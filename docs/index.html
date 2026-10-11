@@ -1,9 +1,3741 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>3olution_Agent_Graph_Documentation</title>
-  </head>
-  <body>
-    <h1>Welcome to 3olution Documentation Pages</h1>
-  </body>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — Knowledge Base</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 340px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+.nav-list { list-style: none; margin: 0; padding: 0; }
+.nav-list li { margin: 0; }
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-list a:hover { background: var(--bg-elev); color: var(--text); }
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+.nav-icon.txt { background: #6e7681; }
+.nav-icon.dir { background: #d29922; }
+.nav-icon.html { background: #e34c26; }
+.nav-icon.js { background: #f1e05a; }
+.nav-icon.sh { background: #89e051; }
+.nav-icon.ps1 { background: #012456; }
+.nav-icon.link { background: #7c3aed; }
+main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.topbar .stats { font-size: 12px; color: var(--text-mute); display: flex; gap: 16px; }
+.topbar .stats span { display: flex; align-items: center; gap: 5px; }
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+.hero p { margin: 0; color: var(--text-dim); font-size: 14.5px; max-width: 780px; }
+.hero .links { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.hero .links a:hover { border-color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.file-section.hidden { display: none; }
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.file-title { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+.file-badge.doc {
+  background: rgba(124, 58, 237, 0.14);
+  color: #a371f7;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.file-badge.md {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.28);
+}
+.file-badge.txt {
+  background: rgba(139, 148, 158, 0.14);
+  color: var(--text-dim);
+  border-color: rgba(139, 148, 158, 0.28);
+}
+.file-badge.dir {
+  background: rgba(210, 153, 34, 0.14);
+  color: var(--yellow);
+  border-color: rgba(210, 153, 34, 0.3);
+}
+.file-badge.link {
+  background: rgba(124, 58, 237, 0.14);
+  color: #a371f7;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, 0.08); }
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.hljs { background: transparent !important; padding: 0 !important; }
+.md-content {
+  padding: 24px 28px;
+  max-height: 1200px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.md-content th { background: var(--bg-elev); color: var(--text); font-weight: 600; }
+.md-content td { color: var(--text-dim); }
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+.md-content kbd {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11.5px;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+}
+.kb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 24px 28px;
+  background: var(--bg-code);
+}
+.kb-card {
+  display: block;
+  text-decoration: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.kb-card:hover {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  transform: translateY(-1px);
+}
+.kb-card .kb-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.kb-card h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.kb-card p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.kb-card .kb-tag {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 900px) {
+  :root { --sidebar-w: 270px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+.nav-list li.hidden { display: none; }
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo-mark">3</span> Knowledge Base</h1>
+    <div class="sub">3olution Agent Graph — v2.0.0</div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search docs, files, folders…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Getting Started</div>
+  <ul class="nav-list" data-group="start">
+    <li><a href="#kb-index"><span class="nav-icon link"></span>Knowledge Base Index</a></li>
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>Overview</a></li>
+    <li><a href="#doc-tree"><span class="nav-icon md"></span>Project Tree</a></li>
+    <li><a href="#doc-workflows"><span class="nav-icon md"></span>Two Workflows</a></li>
+    <li><a href="#doc-quickstart"><span class="nav-icon md"></span>Quick Start</a></li>
+  </ul>
+
+  <div class="nav-group">Subfolder Documentation</div>
+  <ul class="nav-list" data-group="folders">
+    <li><a href="#doc-backend"><span class="nav-icon dir"></span>backend/</a></li>
+    <li><a href="#doc-bootstrap"><span class="nav-icon dir"></span>bootstrap/</a></li>
+    <li><a href="#doc-desktop"><span class="nav-icon dir"></span>desktop/</a></li>
+    <li><a href="#doc-logs"><span class="nav-icon dir"></span>logs/</a></li>
+    <li><a href="#doc-mcp"><span class="nav-icon dir"></span>mcp_server/</a></li>
+    <li><a href="#doc-models"><span class="nav-icon dir"></span>models/</a></li>
+    <li><a href="#doc-php"><span class="nav-icon dir"></span>php_app/</a></li>
+    <li><a href="#doc-runtime"><span class="nav-icon dir"></span>runtime/</a></li>
+    <li><a href="#doc-scripts"><span class="nav-icon dir"></span>scripts/</a></li>
+    <li><a href="#doc-tests"><span class="nav-icon dir"></span>tests/</a></li>
+    <li><a href="#doc-web"><span class="nav-icon dir"></span>web/</a></li>
+  </ul>
+
+  <div class="nav-group">Launchers &amp; Setup</div>
+  <ul class="nav-list" data-group="launchers">
+    <li><a href="#f-runpy"><span class="nav-icon py"></span>run.py</a></li>
+    <li><a href="#f-setupsh"><span class="nav-icon sh"></span>setup.sh</a></li>
+    <li><a href="#f-setupps1"><span class="nav-icon ps1"></span>setup.ps1</a></li>
+    <li><a href="#f-startsh"><span class="nav-icon sh"></span>start.sh</a></li>
+    <li><a href="#f-startbat"><span class="nav-icon ps1"></span>start.bat</a></li>
+  </ul>
+
+  <div class="nav-group">Configuration</div>
+  <ul class="nav-list" data-group="config">
+    <li><a href="#f-envexample"><span class="nav-icon txt"></span>.env.example</a></li>
+    <li><a href="#f-envactive"><span class="nav-icon txt"></span>.env (active)</a></li>
+    <li><a href="#f-requirements"><span class="nav-icon txt"></span>requirements.txt</a></li>
+    <li><a href="#f-gitignore"><span class="nav-icon txt"></span>.gitignore</a></li>
+  </ul>
+
+  <div class="nav-group">Documentation Files</div>
+  <ul class="nav-list" data-group="docs">
+    <li><a href="#f-readme"><span class="nav-icon md"></span>README.md</a></li>
+    <li><a href="#f-installation"><span class="nav-icon md"></span>INSTALLATION.md</a></li>
+    <li><a href="#f-contributing"><span class="nav-icon md"></span>CONTRIBUTING.md</a></li>
+    <li><a href="#f-changes"><span class="nav-icon md"></span>CHANGES.md</a></li>
+    <li><a href="#f-extensive"><span class="nav-icon md"></span>Extensive_Documentation.md</a></li>
+    <li><a href="#f-license"><span class="nav-icon md"></span>LICENSE.md</a></li>
+    <li><a href="#f-filetree"><span class="nav-icon txt"></span>File_Tree.txt</a></li>
+  </ul>
+
+  <div class="nav-group">Utilities</div>
+  <ul class="nav-list" data-group="util">
+    <li><a href="#f-pyinstaller"><span class="nav-icon md"></span>pyinstaller.spec</a></li>
+    <li><a href="#f-fixphpbat"><span class="nav-icon ps1"></span>fix_php.bat</a></li>
+    <li><a href="#f-fixphpps1"><span class="nav-icon ps1"></span>fix_php.ps1</a></li>
+    <li><a href="#f-testphp"><span class="nav-icon py"></span>test_php.py</a></li>
+    <li><a href="#f-treeps1"><span class="nav-icon ps1"></span>Project_Tree.ps1</a></li>
+  </ul>
+
+  <div class="no-results" id="noResults">No matching sections.</div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">3olution Agent Graph / knowledge base</span>
+    </div>
+    <div class="stats">
+      <span>📄 <strong id="statFiles">12</strong> sections</span>
+      <span>📁 <strong>11</strong> subfolders</span>
+      <span>🔗 <strong>10</strong> detailed docs</span>
+      <span>🐍 <strong>Python 3.10+</strong></span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>3olution Agent Graph</h1>
+    <p>
+      A dynamic operating graph for AI agents — build, visualize, and
+      execute agent workflows as node graphs, like ComfyUI but for any
+      LLM + tool stack. This knowledge base documents every file and
+      subfolder in the project root, with links to the detailed
+      per-folder documentation pages. Built by
+      <a href="https://3olution.com" target="_blank" rel="noopener" style="color:var(--accent)">3olution</a>
+      — MIT licensed.
+    </p>
+    <div class="links">
+      <a href="#kb-index">📚 Knowledge Base Index</a>
+      <a href="#doc-quickstart">🚀 Quick Start</a>
+      <a href="#doc-tree">🗂 Project Tree</a>
+      <a href="#doc-workflows">🔀 Two Workflows</a>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       KNOWLEDGE BASE INDEX
+       ============================================================= -->
+  <section class="file-section" id="kb-index" data-name="knowledge base index subfolder documentation links">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Knowledge Base Index <span class="file-badge link">index</span></h2>
+        <span class="file-path">Detailed per-folder documentation pages</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">10 docs</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="kb-grid">
+
+      <a class="kb-card" href="backend.html">
+        <div class="kb-icon">🐍</div>
+        <h3>backend/</h3>
+        <p>FastAPI application, agent loop, multi-provider LLM client, MCP client, SQLite storage, and the graph execution engine.</p>
+        <span class="kb-tag">29 files · 36 routes</span>
+      </a>
+
+      <a class="kb-card" href="bootstrap.html">
+        <div class="kb-icon">📦</div>
+        <h3>bootstrap/</h3>
+        <p>One-shot installer that downloads portable Python, PHP (CGI + CLI), and the SQLite CLI into <code>runtime/</code>.</p>
+        <span class="kb-tag">setup.py</span>
+      </a>
+
+      <a class="kb-card" href="desktop.html">
+        <div class="kb-icon">🖥️</div>
+        <h3>desktop/</h3>
+        <p>PyQt6 desktop client with embedded Chromium view, native-widget fallback, backend launcher, and llama-cpp install dialog.</p>
+        <span class="kb-tag">6 files</span>
+      </a>
+
+      <a class="kb-card" href="mcp_server.html">
+        <div class="kb-icon">🔌</div>
+        <h3>mcp_server/</h3>
+        <p>Model Context Protocol tool server (stdio subprocess). Auto-loads tool modules from <code>tools/</code>.</p>
+        <span class="kb-tag">10 files · 9 tools</span>
+      </a>
+
+      <a class="kb-card" href="models.html">
+        <div class="kb-icon">🗄️</div>
+        <h3>models/ &amp; logs/</h3>
+        <p>GGUF model store for the local llama-cpp server, and rotating daily log files with 14-day retention.</p>
+        <span class="kb-tag">runtime folders</span>
+      </a>
+
+      <a class="kb-card" href="php_app.html">
+        <div class="kb-icon">🐘</div>
+        <h3>php_app/</h3>
+        <p>PHP notes app served at <code>/php/</code>. Driver-agnostic — SQLite (default), MySQL, or PostgreSQL.</p>
+        <span class="kb-tag">7 files</span>
+      </a>
+
+      <a class="kb-card" href="runtime.html">
+        <div class="kb-icon">⚙️</div>
+        <h3>runtime/</h3>
+        <p>Portable Python, PHP, SQLite, and cached archives. Created by <code>bootstrap/setup.py</code>. Fully regenerable.</p>
+        <span class="kb-tag">5 subfolders</span>
+      </a>
+
+      <a class="kb-card" href="scripts.html">
+        <div class="kb-icon">📜</div>
+        <h3>scripts/</h3>
+        <p>Uvicorn entry point with three platform fixes, cross-platform LiteGraph downloader, and the llama-cpp runner.</p>
+        <span class="kb-tag">5 files</span>
+      </a>
+
+      <a class="kb-card" href="tests.html">
+        <div class="kb-icon">🧪</div>
+        <h3>tests/</h3>
+        <p>pytest suite covering the graph engine's topological sort and every built-in node function. Runs in under a second.</p>
+        <span class="kb-tag">45+ tests</span>
+      </a>
+
+      <a class="kb-card" href="web.html">
+        <div class="kb-icon">🌐</div>
+        <h3>web/</h3>
+        <p>Three self-contained pages — Chat, Graph Editor, Settings. Plain HTML/CSS/JS, no build step, one vendored dependency.</p>
+        <span class="kb-tag">10 files · 3 pages</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- =============================================================
+       OVERVIEW
+       ============================================================= -->
+  <section class="file-section" id="doc-overview" data-name="overview project 3olution agent graph">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Overview <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">Project root — what this is</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Overview</h1>
+
+      <p>
+        <strong>3olution Agent Graph</strong> is a full-stack AI agent
+        framework. It combines a FastAPI backend, an MCP tool server,
+        a LiteGraph-based visual workflow editor, and a browser-based
+        chat UI into a single self-contained project. A portable
+        runtime bootstrap means it runs on any machine with a working
+        Python 3.8+ interpreter — no system-wide Python, PHP, or
+        SQLite required.
+      </p>
+
+      <h2>What the stack does</h2>
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>Responsibility</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Python backend</td>
+            <td>Agent loop, LLM routing (Ollama / fallback / llama-cpp), MCP tool integration, graph execution, session persistence</td>
+          </tr>
+          <tr>
+            <td>MCP server</td>
+            <td>Deterministic tool provider — math, filesystem, time, text</td>
+          </tr>
+          <tr>
+            <td>Web chat UI</td>
+            <td>Browser chat with streaming tokens, thinking blocks, and tool events</td>
+          </tr>
+          <tr>
+            <td>Web graph editor</td>
+            <td>LiteGraph.js node editor for building and running agent workflows</td>
+          </tr>
+          <tr>
+            <td>Settings page</td>
+            <td>Install llama-cpp-python, manage Ollama models, pull/delete models</td>
+          </tr>
+          <tr>
+            <td>PyQt6 desktop</td>
+            <td>Native desktop client with embedded Chromium or native widgets</td>
+          </tr>
+          <tr>
+            <td>PHP notes app</td>
+            <td>Server-rendered PHP app served through the Python backend via CGI</td>
+          </tr>
+          <tr>
+            <td>SQLite storage</td>
+            <td>Persistent conversation history and graph run archive</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Key design principles</h2>
+      <ul>
+        <li>
+          <strong>No build step.</strong>
+          The frontend is plain HTML, CSS, and JavaScript. There is no
+          bundler, no transpilation, no framework. What you edit is
+          what the browser runs.
+        </li>
+        <li>
+          <strong>Self-contained runtime.</strong>
+          <code>bootstrap/setup.py</code> downloads portable Python,
+          PHP, and SQLite into <code>runtime/</code>. Nothing is
+          installed system-wide. Deleting the folder and re-running
+          the bootstrap fully resets the environment.
+        </li>
+        <li>
+          <strong>Transport-agnostic event schema.</strong>
+          The agent emits the same event dict whether it is delivered
+          over WebSocket, SSE, or batched JSON. Any client that can
+          consume one transport can be swapped for any other without
+          changing the parsing logic.
+        </li>
+        <li>
+          <strong>One job per module.</strong>
+          Five backend modules (<code>config</code>,
+          <code>state</code>, <code>retry</code>,
+          <code>thinking</code>, <code>storage</code>) import nothing
+          from the rest of the backend. They can be tested in
+          isolation and re-used by the desktop client.
+        </li>
+        <li>
+          <strong>Fail loud, fail clearly.</strong>
+          Every startup step is best-effort — the backend boots even
+          if the LLM, MCP server, or llama-cpp subprocess is missing.
+          Each failure logs a specific, actionable message rather than
+          a generic "something went wrong".
+        </li>
+      </ul>
+
+      <h2>License</h2>
+      <p>
+        MIT licensed. The 3olution name and logo are trademarks of
+        3olution. See <a href="#f-license">LICENSE.md</a> for the full
+        text and third-party component licenses.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       PROJECT TREE
+       ============================================================= -->
+  <section class="file-section" id="doc-tree" data-name="project tree folder structure layout">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Project Tree <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">Every folder and file at a glance</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Project Tree</h1>
+
+      <p>
+        The complete layout. Items marked
+        <em>[gitignored]</em> are regenerated by
+        <code>bootstrap/setup.py</code> or created on first run.
+      </p>
+
+      <pre>3olution-agent-graph/
+│
+├── .env.example                    ← copy to .env to customise
+├── .gitignore                      ← what is excluded from git
+├── LICENSE                         ← MIT
+├── README.md                       ← project entry point
+├── CONTRIBUTING.md                 ← contribution guidelines
+├── CHANGES.md                      ← changelog
+├── INSTALLATION.md                 ← step-by-step install
+├── HOW_TO_USE.md                   ← interface tour
+├── STARTUP.md                      ← launch option reference
+├── ERROR_HANDLING.md               ← error taxonomy
+├── FAQ.md                          ← common questions
+├── FUTURE_EXTENSIONS.md            ← roadmap
+├── requirements.txt                ← pip dependencies
+├── run.py                          ← developer launcher
+├── pyinstaller.spec                ← desktop packaging
+├── setup.sh / setup.ps1            ← portable runtime bootstrap
+├── start.sh / start.bat            ← portable launcher
+├── fix_php.bat / fix_php.ps1       ← PHP permission repair
+├── test_php.py                     ← PHP launch diagnostic
+├── File_Tree.txt                   ← this tree
+│
+├── bootstrap/                      ← one-shot runtime installer
+│   └── setup.py
+│
+├── runtime/                        ← [gitignored] portable binaries
+│   ├── python/                     ← portable CPython 3.12.11
+│   ├── php/                        ← portable PHP (CLI + CGI)
+│   ├── sqlite/                     ← SQLite CLI tools
+│   ├── llama-server/               ← optional native llama.cpp binary
+│   ├── _downloads/                 ← cached archives
+│   └── runtime.env                 ← manifest
+│
+├── backend/                        ← FastAPI application
+│   ├── main.py                     ← app + lifespan + chat routes
+│   ├── config.py                   ← pydantic-settings
+│   ├── state.py                    ← shared dict
+│   ├── retry.py                    ← exponential backoff
+│   ├── thinking.py                 ← reasoning splitter
+│   ├── storage.py                  ← SQLite persistence
+│   ├── logging_config.py           ← loguru sinks
+│   ├── llm.py                      ← multi-provider client
+│   ├── mcp_client.py               ← MCP stdio client
+│   ├── models_setup.py             ← models/ folder
+│   ├── ollama.py                   ← native Ollama API
+│   ├── php_server.py               ← PHP-CGI executor
+│   ├── llama_installer.py          ← pip installer
+│   ├── llama_server.py             ← subprocess lifecycle
+│   ├── agent.py                    ← linear agent loop
+│   ├── routes/                     ← additional API routers
+│   └── graph/                      ← graph engine
+│       ├── model.py                ← Graph / Node / Edge
+│       ├── registry.py             ← node type registry
+│       ├── nodes.py                ← 16 built-in nodes
+│       ├── engine.py               ← topological executor
+│       ├── routes.py               ← /api/graph/*
+│       └── custom_nodes/           ← user-authored nodes
+│
+├── mcp_server/                     ← MCP tool server
+│   ├── server.py                   ← entry point
+│   ├── _server.py                  ← shared mcp instance
+│   └── tools/                      ← auto-loaded tool modules
+│       ├── math_tools.py
+│       ├── time_tools.py
+│       ├── filesystem_tools.py
+│       └── text_tools.py
+│
+├── desktop/                        ← PyQt6 desktop client
+│   ├── app.py                      ← embedded Chromium
+│   ├── native_chat.py              ← native widgets
+│   ├── backend_launcher.py
+│   ├── install_dialog.py
+│   └── logging_config.py
+│
+├── web/                            ← browser frontend
+│   ├── index.html / styles.css / app.js     ← chat page
+│   ├── graph.html / graph.css / graph.js    ← graph editor
+│   ├── settings.html / settings.css / settings.js  ← settings
+│   └── vendor/                     ← [gitignored] LiteGraph.js
+│
+├── php_app/                        ← PHP notes app
+│   ├── index.php / db.php / demo.php
+│   ├── style.css                   ← deprecated stub
+│   ├── static/style.css            ← the real stylesheet
+│   └── data/                       ← [gitignored] SQLite DB
+│
+├── models/                         ← [gitignored] GGUF weights
+│   └── README.md
+│
+├── logs/                           ← [gitignored] rotating logs
+│   └── .gitkeep
+│
+├── tests/                          ← pytest suite
+│   ├── test_engine.py
+│   └── test_nodes.py
+│
+└── scripts/                        ← launch &amp; download helpers
+    ├── serve.py
+    ├── llama_cpp_runner.py
+    ├── download_vendor.py
+    ├── download_vendor.sh
+    └── download_vendor.ps1</pre>
+
+      <h2>What is gitignored and why</h2>
+      <p>Every ignored path falls into one of five buckets:</p>
+      <table>
+        <thead>
+          <tr><th>Bucket</th><th>Examples</th><th>Reason</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Generated by bootstrap</td>
+            <td><code>runtime/</code></td>
+            <td>~300 MB of binaries, re-downloadable</td>
+          </tr>
+          <tr>
+            <td>Downloaded at runtime</td>
+            <td><code>web/vendor/</code>, <code>models/</code></td>
+            <td>Network-fetched; large</td>
+          </tr>
+          <tr>
+            <td>Written by the app</td>
+            <td><code>logs/</code>, <code>sessions.db</code>, <code>php_app/data/*.db</code></td>
+            <td>User data</td>
+          </tr>
+          <tr>
+            <td>User-specific</td>
+            <td><code>.env</code>, <code>.vscode/</code></td>
+            <td>Not portable</td>
+          </tr>
+          <tr>
+            <td>OS clutter</td>
+            <td><code>.DS_Store</code>, <code>Thumbs.db</code></td>
+            <td>Not code</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        The rule: if a file can be regenerated from source code +
+        <code>.env</code> + <code>bootstrap/setup.py</code>, it goes
+        in <code>.gitignore</code>. See
+        <a href="#f-gitignore">.gitignore</a> for the full file.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       TWO WORKFLOWS
+       ============================================================= -->
+  <section class="file-section" id="doc-workflows" data-name="workflows developer portable runpy bootstrap">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Two Workflows <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">Developer vs. end-user installation</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Two Workflows</h1>
+
+      <p>
+        The project ships two independent launcher paths. They run the
+        same backend code; only the Python interpreter differs.
+      </p>
+
+      <h2>Developer workflow</h2>
+      <p>Uses the Python interpreter already on <code>PATH</code>.</p>
+      <pre>python run.py setup      # create .venv/, install deps
+python run.py backend    # start the backend
+python run.py desktop    # start the PyQt6 client
+python run.py native     # native widgets, no embedded browser
+python run.py mcp        # run the MCP server in the foreground
+python run.py vendor     # force-refresh LiteGraph files</pre>
+
+      <table>
+        <thead>
+          <tr><th>Pros</th><th>Cons</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              Familiar virtualenv semantics · fast iteration ·
+              no 300 MB download · uses the system Python's
+              site-packages for compilers and dev tools
+            </td>
+            <td>
+              Requires Python 3.10+ on PATH · no PHP or SQLite CLI
+              installed · does not work on a machine without Python
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Portable (end-user) workflow</h2>
+      <p>Downloads a self-contained runtime into <code>runtime/</code>.</p>
+      <pre>./setup.sh &amp;&amp; ./start.sh         # Linux / macOS
+setup.ps1 ; start.bat             # Windows</pre>
+      <p>Or, manually:</p>
+      <pre>python bootstrap/setup.py         # download runtime
+python bootstrap/setup.py --check # report what's installed
+python bootstrap/setup.py --force # reinstall everything</pre>
+
+      <table>
+        <thead>
+          <tr><th>Pros</th><th>Cons</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              Zero system dependencies · works from a USB stick ·
+              identical across Windows, macOS, and Linux · ships PHP
+              and the SQLite CLI
+            </td>
+            <td>
+              2–5 minute first-run download (~250 MB) · uses its own
+              private Python, so system-level packages are unavailable
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Which one should I use?</h2>
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Recommended</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>First-time install, want everything to just work</td><td>Portable</td></tr>
+          <tr><td>Development on the Python code only</td><td>Developer</td></tr>
+          <tr><td>Shared machine, no admin rights</td><td>Portable</td></tr>
+          <tr><td>Air-gapped environment with a pre-cached <code>runtime/_downloads/</code></td><td>Portable</td></tr>
+          <tr><td>CI runner with a pinned Python already present</td><td>Developer</td></tr>
+          <tr><td>You want the PHP notes app to work out of the box</td><td>Portable</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Both workflows coexist.</strong>
+        You can run <code>bootstrap/setup.py</code> to get the
+        portable runtime, and also use <code>python run.py setup</code>
+        with a system Python. They do not conflict — each keeps its
+        own interpreter in a different folder.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       QUICK START
+       ============================================================= -->
+  <section class="file-section" id="doc-quickstart" data-name="quick start install llm ollama">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Quick Start <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">From zero to running in five steps</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Quick Start</h1>
+
+      <h2>1. Clone the repository</h2>
+      <pre>git clone https://github.com/3olution/agent-graph.git
+cd agent-graph</pre>
+
+      <h2>2. Install the runtime</h2>
+      <p>Portable (recommended for first-time installs):</p>
+      <pre>python bootstrap/setup.py</pre>
+      <p>Developer:</p>
+      <pre>python run.py setup</pre>
+
+      <h2>3. Install and start an LLM</h2>
+      <p>Ollama is the default and is what most users run locally:</p>
+      <pre>ollama pull llama3.2
+ollama serve</pre>
+      <p>
+        The backend defaults already point at
+        <code>http://localhost:11434/v1</code> with model
+        <code>llama3.2</code>, so no <code>.env</code> edits are
+        required.
+      </p>
+      <p>
+        To use a different OpenAI-compatible endpoint, copy
+        <code>.env.example</code> to <code>.env</code> and set
+        <code>AGENT_LLM_BASE_URL</code>, <code>AGENT_LLM_API_KEY</code>,
+        and <code>AGENT_LLM_MODEL</code>.
+      </p>
+
+      <h2>4. Start the backend</h2>
+      <pre>./start.sh          # Linux / macOS
+start.bat           # Windows
+python run.py backend   # or, if using the developer workflow</pre>
+      <p>Expected output ends with:</p>
+      <pre>INFO | Backend ready — primary LLM=llama3.2 fallback=(none) llama_cpp=idle php=enabled</pre>
+
+      <h2>5. Open the UI</h2>
+      <table>
+        <thead>
+          <tr><th>URL</th><th>What</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>http://127.0.0.1:8000/</code></td><td>Chat UI</td></tr>
+          <tr><td><code>http://127.0.0.1:8000/graph</code></td><td>Graph editor</td></tr>
+          <tr><td><code>http://127.0.0.1:8000/settings</code></td><td>LLM &amp; model management</td></tr>
+          <tr><td><code>http://127.0.0.1:8000/php/</code></td><td>PHP notes app</td></tr>
+          <tr><td><code>http://127.0.0.1:8000/docs</code></td><td>Auto-generated API browser</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Verify the install</h2>
+      <pre>curl http://127.0.0.1:8000/api/health</pre>
+      <p>
+        Expected: a JSON object with <code>"status": "ok"</code> and
+        subsystem fields for LLM, MCP, llama-cpp, PHP, and storage.
+      </p>
+
+      <pre>pytest tests/ -v</pre>
+      <p>Expected: 45 tests, all passing, in under a second.</p>
+
+      <h2>Optional: install llama-cpp-python</h2>
+      <p>
+        Skip this step if you are happy using Ollama. If you want to
+        run GGUF files directly through the backend:
+      </p>
+      <ol>
+        <li>Open <code>http://127.0.0.1:8000/settings</code>.</li>
+        <li>In the <em>LLM Runtime</em> card, click <em>Show install options</em>.</li>
+        <li>The dropdown is pre-selected with the wheel recommended for your GPU (based on CUDA detection).</li>
+        <li>Click <em>Install</em>. pip's output streams live into the log panel.</li>
+        <li>Restart the backend so the newly installed module is loaded.</li>
+        <li>Drop a <code>.gguf</code> file into <code>models/</code> and load it from the chat header's <em>Load GGUF</em> button.</li>
+      </ol>
+
+      <div class="callout success">
+        <strong>That is the entire setup.</strong>
+        The backend, MCP server, web UI, graph editor, settings page,
+        and PHP notes app are all running on a single port. Nothing
+        else needs to be installed.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — backend/
+       ============================================================= -->
+  <section class="file-section" id="doc-backend" data-name="backend folder fastapi agent llm graph">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>backend/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">FastAPI application — agent, LLM, graph, storage</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">29 files</span>
+        <a class="copy-btn" href="backend.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>backend/</h1>
+
+      <p>
+        The FastAPI application. It exposes the chat agent, the graph
+        execution engine, and the management API for Ollama,
+        llama-cpp, PHP, system state, and logs.
+      </p>
+
+      <h2>Package layout</h2>
+      <pre>backend/
+├── __init__.py               __version__ = "2.0.0"
+├── main.py                   FastAPI app + lifespan + chat routes
+├── config.py                 pydantic-settings, all AGENT_* vars
+├── state.py                  shared dict for runtime singletons
+├── retry.py                  async exponential-backoff helper
+├── thinking.py               reasoning-marker splitter
+├── storage.py                SQLite session + graph-run store
+├── logging_config.py         loguru console + rotating file sinks
+├── llm.py                    three-provider OpenAI-compatible client
+├── mcp_client.py             MCP stdio client + tool listing
+├── models_setup.py           models/ folder + GGUF resolution
+├── ollama.py                 native Ollama REST API client
+├── php_server.py             PHP-CGI execution engine
+├── llama_installer.py        pip installer for llama-cpp-python
+├── llama_server.py           llama-server subprocess lifecycle
+├── agent.py                  linear perceive→decide→act loop
+│
+├── routes/
+│   ├── ollama_routes.py      /api/ollama/*
+│   ├── llama_routes.py       /api/llama/*
+│   ├── system_routes.py      /api/system/*, /api/logs/*
+│   └── php_routes.py         /php/*, /php-static/*
+│
+└── graph/
+    ├── model.py              Graph / Node / Edge / NodeType
+    ├── registry.py           node type registry + serializer
+    ├── nodes.py              16 built-in node implementations
+    ├── engine.py             Kahn topological executor
+    ├── routes.py             /api/graph/*, /ws/graph
+    └── custom_nodes/         user-authored node types</pre>
+
+      <h2>Module independence</h2>
+      <p>
+        Five modules import nothing from the rest of the backend:
+        <code>config</code>, <code>state</code>, <code>retry</code>,
+        <code>thinking</code>, and <code>storage</code>. They can be
+        tested in isolation, imported by scripts, and re-used by the
+        desktop client without pulling in FastAPI or the OpenAI SDK.
+      </p>
+
+      <h2>Startup sequence</h2>
+      <ol>
+        <li>Logging — loguru console + rotating file sink.</li>
+        <li>Environment checks — <code>.env</code>, web files, vendor files.</li>
+        <li>LLMClient — construct three <code>AsyncOpenAI</code> instances (lazy).</li>
+        <li>SessionStore — open SQLite, create tables.</li>
+        <li>LlamaServerManager — spawn the llama-server subprocess (best-effort).</li>
+        <li>MCPClient — spawn the MCP stdio server, initialize the session (best-effort).</li>
+        <li>Agent — instantiate with the LLM client, MCP client, and store.</li>
+        <li>Warmup — send a one-token ping to the primary LLM.</li>
+        <li>Routers — mount the five routers.</li>
+        <li>Static files — mount <code>web/</code> at <code>/</code> last.</li>
+      </ol>
+
+      <p>
+        <a href="backend.html">Open the full backend documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — bootstrap/
+       ============================================================= -->
+  <section class="file-section" id="doc-bootstrap" data-name="bootstrap folder runtime setup portable">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>bootstrap/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">Portable runtime installer</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 file</span>
+        <a class="copy-btn" href="bootstrap.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>bootstrap/</h1>
+
+      <p>
+        Contains a single script, <code>setup.py</code>, whose job is
+        to make the backend runnable on a machine that has nothing
+        installed except a working Python 3.8+ interpreter.
+      </p>
+
+      <h2>What it installs</h2>
+      <ul>
+        <li>A private Python 3.12 interpreter under <code>runtime/python/</code></li>
+        <li>A private PHP runtime (CGI + CLI) under <code>runtime/php/</code></li>
+        <li>A private SQLite CLI under <code>runtime/sqlite/</code></li>
+        <li>All Python dependencies into that private Python</li>
+        <li>The LiteGraph vendor files into <code>web/vendor/</code></li>
+        <li>A manifest at <code>runtime/runtime.env</code></li>
+      </ul>
+
+      <h2>Version pins</h2>
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Version</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Python</td><td>3.12.11</td><td>astral-sh/python-build-standalone (tag 20250712)</td></tr>
+          <tr><td>PHP (Unix)</td><td>8.4.x → 8.2.x fallback</td><td>dl.static-php.dev</td></tr>
+          <tr><td>PHP (Windows)</td><td>8.4.15 → 8.2.29 fallback</td><td>windows.php.net (official ZIP)</td></tr>
+          <tr><td>SQLite CLI</td><td>3.46.0</td><td>sqlite.org</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Common flags</h2>
+      <table>
+        <thead>
+          <tr><th>Flag</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--force</code></td><td>Re-download and reinstall every component</td></tr>
+          <tr><td><code>--skip-python</code></td><td>Skip the portable Python</td></tr>
+          <tr><td><code>--skip-php</code></td><td>Skip the PHP runtime</td></tr>
+          <tr><td><code>--skip-sqlite</code></td><td>Skip the SQLite CLI</td></tr>
+          <tr><td><code>--skip-deps</code></td><td>Skip <code>pip install -r requirements.txt</code></td></tr>
+          <tr><td><code>--skip-vendor</code></td><td>Skip the LiteGraph download</td></tr>
+          <tr><td><code>--check</code></td><td>Report what's installed, install nothing</td></tr>
+          <tr><td><code>--verbose</code></td><td>Print full tracebacks on error</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <a href="bootstrap.html">Open the full bootstrap documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — desktop/
+       ============================================================= -->
+  <section class="file-section" id="doc-desktop" data-name="desktop folder pyqt6 native chat client">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>desktop/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">PyQt6 desktop client</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">6 files</span>
+        <a class="copy-btn" href="desktop.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>desktop/</h1>
+
+      <p>
+        A PyQt6 desktop client that renders the same web UI inside an
+        embedded Chromium view, plus a native-widgets fallback for
+        machines where the WebEngine cannot be installed.
+      </p>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead>
+          <tr><th>File</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>app.py</code></td>
+            <td>Main entry point. PyQt6 window + embedded Chromium view via <code>QWebEngineView</code>.</td>
+          </tr>
+          <tr>
+            <td><code>native_chat.py</code></td>
+            <td>Native-widgets fallback chat client. No embedded browser. Same backend, same event schema.</td>
+          </tr>
+          <tr>
+            <td><code>backend_launcher.py</code></td>
+            <td>Spawns the FastAPI backend as a subprocess and monitors its lifecycle.</td>
+          </tr>
+          <tr>
+            <td><code>install_dialog.py</code></td>
+            <td>Native installer UI for llama-cpp-python. Same SSE stream as the settings page.</td>
+          </tr>
+          <tr>
+            <td><code>logging_config.py</code></td>
+            <td>Loguru sink for <code>logs/desktop-YYYY-MM-DD.log</code>.</td>
+          </tr>
+          <tr>
+            <td><code>__init__.py</code></td>
+            <td>Package marker.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Launching</h2>
+      <pre>python run.py desktop        # embedded Chromium (recommended)
+python run.py native         # native PyQt6 widgets</pre>
+
+      <h2>Packaging</h2>
+      <p>
+        The <code>pyinstaller.spec</code> at the project root builds
+        a single-folder distribution. The embedded Chromium view
+        accounts for ~280 MB extracted; comment out the two
+        <code>PyQt6-WebEngine</code> lines in <code>hiddenimports</code>
+        to skip it if you do not need the browser.
+      </p>
+
+      <p>
+        <a href="desktop.html">Open the full desktop documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — logs/
+       ============================================================= -->
+  <section class="file-section" id="doc-logs" data-name="logs folder rotating log files gitkeep">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>logs/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">Rotating daily log files</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 file</span>
+        <a class="copy-btn" href="models.html#doc-logs" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>logs/</h1>
+
+      <p>
+        The rotating daily log directory. Files are written by loguru
+        on both the backend and the desktop client. The folder is
+        committed to git (via a <code>.gitkeep</code> placeholder),
+        but the <code>*.log</code> files themselves are gitignored.
+      </p>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead>
+          <tr><th>File</th><th>Written by</th><th>Level</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>backend-YYYY-MM-DD.log</code></td>
+            <td>Backend (loguru)</td>
+            <td>DEBUG — startup, LLM requests, tool calls, subprocess output</td>
+          </tr>
+          <tr>
+            <td><code>desktop-YYYY-MM-DD.log</code></td>
+            <td>Desktop client</td>
+            <td>DEBUG — client lifecycle, forwarded backend lines</td>
+          </tr>
+          <tr>
+            <td><code>.gitkeep</code></td>
+            <td>Repo</td>
+            <td>Empty placeholder</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Rotation and retention</h2>
+      <ul>
+        <li><strong>Rotation:</strong> at midnight UTC.</li>
+        <li><strong>Retention:</strong> <code>AGENT_LOG_RETENTION_DAYS</code> days (default 14). Files older than that are deleted automatically at rotation time.</li>
+        <li><strong>Windows-safe:</strong> the file sink uses <code>enqueue=True</code>, which routes writes through a background thread. No file-locking conflicts with antivirus scanners.</li>
+      </ul>
+
+      <h2>Viewing logs</h2>
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Command</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Desktop client</td><td>View menu → <em>View Logs…</em></td></tr>
+          <tr><td>Browser</td><td><code>GET /api/logs/recent?lines=500&amp;source=all</code></td></tr>
+          <tr><td>Terminal (Unix)</td><td><code>tail -f logs/backend-*.log</code></td></tr>
+          <tr><td>Terminal (Windows)</td><td><code>Get-Content logs\backend-*.log -Wait -Tail 50</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <a href="models.html#doc-logs">Open the full logs documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — mcp_server/
+       ============================================================= -->
+  <section class="file-section" id="doc-mcp" data-name="mcp server folder model context protocol tools">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>mcp_server/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">Model Context Protocol tool server</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">10 files</span>
+        <a class="copy-btn" href="mcp_server.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>mcp_server/</h1>
+
+      <p>
+        A FastMCP-compatible stdio subprocess that exposes deterministic
+        tools to the agent over the Model Context Protocol. The backend
+        spawns this server at startup and calls its tools through the
+        LLM's function-calling interface.
+      </p>
+
+      <h2>Package layout</h2>
+      <pre>mcp_server/
+├── __init__.py               package docstring
+├── server.py                 thin entry point
+├── _server.py                shared mcp instance + fixes
+├── Extensive_Documentation.md
+└── tools/
+    ├── __init__.py           auto-loader
+    ├── math_tools.py         add, multiply, sqrt, power
+    ├── time_tools.py         current_time
+    ├── filesystem_tools.py   list_directory, read_file
+    └── text_tools.py         word_count, shout</pre>
+
+      <h2>The nine built-in tools</h2>
+      <table>
+        <thead>
+          <tr><th>Tool</th><th>Signature</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>add</code></td><td><code>(a: float, b: float) → float</code></td><td>Exact IEEE 754 addition</td></tr>
+          <tr><td><code>multiply</code></td><td><code>(a: float, b: float) → float</code></td><td>Exact IEEE 754 multiplication</td></tr>
+          <tr><td><code>sqrt</code></td><td><code>(x: float) → float</code></td><td>Rejects negative inputs</td></tr>
+          <tr><td><code>power</code></td><td><code>(base: float, exponent: float) → float</code></td><td>Fractional and negative exponents supported</td></tr>
+          <tr><td><code>current_time</code></td><td><code>() → str</code></td><td>ISO 8601 UTC timestamp</td></tr>
+          <tr><td><code>list_directory</code></td><td><code>(path: str = ".") → str</code></td><td>Sorted newline-separated entries</td></tr>
+          <tr><td><code>read_file</code></td><td><code>(path: str, max_bytes: int = 4096) → str</code></td><td>UTF-8 only; truncated at max_bytes</td></tr>
+          <tr><td><code>word_count</code></td><td><code>(text: str) → dict</code></td><td>Returns words / characters / unique_words</td></tr>
+          <tr><td><code>shout</code></td><td><code>(text: str) → str</code></td><td>Uppercases text</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Adding a tool</h2>
+      <p>
+        Drop a new <code>.py</code> file into
+        <code>mcp_server/tools/</code>. Restart the backend. The tool
+        appears in the agent's tool list on the next turn.
+      </p>
+      <pre>from .._server import mcp
+
+@mcp.tool()
+def km_to_miles(km: float) -> float:
+    """Convert kilometers to miles (1 km ≈ 0.621371 mi)."""
+    return km * 0.621371</pre>
+
+      <h2>Two critical rules</h2>
+      <ul>
+        <li>
+          <strong>Import from <code>.._server</code>, not
+          <code>..server</code>.</strong> The latter creates a
+          circular import.
+        </li>
+        <li>
+          <strong>Never print to stdout.</strong> That channel is the
+          JSON-RPC transport. Use <code>loguru</code> instead.
+        </li>
+      </ul>
+
+      <p>
+        <a href="mcp_server.html">Open the full MCP server documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — models/
+       ============================================================= -->
+  <section class="file-section" id="doc-models" data-name="models folder gguf llama cpp weights">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>models/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">GGUF model store</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 file</span>
+        <a class="copy-btn" href="models.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>models/</h1>
+
+      <p>
+        Holds GGUF weight files for the locally-managed llama-cpp
+        server. Created on first startup by
+        <code>backend/models_setup.py</code>, which also writes a
+        README into it. The folder is gitignored — GGUF files are
+        gigabytes each.
+      </p>
+
+      <h2>Downloading a model</h2>
+      <pre>pip install huggingface-hub
+cd models
+huggingface-cli download &lt;repo-id&gt; &lt;filename&gt;.gguf --local-dir .</pre>
+
+      <h2>Popular repositories</h2>
+      <table>
+        <thead>
+          <tr><th>Model family</th><th>Repository</th><th>Q4_K_M size</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Llama 3.2 3B</td><td><code>bartowski/Llama-3.2-3B-Instruct-GGUF</code></td><td>2.0 GB</td></tr>
+          <tr><td>Llama 3.1 8B</td><td><code>bartowski/Meta-Llama-3.1-8B-Instruct-GGUF</code></td><td>4.9 GB</td></tr>
+          <tr><td>Mistral 7B</td><td><code>TheBloke/Mistral-7B-Instruct-v0.2-GGUF</code></td><td>4.4 GB</td></tr>
+          <tr><td>Qwen 2.5 7B</td><td><code>bartowski/Qwen2.5-7B-Instruct-GGUF</code></td><td>4.7 GB</td></tr>
+          <tr><td>Qwen 2.5 Coder 7B</td><td><code>bartowski/Qwen2.5-Coder-7B-Instruct-GGUF</code></td><td>4.7 GB</td></tr>
+          <tr><td>Phi-3 Mini</td><td><code>microsoft/Phi-3-mini-4k-instruct-gguf</code></td><td>2.4 GB</td></tr>
+          <tr><td>Gemma 2 9B</td><td><code>bartowski/gemma-2-9b-it-GGUF</code></td><td>5.7 GB</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Quantization suffixes</h2>
+      <table>
+        <thead>
+          <tr><th>Suffix</th><th>Bits</th><th>Quality</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Q2_K</code></td><td>2</td><td>Lowest</td></tr>
+          <tr><td><code>Q3_K_S</code></td><td>3</td><td>Very low</td></tr>
+          <tr><td><code>Q4_0</code></td><td>4</td><td>Low</td></tr>
+          <tr><td><code>Q4_K_M</code></td><td>4</td><td>Balanced — recommended default</td></tr>
+          <tr><td><code>Q5_K_M</code></td><td>5</td><td>Good</td></tr>
+          <tr><td><code>Q6_K</code></td><td>6</td><td>Very good</td></tr>
+          <tr><td><code>Q8_0</code></td><td>8</td><td>Excellent</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Backend API</h2>
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Path</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>GET</td><td><code>/api/llama/runtime/models</code></td><td>List all GGUF files</td></tr>
+          <tr><td>POST</td><td><code>/api/llama/runtime/load</code></td><td>Swap the loaded model</td></tr>
+          <tr><td>POST</td><td><code>/api/llama/runtime/unload</code></td><td>Free the VRAM / RAM</td></tr>
+          <tr><td>POST</td><td><code>/api/llama/runtime/retry</code></td><td>Restart the subprocess</td></tr>
+          <tr><td>GET</td><td><code>/api/llama/all-models</code></td><td>Unified Ollama + GGUF list</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <a href="models.html">Open the full models documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — php_app/
+       ============================================================= -->
+  <section class="file-section" id="doc-php" data-name="php app notes sqlite mysql postgresql cgi">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>php_app/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">PHP notes app — served at /php/</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">7 files</span>
+        <a class="copy-btn" href="php_app.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>php_app/</h1>
+
+      <p>
+        A small, self-contained PHP notes application served by the
+        Python backend through PHP's CGI SAPI. It is
+        driver-agnostic — the same code runs against SQLite (default),
+        MySQL, or PostgreSQL, chosen entirely by
+        <code>AGENT_PHP_DB_DRIVER</code>.
+      </p>
+
+      <h2>Package layout</h2>
+      <pre>php_app/
+├── index.php          main page — list, add, delete
+├── db.php             connection factory + ensure_schema()
+├── demo.php           JSON endpoint — reports driver + version
+├── style.css          deprecated stub (see static/)
+│
+├── data/              SQLite database directory
+│   ├── .gitkeep
+│   └── app.db         created on first request
+│
+└── static/            assets served at /php-static/*
+    └── style.css      the real stylesheet</pre>
+
+      <h2>Routes</h2>
+      <table>
+        <thead>
+          <tr><th>Route</th><th>Renders</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>GET /php/</code></td><td>The notes page — list of notes plus an add form</td></tr>
+          <tr><td><code>POST /php/ action=add</code></td><td>Inserts a note, redirects back</td></tr>
+          <tr><td><code>POST /php/ action=delete</code></td><td>Deletes a note, redirects back</td></tr>
+          <tr><td><code>GET /php/demo.php</code></td><td>JSON: driver, version, note count, tables</td></tr>
+          <tr><td><code>GET /php-static/style.css</code></td><td>The stylesheet</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Cross-driver DDL</h2>
+      <p>
+        <code>ensure_schema()</code> in <code>db.php</code> emits the
+        correct DDL for each driver:
+      </p>
+      <table>
+        <thead><tr><th>Feature</th><th>SQLite</th><th>MySQL</th><th>PostgreSQL</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Auto-increment PK</td>
+            <td><code>INTEGER PRIMARY KEY AUTOINCREMENT</code></td>
+            <td><code>INT AUTO_INCREMENT PRIMARY KEY</code></td>
+            <td><code>SERIAL PRIMARY KEY</code></td>
+          </tr>
+          <tr>
+            <td>WAL mode</td>
+            <td><code>PRAGMA journal_mode = WAL</code></td>
+            <td>n/a</td>
+            <td>n/a</td>
+          </tr>
+          <tr>
+            <td>Foreign keys</td>
+            <td><code>PRAGMA foreign_keys = ON</code></td>
+            <td>on by default</td>
+            <td>on by default</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        <a href="php_app.html">Open the full PHP notes app documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — runtime/
+       ============================================================= -->
+  <section class="file-section" id="doc-runtime" data-name="runtime folder portable binaries manifest">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>runtime/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">Portable binaries and manifest</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">5 subfolders</span>
+        <a class="copy-btn" href="runtime.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>runtime/</h1>
+
+      <p>
+        Fully self-contained portable runtime created and managed by
+        <code>bootstrap/setup.py</code>. Nothing here touches the host
+        system's PATH, registry, or site-packages. The whole folder is
+        safe to delete — the bootstrap recreates it from scratch.
+      </p>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead>
+          <tr><th>Subfolder</th><th>Contents</th><th>Size</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>_downloads/</code></td><td>Cached archives of every downloaded component</td><td>~90 MB</td></tr>
+          <tr><td><code>python/</code></td><td>Portable CPython 3.12.11 + stdlib + installed pip deps</td><td>~120 MB + deps</td></tr>
+          <tr><td><code>php/</code></td><td>PHP 8.4 CLI + CGI + php.ini + ext/</td><td>~40 MB</td></tr>
+          <tr><td><code>sqlite/</code></td><td>SQLite CLI tools (sqlite3, sqldiff, analyzer)</td><td>~3 MB</td></tr>
+          <tr><td><code>llama-server/</code></td><td>Optional native llama.cpp binary</td><td>~10–50 MB</td></tr>
+          <tr><td><code>runtime.env</code></td><td>Manifest with paths to every installed binary</td><td>&lt;1 KB</td></tr>
+        </tbody>
+      </table>
+
+      <h2>The manifest</h2>
+      <p>
+        <code>runtime.env</code> is a shell-sourceable file that records
+        exactly which binaries were installed and where. The launchers
+        (<code>start.sh</code> / <code>start.bat</code>) source it to
+        find the correct interpreter.
+      </p>
+      <pre>RUNTIME_PLATFORM=windows
+RUNTIME_ARCH=x86_64
+RUNTIME_PYTHON_VERSION=3.12.11
+RUNTIME_PHP_VERSION=8.4.15
+RUNTIME_SQLITE_VERSION=3460000
+
+RUNTIME_PYTHON=C:\...\runtime\python\python.exe
+RUNTIME_PHP_CLI=C:\...\runtime\php\php.exe
+RUNTIME_PHP_CGI=C:\...\runtime\php\php-cgi.exe
+RUNTIME_SQLITE=C:\...\runtime\sqlite\sqlite3.exe</pre>
+
+      <h2>Safe to delete</h2>
+      <table>
+        <thead>
+          <tr><th>Path</th><th>Effect of deletion</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>runtime/_downloads/</code></td><td>Frees ~90 MB. Next bootstrap re-downloads.</td></tr>
+          <tr><td><code>runtime/python/</code></td><td>Backend cannot start. Re-run bootstrap.</td></tr>
+          <tr><td><code>runtime/php/</code></td><td><code>/php/</code> returns 500. Rest of the app unaffected.</td></tr>
+          <tr><td><code>runtime/sqlite/</code></td><td>None. Only the manual-inspection CLI is lost.</td></tr>
+          <tr><td><code>runtime/llama-server/</code></td><td>llama-cpp falls back to the Python module.</td></tr>
+          <tr><td><code>runtime/</code> (whole)</td><td>Full reset. Re-run <code>setup.py</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout danger">
+        <strong>Do not delete user data.</strong>
+        <code>sessions.db</code>, <code>php_app/data/app.db</code>, and
+        <code>models/*.gguf</code> live <em>outside</em>
+        <code>runtime/</code> and are not regenerable. Back them up
+        before a full reset.
+      </div>
+
+      <p>
+        <a href="runtime.html">Open the full runtime documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — scripts/
+       ============================================================= -->
+  <section class="file-section" id="doc-scripts" data-name="scripts folder serve vendor llama runner">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>scripts/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">Launch and download helpers</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">5 files</span>
+        <a class="copy-btn" href="scripts.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>scripts/</h1>
+
+      <p>
+        Five small programs that sit between the user and the backend.
+        None are imported by <code>backend/</code> — each is a
+        standalone entry point.
+      </p>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead>
+          <tr><th>File</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>serve.py</code></td>
+            <td>Uvicorn entry point with three cross-platform fixes applied</td>
+          </tr>
+          <tr>
+            <td><code>llama_cpp_runner.py</code></td>
+            <td>Direct runner for <code>llama_cpp.server</code> that bypasses the module's argument parser</td>
+          </tr>
+          <tr>
+            <td><code>download_vendor.py</code></td>
+            <td>Cross-platform LiteGraph downloader with mirror fallback and two validation gates</td>
+          </tr>
+          <tr>
+            <td><code>download_vendor.sh</code></td>
+            <td>Bash wrapper — for environments with curl but no Python</td>
+          </tr>
+          <tr>
+            <td><code>download_vendor.ps1</code></td>
+            <td>PowerShell wrapper — for Windows users</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>serve.py — the three fixes</h2>
+      <table>
+        <thead>
+          <tr><th>Problem</th><th>Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Windows event loop breaks MCP stdio</td>
+            <td>Set <code>WindowsSelectorEventLoopPolicy</code> before importing uvicorn</td>
+          </tr>
+          <tr>
+            <td>Reloader child cannot find <code>backend</code></td>
+            <td>Set both <code>sys.path</code> and <code>PYTHONPATH</code> before importing uvicorn</td>
+          </tr>
+          <tr>
+            <td>Access log floods the log sink</td>
+            <td>Disabled unless <code>AGENT_UVICORN_ACCESS_LOG=1</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>download_vendor — two validation gates</h2>
+      <ol>
+        <li><strong>Size floor</strong> — 50 KB for JS, 1 KB for CSS. Rejects 404 pages and captive-portal error pages.</li>
+        <li><strong>Required substring</strong> — <code>LiteGraph</code> in JS, <code>litegraph</code> in CSS. Rejects generic 200 pages that are not the real file.</li>
+      </ol>
+      <p>
+        Only after both gates pass is the file written to disk. The
+        previous (possibly working) copy is never overwritten by a
+        partial or corrupted download.
+      </p>
+
+      <p>
+        <a href="scripts.html">Open the full scripts documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — tests/
+       ============================================================= -->
+  <section class="file-section" id="doc-tests" data-name="tests folder pytest engine nodes">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>tests/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">pytest suite — pure-logic coverage</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">3 files</span>
+        <a class="copy-btn" href="tests.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>tests/</h1>
+
+      <p>
+        A focused pytest suite covering the pure-logic parts of the
+        codebase. The integration surface (FastAPI routes, MCP
+        subprocess, LLM clients) is deliberately excluded — those
+        require mocking infrastructure that outweighs the value of
+        the tests.
+      </p>
+
+      <h2>File layout</h2>
+      <pre>tests/
+├── __init__.py         package marker + usage docs
+├── test_engine.py      topological sort, JSON safety
+└── test_nodes.py       built-in node functions + graph parsing</pre>
+
+      <h2>Coverage at a glance</h2>
+      <table>
+        <thead>
+          <tr><th>File</th><th>Tests</th><th>Covers</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_engine.py</code></td>
+            <td>15</td>
+            <td>
+              <code>_topo_sort()</code> (linear, fan-out, fan-in,
+              diamond, disconnected, empty, single, cycles, dangling
+              edges) and <code>_safe()</code>
+            </td>
+          </tr>
+          <tr>
+            <td><code>test_nodes.py</code></td>
+            <td>30+</td>
+            <td>
+              Registry, input nodes, output nodes, LLM prompt builder,
+              text templating, control flow, utility nodes,
+              <code>Graph.from_dict()</code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Running the tests</h2>
+      <pre>pip install pytest pytest-asyncio
+pytest tests/ -v</pre>
+      <p>
+        The suite runs in under a second. If it takes longer, something
+        is wrong — most likely a test is accidentally calling an
+        external service.
+      </p>
+
+      <h2>Design principles</h2>
+      <ul>
+        <li><strong>Pure logic only.</strong> No HTTP requests, no subprocesses, no model inference.</li>
+        <li><strong>No global state.</strong> Tests can run in any order and in parallel.</li>
+        <li><strong>Explicit async markers.</strong> Every async test is decorated with <code>@pytest.mark.asyncio</code>. No <code>conftest.py</code> or <code>pytest.ini</code> needed.</li>
+      </ul>
+
+      <p>
+        <a href="tests.html">Open the full tests documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SUBFOLDER — web/
+       ============================================================= -->
+  <section class="file-section" id="doc-web" data-name="web folder frontend chat graph settings">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>web/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">Browser frontend — three pages</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">10 files</span>
+        <a class="copy-btn" href="web.html" style="text-decoration:none;">↗ Open full docs</a>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>web/</h1>
+
+      <p>
+        The complete browser-facing frontend. Three self-contained
+        pages — Chat at <code>/</code>, Graph Editor at
+        <code>/graph</code>, Settings at <code>/settings</code> —
+        served as plain HTML, CSS, and JavaScript. No bundler, no
+        transpilation, no framework.
+      </p>
+
+      <h2>Folder layout</h2>
+      <pre>web/
+├── index.html          Chat page           (served at /)
+├── styles.css          Chat stylesheet
+├── app.js              Chat client (WebSocket + REST)
+│
+├── graph.html          Graph editor        (served at /graph)
+├── graph.css           Graph editor stylesheet
+├── graph.js            LiteGraph adapter + WS execution
+│
+├── settings.html       Settings page       (served at /settings)
+├── settings.css        Settings stylesheet
+├── settings.js         Settings client (SSE consumers)
+│
+└── vendor/             Third-party assets
+    ├── litegraph.min.js    (downloaded, gitignored)
+    ├── litegraph.css       (downloaded, gitignored)
+    └── .gitkeep            (placeholder)</pre>
+
+      <h2>Design principles</h2>
+      <ul>
+        <li>
+          <strong>No build step.</strong> Every file is served
+          directly. What you edit is what the browser runs.
+        </li>
+        <li>
+          <strong>No shared JavaScript.</strong> Each page has its own
+          script and stylesheet. A change to the chat page cannot
+          break the graph editor.
+        </li>
+        <li>
+          <strong>One vendored dependency.</strong> LiteGraph.js is
+          the only third-party library. It has a CDN fallback if the
+          local copy is missing.
+        </li>
+        <li>
+          <strong>Same origin.</strong> The pages are served from the
+          backend, so no CORS configuration is needed for the default
+          deployment.
+        </li>
+      </ul>
+
+      <h2>Page inventory</h2>
+      <table>
+        <thead>
+          <tr><th>Page</th><th>URL</th><th>Transport</th><th>Endpoints</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chat</td>
+            <td><code>/</code></td>
+            <td>WebSocket + REST</td>
+            <td><code>/ws</code>, <code>/api/llama/all-models</code>, <code>/api/ollama/ps</code>, <code>/api/sessions/*</code></td>
+          </tr>
+          <tr>
+            <td>Graph Editor</td>
+            <td><code>/graph</code></td>
+            <td>WebSocket + REST</td>
+            <td><code>/ws/graph</code>, <code>/api/graph/*</code></td>
+          </tr>
+          <tr>
+            <td>Settings</td>
+            <td><code>/settings</code></td>
+            <td>REST + SSE</td>
+            <td><code>/api/llama/install/*</code>, <code>/api/ollama/*</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        <a href="web.html">Open the full web frontend documentation →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — run.py
+       ============================================================= -->
+  <section class="file-section" id="f-runpy" data-name="run.py developer launcher setup backend desktop">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>run.py <span class="file-badge">python</span></h2>
+        <span class="file-path">Project root — developer launcher</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">launcher</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>run.py</h1>
+
+      <p>
+        The developer-workflow entry point. Creates a standard
+        <code>.venv/</code> and installs dependencies there. For the
+        end-user portable workflow, use <code>setup.sh</code> /
+        <code>setup.ps1</code> and <code>start.sh</code> /
+        <code>start.bat</code>.
+      </p>
+
+      <h2>Commands</h2>
+      <table>
+        <thead>
+          <tr><th>Command</th><th>What it does</th><th>Needs backend?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>setup</code></td><td>Create <code>.venv/</code>, install deps, download vendor files, create models and logs folders</td><td>No</td></tr>
+          <tr><td><code>backend</code></td><td>Start FastAPI on <code>127.0.0.1:8000</code> via <code>scripts/serve.py</code></td><td>No</td></tr>
+          <tr><td><code>desktop</code></td><td>Start the PyQt6 client with embedded Chromium</td><td>Yes</td></tr>
+          <tr><td><code>native</code></td><td>Start the PyQt6 native chat client</td><td>Yes</td></tr>
+          <tr><td><code>mcp</code></td><td>Run the MCP server in the foreground</td><td>No</td></tr>
+          <tr><td><code>vendor</code></td><td>Force re-download of LiteGraph files</td><td>No</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Why scripts/serve.py and not uvicorn directly?</h2>
+      <p>
+        <code>serve.py</code> handles three things that would otherwise
+        require the user to remember them:
+      </p>
+      <ol>
+        <li>
+          <strong>Windows event-loop policy.</strong> uvicorn creates
+          the loop at import time, so setting the policy inside
+          <code>backend/main.py</code> is too late.
+        </li>
+        <li>
+          <strong>sys.path for the reloader.</strong> On Windows, the
+          reloader child uses <code>multiprocessing</code> spawn,
+          which does not inherit <code>sys.path</code> mutations.
+        </li>
+        <li>
+          <strong>loop="asyncio".</strong> uvicorn's auto-detection
+          sometimes picks uvloop, which does not always work with the
+          MCP SDK's stdio transport.
+        </li>
+      </ol>
+
+      <h2>Python version gate</h2>
+      <p>
+        <code>run.py</code> refuses to run on Python &lt; 3.10 with a
+        clear error. The code uses <code>X | Y</code> type hints
+        (3.10+), <code>asyncio.to_thread</code> (3.9+), and pydantic
+        v2 patterns that need a modern interpreter.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — setup.sh / setup.ps1
+       ============================================================= -->
+  <section class="file-section" id="f-setupsh" data-name="setup.sh portable bootstrap wrapper">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>setup.sh / setup.ps1 <span class="file-badge">shell</span></h2>
+        <span class="file-path">Project root — portable bootstrap wrappers</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">launcher</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>setup.sh / setup.ps1</h1>
+
+      <p>
+        These are the two-command bootstrap for end users. They find
+        any Python 3.8+ on PATH and hand off to
+        <code>bootstrap/setup.py</code>, which downloads the portable
+        runtime.
+      </p>
+
+      <h2>Behavior on first run</h2>
+      <pre>$ ./setup.sh
+╔══════════════════════════════════════════════════════════════════╗
+║  3olution Agent Graph — Portable Setup                           ║
+║  https://3olution.com                                            ║
+╚══════════════════════════════════════════════════════════════════╝
+
+• Using Python: /usr/bin/python3  (3.12.3)
+══════════════════════════════════════════════════════════════════
+  Python 3.12.11
+══════════════════════════════════════════════════════════════════
+• Downloading portable Python
+    https://github.com/astral-sh/...
+    [████████████████████████] 100.0%   24.8 MB / 24.8 MB   8.2 MB/s
+✓ Python installed at /path/runtime/python/bin/python3
+...</pre>
+
+      <h2>Behavior on subsequent runs</h2>
+      <pre>$ ./setup.sh
+• Using Python: /usr/bin/python3  (3.12.3)
+✓ Python 3.12.11 already installed
+✓ PHP 8.4.15 already installed
+✓ SQLite CLI 3460000 already installed
+✓ Python dependencies installed
+✓ LiteGraph vendor files ready
+✓ Bootstrap complete.</pre>
+      <p>Idempotent: the second run takes about two seconds.</p>
+
+      <h2>Flags</h2>
+      <table>
+        <thead>
+          <tr><th>Flag</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--force</code></td><td>Re-download and re-extract everything</td></tr>
+          <tr><td><code>--check</code></td><td>Report what's installed, exit</td></tr>
+          <tr><td><code>--skip-php</code></td><td>Skip PHP (disables <code>/php/</code>)</td></tr>
+          <tr><td><code>--skip-sqlite</code></td><td>Skip SQLite CLI</td></tr>
+          <tr><td><code>--skip-deps</code></td><td>Skip <code>pip install</code></td></tr>
+          <tr><td><code>--skip-vendor</code></td><td>Skip LiteGraph download</td></tr>
+          <tr><td><code>--verbose</code></td><td>Print diagnostic info</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Environment overrides</h2>
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>PYTHON</code></td><td>Path to a specific Python interpreter to use for bootstrap</td></tr>
+          <tr><td><code>NO_COLOR</code></td><td>Set to disable colored output</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — start.sh / start.bat
+       ============================================================= -->
+  <section class="file-section" id="f-startsh" data-name="start.sh start.bat portable launcher">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>start.sh / start.bat <span class="file-badge">shell</span></h2>
+        <span class="file-path">Project root — portable launchers</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">launcher</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>start.sh / start.bat</h1>
+
+      <p>
+        The portable launchers. They use the portable runtime and
+        auto-run <code>setup</code> if the runtime is missing.
+      </p>
+
+      <h2>Behavior</h2>
+      <pre>$ ./start.sh
+╔══════════════════════════════════════════════════════════════════╗
+║  3olution Agent Graph — Starting Backend                         ║
+║  https://3olution.com                                            ║
+╚══════════════════════════════════════════════════════════════════╝
+
+• Backend will start at http://127.0.0.1:8000
+
+  Chat UI:       http://127.0.0.1:8000/
+  Graph editor:  http://127.0.0.1:8000/graph
+  Settings:      http://127.0.0.1:8000/settings
+  PHP notes:     http://127.0.0.1:8000/php/
+
+  Press Ctrl+C to stop.
+
+2025-01-15 12:00:00 | INFO | Starting 3olution Agent Graph v2.0.0
+...</pre>
+
+      <h2>The PATH trick</h2>
+      <p>
+        Both launchers prepend <code>runtime/python/bin</code> and
+        <code>runtime/php</code> to <code>PATH</code> before handing
+        off to the backend. This means any subprocess the backend
+        spawns — including the MCP server, PHP-CGI, and any future
+        tool — will resolve <code>python</code> and <code>php</code>
+        to the portable binaries rather than any system install.
+      </p>
+
+      <h2>Flags</h2>
+      <table>
+        <thead>
+          <tr><th>Flag</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--host HOST</code></td><td>Bind address (default 127.0.0.1)</td></tr>
+          <tr><td><code>--port PORT</code></td><td>Bind port (default 8000)</td></tr>
+          <tr><td><code>--reload</code></td><td>Enable uvicorn auto-reload</td></tr>
+          <tr><td><code>--help</code></td><td>Show usage</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Custom port example</h2>
+      <pre>./start.sh --port 9000
+# Backend now at http://127.0.0.1:9000</pre>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — .env.example
+       ============================================================= -->
+  <section class="file-section" id="f-envexample" data-name="env example configuration template AGENT_ variables">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>.env.example <span class="file-badge txt">text</span></h2>
+        <span class="file-path">Project root — configuration template</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">template</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>.env.example</h1>
+
+      <p>
+        The canonical list of every setting the app understands. It is
+        committed to git; <code>.env</code> is not. Copy it to
+        <code>.env</code> and edit the values.
+      </p>
+
+      <h2>How config flows</h2>
+      <pre>.env.example  ─copy─→  .env  ─read─→  backend/config.py  ─inject─→  everything</pre>
+      <p>
+        <code>backend/config.py</code> uses pydantic-settings with
+        <code>env_prefix="AGENT_"</code>. Any variable in
+        <code>.env</code> starting with <code>AGENT_</code> becomes a
+        field on <code>Settings</code>. Unknown variables are silently
+        ignored (<code>extra="ignore"</code>).
+      </p>
+
+      <h2>Working defaults</h2>
+      <p>
+        Every setting has a working default in
+        <code>config.py</code>. A user can delete their entire
+        <code>.env</code> and the app still runs — against a local
+        Ollama instance with the model <code>llama3.2</code>. That is
+        the correct default for the target audience.
+      </p>
+
+      <h2>The two Ollama endpoints</h2>
+      <p>
+        The <code>.env.example</code> deliberately presents two Ollama
+        configurations that are easy to confuse:
+      </p>
+      <table>
+        <thead>
+          <tr><th>Block</th><th>Purpose</th><th>When used</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>AGENT_LLM_*</code></td>
+            <td>Primary endpoint (OpenAI-compatible)</td>
+            <td>Default route for every chat</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_OLLAMA_HOST</code></td>
+            <td>Ollama native API</td>
+            <td>Settings page only (list/pull/delete models)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        The first points at <code>http://localhost:11434/v1</code>.
+        The second points at <code>http://127.0.0.1:11434</code>.
+        Same server, different paths.
+      </p>
+
+      <h2>Key variables</h2>
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Default</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>AGENT_HOST</code></td><td><code>127.0.0.1</code></td><td>Bind address</td></tr>
+          <tr><td><code>AGENT_PORT</code></td><td><code>8000</code></td><td>Bind port</td></tr>
+          <tr><td><code>AGENT_LLM_BASE_URL</code></td><td><code>http://localhost:11434/v1</code></td><td>Primary LLM endpoint</td></tr>
+          <tr><td><code>AGENT_LLM_MODEL</code></td><td><code>llama3.2</code></td><td>Default model</td></tr>
+          <tr><td><code>AGENT_LLM_FALLBACK_BASE_URL</code></td><td><code>(empty)</code></td><td>Optional failover endpoint</td></tr>
+          <tr><td><code>AGENT_LLAMA_CPP_ENABLED</code></td><td><code>true</code></td><td>Enable the local llama-cpp server</td></tr>
+          <tr><td><code>AGENT_PHP_ENABLED</code></td><td><code>true</code></td><td>Mount the <code>/php/</code> notes app</td></tr>
+          <tr><td><code>AGENT_PHP_DB_DRIVER</code></td><td><code>sqlite</code></td><td>PHP database driver</td></tr>
+          <tr><td><code>AGENT_MAX_ITERATIONS</code></td><td><code>10</code></td><td>Max tool-call iterations per turn</td></tr>
+          <tr><td><code>AGENT_STREAM_STALL_TIMEOUT</code></td><td><code>360.0</code></td><td>Abort a stalled turn after N seconds</td></tr>
+          <tr><td><code>AGENT_RETRY_ATTEMPTS</code></td><td><code>3</code></td><td>Max LLM retry attempts</td></tr>
+          <tr><td><code>AGENT_SESSION_DB</code></td><td><code>sessions.db</code></td><td>SQLite session file path</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — .env (active)
+       ============================================================= -->
+  <section class="file-section" id="f-envactive" data-name="env active configuration tuned windows ollama">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>.env (active) <span class="file-badge txt">text</span></h2>
+        <span class="file-path">Project root — tuned for Windows + Ollama</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">config</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>.env — Active Configuration</h1>
+
+      <p>
+        This is the tuned configuration for a specific machine:
+        Windows 10/11, Ollama on the default port with the
+        <code>llama3.2</code> model, and llama-cpp-python in CPU-only
+        mode (because the GPU is a GTX 960 with compute capability
+        5.2, below the minimum for modern CUDA builds).
+      </p>
+
+      <h2>What this configuration changes</h2>
+      <table>
+        <thead>
+          <tr><th>Setting</th><th>Value</th><th>Reason</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>AGENT_LLM_TIMEOUT</code></td>
+            <td><code>360.0</code></td>
+            <td>Reasoning models can take minutes to produce a first token</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_LLAMA_CPP_PORT</code></td>
+            <td><code>8081</code></td>
+            <td>8000 is the backend, 8080 may be held by a stale process</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_LLAMA_CPP_N_GPU_LAYERS</code></td>
+            <td><code>0</code></td>
+            <td>GTX 960 (compute 5.2) lacks the capability for modern CUDA builds</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_LLAMA_CPP_N_CTX</code></td>
+            <td><code>4096</code></td>
+            <td>Reduced from 8192 to lower RAM pressure on CPU-only inference</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_LLAMA_CPP_CHAT_FORMAT</code></td>
+            <td><code>(empty)</code></td>
+            <td>Empty means use the model's own embedded chat template</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_PHP_TIMEOUT</code></td>
+            <td><code>120.0</code></td>
+            <td>Longer than default to accommodate slow first-run PHP startup</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_LOG_FILE_LEVEL</code></td>
+            <td><code>INFO</code></td>
+            <td>Reduced from DEBUG to keep log files small</td>
+          </tr>
+          <tr>
+            <td><code>LLAMA_CPP_SERVER_PORT</code></td>
+            <td><code>8081</code></td>
+            <td>Workaround for a known quirk in <code>llama_cpp.server</code>'s argument parser</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Windows Defender note</h2>
+      <p>
+        The <code>.env</code> comments include three fixes for the
+        "Access is denied" error when the backend spawns
+        <code>php.exe</code>:
+      </p>
+      <ol>
+        <li>Unblock the file: <code>Get-ChildItem runtime\php -Recurse | Unblock-File</code></li>
+        <li>Add a Defender exclusion: <code>Add-MpPreference -ExclusionPath "$PWD\runtime\php"</code></li>
+        <li>Disable PHP entirely: <code>AGENT_PHP_ENABLED=false</code></li>
+      </ol>
+      <p>
+        The <code>fix_php.bat</code> and <code>fix_php.ps1</code>
+        scripts automate steps 1 and 2.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — requirements.txt
+       ============================================================= -->
+  <section class="file-section" id="f-requirements" data-name="requirements.txt dependencies pip">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>requirements.txt <span class="file-badge txt">text</span></h2>
+        <span class="file-path">Project root — pip dependencies</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">deps</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>requirements.txt</h1>
+
+      <p>
+        Installed into the portable runtime by
+        <code>bootstrap/setup.py</code>, and into <code>.venv/</code>
+        by <code>python run.py setup</code>.
+      </p>
+
+      <h2>Dependencies by category</h2>
+      <table>
+        <thead>
+          <tr><th>Category</th><th>Packages</th><th>Optional?</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Core web stack</td>
+            <td><code>fastapi</code>, <code>uvicorn[standard]</code>, <code>pydantic</code>, <code>pydantic-settings</code></td>
+            <td>Required</td>
+          </tr>
+          <tr>
+            <td>Form / multipart</td>
+            <td><code>python-multipart</code></td>
+            <td>Required</td>
+          </tr>
+          <tr>
+            <td>LLM client</td>
+            <td><code>openai</code> (pinned to 1.x)</td>
+            <td>Required</td>
+          </tr>
+          <tr>
+            <td>MCP SDK</td>
+            <td><code>mcp&gt;=2.2.0</code></td>
+            <td>Required</td>
+          </tr>
+          <tr>
+            <td>HTTP</td>
+            <td><code>httpx</code>, <code>websockets</code></td>
+            <td>Required</td>
+          </tr>
+          <tr>
+            <td>Desktop</td>
+            <td><code>PyQt6</code>, <code>PyQt6-WebEngine</code></td>
+            <td>Optional (skip if browser-only)</td>
+          </tr>
+          <tr>
+            <td>Logging</td>
+            <td><code>loguru</code></td>
+            <td>Required</td>
+          </tr>
+          <tr>
+            <td>On-demand</td>
+            <td><code>llama-cpp-python</code></td>
+            <td>Installed from the Settings page</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Why llama-cpp-python is not listed</h2>
+      <p>
+        It has platform-specific wheels (CPU / CUDA 11.8 / 12.1 / 12.4)
+        that must match the user's GPU drivers. Bundling it would force
+        a source build on machines without a matching wheel, which
+        usually fails. Instead,
+        <code>backend/llama_installer.py</code> detects the GPU and
+        streams the correct <code>pip install</code> from the Settings
+        page.
+      </p>
+
+      <h2>Version pinning strategy</h2>
+      <p>
+        Pinned to the minor version (<code>&gt;=X.Y.0</code>) rather
+        than the patch version so users get bug fixes and security
+        patches without waiting for a release. Upper bounds are
+        omitted deliberately, except for <code>openai&lt;2.0.0</code>
+        — that major version changed the streaming delta shape in a
+        way that would require changes to
+        <code>backend/agent.py</code>'s <code>_consume_stream()</code>.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — .gitignore
+       ============================================================= -->
+  <section class="file-section" id="f-gitignore" data-name="gitignore excluded files patterns">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>.gitignore <span class="file-badge txt">text</span></h2>
+        <span class="file-path">Project root — what git excludes</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">config</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>.gitignore</h1>
+
+      <p>
+        Rule of thumb: if a file can be regenerated from source code +
+        <code>.env</code> + <code>bootstrap/setup.py</code>, it goes
+        in <code>.gitignore</code>.
+      </p>
+
+      <h2>Buckets</h2>
+      <table>
+        <thead>
+          <tr><th>Bucket</th><th>Examples</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Virtual environments</td>
+            <td><code>.venv/</code>, <code>venv/</code></td>
+            <td>Regenerable from requirements.txt</td>
+          </tr>
+          <tr>
+            <td>Python build artifacts</td>
+            <td><code>__pycache__/</code>, <code>*.pyc</code>, <code>build/</code>, <code>dist/</code></td>
+            <td>Derived from source</td>
+          </tr>
+          <tr>
+            <td>Test / coverage</td>
+            <td><code>.pytest_cache/</code>, <code>.coverage</code>, <code>htmlcov/</code></td>
+            <td>Regenerated by running tests</td>
+          </tr>
+          <tr>
+            <td>Type checkers</td>
+            <td><code>.mypy_cache/</code>, <code>.ruff_cache/</code></td>
+            <td>Tool caches</td>
+          </tr>
+          <tr>
+            <td>Environment</td>
+            <td><code>.env</code>, <code>.env.local</code></td>
+            <td>User-specific; may contain secrets</td>
+          </tr>
+          <tr>
+            <td>IDE / editors</td>
+            <td><code>.vscode/</code>, <code>.idea/</code>, <code>*.swp</code></td>
+            <td>Not portable</td>
+          </tr>
+          <tr>
+            <td>OS clutter</td>
+            <td><code>.DS_Store</code>, <code>Thumbs.db</code></td>
+            <td>Not code</td>
+          </tr>
+          <tr>
+            <td>Logs</td>
+            <td><code>*.log</code>, <code>logs/</code></td>
+            <td>Runtime artifacts</td>
+          </tr>
+          <tr>
+            <td>SQLite databases</td>
+            <td><code>*.db</code>, <code>*.db-wal</code>, <code>*.db-shm</code></td>
+            <td>User data</td>
+          </tr>
+          <tr>
+            <td>Portable runtime</td>
+            <td><code>runtime/</code></td>
+            <td>~300 MB of binaries, re-downloadable</td>
+          </tr>
+          <tr>
+            <td>Vendored frontend assets</td>
+            <td><code>web/vendor/</code></td>
+            <td>Network-fetched</td>
+          </tr>
+          <tr>
+            <td>GGUF weights</td>
+            <td><code>models/</code></td>
+            <td>Gigabytes each</td>
+          </tr>
+          <tr>
+            <td>PHP app data</td>
+            <td><code>php_app/data/</code></td>
+            <td>Contains user notes</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Whitelisted exceptions</h2>
+      <p>
+        A handful of inverse patterns keep the empty directory
+        structure in git while ignoring the contents:
+      </p>
+      <pre>!runtime/.gitkeep
+!runtime/README.md
+!models/README.md
+!web/vendor/.gitkeep
+!logs/.gitkeep
+!php_app/data/.gitkeep</pre>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — README.md
+       ============================================================= -->
+  <section class="file-section" id="f-readme" data-name="README project overview">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>README.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">Project root — entry point</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>README.md</h1>
+
+      <p>
+        The project entry point. Covers quick start, LLM configuration,
+        the built-in node types, the built-in MCP tools, the API
+        reference, the event schema, cross-platform notes, testing,
+        packaging, troubleshooting, and the roadmap.
+      </p>
+
+      <h2>Table of contents</h2>
+      <ul>
+        <li><a href="#doc-overview">What is this?</a></li>
+        <li><a href="#doc-quickstart">Quick start</a></li>
+        <li>LLM configuration</li>
+        <li><a href="#doc-backend">Built-in node types</a></li>
+        <li><a href="#doc-mcp">Built-in MCP tools</a></li>
+        <li>API reference</li>
+        <li>Event schema</li>
+        <li>Cross-platform notes</li>
+        <li><a href="#doc-tests">Testing</a></li>
+        <li>Packaging</li>
+        <li>Troubleshooting</li>
+        <li>Future extensions</li>
+        <li><a href="#f-contributing">Contributing</a></li>
+        <li><a href="#f-license">Branding</a></li>
+      </ul>
+
+      <h2>Badges</h2>
+      <ul>
+        <li>License: MIT</li>
+        <li>Python 3.10+</li>
+        <li>FastAPI 0.118+</li>
+        <li>Platform: Windows · macOS · Linux</li>
+      </ul>
+
+      <h2>Where to go next</h2>
+      <table>
+        <thead>
+          <tr><th>If you want to…</th><th>Read</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Install the project</td><td><a href="#f-installation">INSTALLATION.md</a></td></tr>
+          <tr><td>Understand the backend</td><td><a href="backend.html">backend.html</a></td></tr>
+          <tr><td>Extend the graph editor</td><td><a href="web.html">web.html</a></td></tr>
+          <tr><td>Add an MCP tool</td><td><a href="mcp_server.html">mcp_server.html</a></td></tr>
+          <tr><td>Contribute a patch</td><td><a href="#f-contributing">CONTRIBUTING.md</a></td></tr>
+          <tr><td>See what changed</td><td><a href="#f-changes">CHANGES.md</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — INSTALLATION.md
+       ============================================================= -->
+  <section class="file-section" id="f-installation" data-name="INSTALLATION install guide prerequisites">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>INSTALLATION.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">Project root — step-by-step install</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>INSTALLATION.md</h1>
+
+      <h2>Prerequisites</h2>
+      <table>
+        <thead>
+          <tr><th>Requirement</th><th>Minimum</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Python</td><td>3.10</td><td>3.11+ recommended</td></tr>
+          <tr><td>pip</td><td>latest</td><td><code>python -m pip install -U pip</code></td></tr>
+          <tr><td>LLM endpoint</td><td>any OpenAI-compatible</td><td>Ollama is free and local</td></tr>
+          <tr><td>OS</td><td>Win 10+, macOS 12+, Linux</td><td>PyQt6 is cross-platform</td></tr>
+          <tr><td>RAM</td><td>2 GB for the app</td><td>LLM RAM is separate</td></tr>
+        </tbody>
+      </table>
+      <p>
+        The bootstrap installer needs Python 3.8 or newer on
+        <code>PATH</code> to run. It then downloads its own portable
+        Python 3.12 into <code>runtime/</code>, so the version of the
+        system Python does not affect the runtime once the install
+        completes.
+      </p>
+
+      <h2>Installation steps</h2>
+      <ol>
+        <li>Clone the repository.</li>
+        <li>Install dependencies (portable or developer workflow).</li>
+        <li>Set up an LLM (Ollama by default).</li>
+        <li>Optionally configure <code>.env</code>.</li>
+        <li>Run the backend.</li>
+        <li>Optionally install llama-cpp-python from the Settings page.</li>
+        <li>Optionally start the desktop client.</li>
+        <li>Optionally enable the PHP notes app.</li>
+        <li>Verify the install.</li>
+      </ol>
+
+      <h2>Which install path should I use?</h2>
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Recommended</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>First-time install, want everything to just work</td><td>Portable (<code>bootstrap/setup.py</code>)</td></tr>
+          <tr><td>Development on the Python code only</td><td>Developer (<code>run.py setup</code>)</td></tr>
+          <tr><td>Shared machine, no admin rights</td><td>Portable</td></tr>
+          <tr><td>CI runner with a pinned Python already present</td><td>Developer</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Troubleshooting highlights</h2>
+      <table>
+        <thead>
+          <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>python: command not found</code></td><td>Python not installed</td><td>Install Python 3.10+ from python.org</td></tr>
+          <tr><td>Bootstrap fails with HTTP 403/404</td><td>Pinned version retired upstream</td><td>Add a newer version to the candidate list</td></tr>
+          <tr><td>pip install fails on a package</td><td>Missing C++ compiler</td><td>Install build tools for your OS</td></tr>
+          <tr><td><code>/graph</code> returns 404</td><td>Vendor files missing</td><td><code>python scripts/download_vendor.py --force</code></td></tr>
+          <tr><td><code>/php/</code> returns 500</td><td>PHP binary or php.ini missing</td><td>Run the PHP-only bootstrap</td></tr>
+          <tr><td>MCP handshake fails on Windows</td><td>Proactor event loop bug</td><td>Launch via <code>scripts/serve.py</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — CONTRIBUTING.md
+       ============================================================= -->
+  <section class="file-section" id="f-contributing" data-name="CONTRIBUTING guidelines pull requests">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>CONTRIBUTING.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">Project root — contribution guidelines</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>CONTRIBUTING.md</h1>
+
+      <h2>Development setup</h2>
+      <p>Prerequisites:</p>
+      <ul>
+        <li>Python 3.8+ on <code>PATH</code> for the bootstrap</li>
+        <li>Git</li>
+        <li>Optionally a C++ compiler for building packages from source</li>
+        <li>Optionally Ollama for a local LLM endpoint</li>
+      </ul>
+
+      <h2>Code style</h2>
+      <h3>Python</h3>
+      <ul>
+        <li>PEP 8 — four-space indents, <code>snake_case</code> functions, <code>PascalCase</code> classes</li>
+        <li>Type hints on every public function signature</li>
+        <li><code>from __future__ import annotations</code> at the top of new modules</li>
+        <li>Docstrings on every module, class, and public function</li>
+        <li>ASCII only in comments and identifiers</li>
+        <li><code>ruff</code> for linting and formatting</li>
+        <li><code>mypy</code> for static type checking (not required to pass cleanly today)</li>
+      </ul>
+
+      <h3>JavaScript</h3>
+      <ul>
+        <li>2-space indentation</li>
+        <li><code>"use strict";</code> at the top of every file</li>
+        <li><code>const</code> and <code>let</code>, never <code>var</code></li>
+        <li><code>async</code> / <code>await</code> over <code>.then()</code> chains</li>
+        <li>Template literals for string interpolation</li>
+        <li>No frameworks, no bundler</li>
+      </ul>
+
+      <h3>CSS</h3>
+      <ul>
+        <li><code>kebab-case</code> class names</li>
+        <li>CSS custom properties for themeable values</li>
+        <li>Flexbox and grid for layout</li>
+        <li>No CSS frameworks</li>
+      </ul>
+
+      <h2>Commit messages</h2>
+      <p>Short imperative summary on the first line (≤50 chars). Blank line, then a longer explanation wrapped at 72 chars if needed.</p>
+
+      <h2>Adding a node type</h2>
+      <p>Two options:</p>
+      <ul>
+        <li>
+          <strong>Built-in node.</strong> Edit
+          <code>backend/graph/nodes.py</code>, write an
+          <code>async def _my_node(ctx, inputs, params) -&gt; dict</code>
+          function, register it with a
+          <code>register(NodeType(...))</code> call. Add tests to
+          <code>tests/test_nodes.py</code>.
+        </li>
+        <li>
+          <strong>Custom node.</strong> Create
+          <code>backend/graph/custom_nodes/my_nodes.py</code>. Import
+          <code>NodeType</code>, <code>Port</code>, and
+          <code>Param</code> from <code>..model</code>, and
+          <code>register</code> from <code>..registry</code>. Register
+          exactly as above. The loader picks up the new file
+          automatically.
+        </li>
+      </ul>
+
+      <h2>Adding an MCP tool</h2>
+      <ol>
+        <li>Create a new <code>.py</code> file in <code>mcp_server/tools/</code>. Do not start the name with an underscore.</li>
+        <li>Import the shared instance: <code>from .._server import mcp</code>.</li>
+        <li>Decorate a function with <code>@mcp.tool()</code>.</li>
+        <li>Restart the backend.</li>
+      </ol>
+      <p>Rules:</p>
+      <ul>
+        <li>Never print to stdout — that channel is the JSON-RPC transport</li>
+        <li>Type hints become the parameter schema</li>
+        <li>Return JSON-serializable values</li>
+        <li>Keep docstrings short and imperative</li>
+      </ul>
+
+      <h2>Pull request checklist</h2>
+      <ul>
+        <li>Tests pass (<code>pytest tests/ -v</code>)</li>
+        <li>No new <code>ruff</code> warnings</li>
+        <li>Documentation updated if behavior changed</li>
+        <li><code>CHANGES.md</code> has an entry under <code>[Unreleased]</code></li>
+        <li>Commit messages are descriptive</li>
+        <li>No secrets in the diff</li>
+        <li>If the frontend changed, all three pages still render correctly</li>
+        <li>If the backend changed, the startup log has no new warnings</li>
+      </ul>
+
+      <h2>Reporting issues</h2>
+      <p>
+        Open an issue at
+        <a href="https://github.com/3olution/agent-graph/issues">github.com/3olution/agent-graph/issues</a>
+        and include:
+      </p>
+      <ul>
+        <li>Environment — OS, Python version, portable or system Python</li>
+        <li>Steps to reproduce</li>
+        <li>Expected vs. actual behavior</li>
+        <li>The last 200 lines of <code>logs/backend-YYYY-MM-DD.log</code></li>
+      </ul>
+
+      <h2>Security issues</h2>
+      <p>
+        Do not open a public issue for a security vulnerability.
+        Email <code>security@3olution.com</code> instead.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — CHANGES.md
+       ============================================================= -->
+  <section class="file-section" id="f-changes" data-name="CHANGES changelog version history">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>CHANGES.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">Project root — changelog</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>CHANGES.md</h1>
+
+      <p>
+        Follows <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>
+        and <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.
+      </p>
+
+      <h2>Version history at a glance</h2>
+      <table>
+        <thead>
+          <tr><th>Version</th><th>Date</th><th>Highlights</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2.0.0</td>
+            <td>2026-09-15</td>
+            <td>MCP subprocess fix, fallback LLM, vendor auto-download, startup diagnostics</td>
+          </tr>
+          <tr>
+            <td>1.0.0</td>
+            <td>2026-09-14</td>
+            <td>Initial release</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>2.0.0 — the critical fixes</h2>
+      <ul>
+        <li>
+          <strong>MCP subprocess "Connection closed" on Windows.</strong>
+          <code>AGENT_MCP_SERVER_COMMAND</code> now defaults to
+          <code>sys.executable</code>. The client resolves bare
+          interpreter names to <code>sys.executable</code>, retries
+          connect once with a fresh <code>AsyncExitStack</code>, and
+          wraps Windows <code>.ps1</code> / <code>.cmd</code> shims in
+          <code>cmd /c</code>.
+        </li>
+        <li>
+          <strong>Silent 401 errors when <code>.env</code> is missing.</strong>
+          Defaults now point at a local Ollama instance.
+        </li>
+        <li>
+          <strong><code>/graph</code> and <code>/settings</code> returned 404.</strong>
+          Explicit HTML routes are now registered before the static
+          mount.
+        </li>
+        <li>
+          <strong>LiteGraph vendor files not auto-downloaded.</strong>
+          Three layers of automatic download: <code>run.py setup</code>,
+          <code>run.py backend</code>, and the FastAPI lifespan.
+        </li>
+        <li>
+          <strong>MCP server crash on older <code>mcp</code> SDK.</strong>
+          <code>run()</code> calls <code>mcp.run(show_banner=False)</code>
+          with a <code>try/except TypeError</code> fallback.
+        </li>
+        <li>
+          <strong><code>/favicon.ico</code> 404 log noise.</strong>
+          The backend now serves an inline SVG favicon at both
+          <code>/favicon.ico</code> and <code>/favicon.svg</code>.
+        </li>
+      </ul>
+
+      <h2>2.0.0 — what was added</h2>
+      <ul>
+        <li><strong>Fallback LLM.</strong> Optional secondary endpoint for redundancy.</li>
+        <li><strong>Auto-download of LiteGraph vendor files.</strong> With two validation gates and a two-mirror fallback chain.</li>
+        <li><strong>Startup diagnostics.</strong> The FastAPI lifespan logs the effective configuration; <code>/api/health</code> returns structured state.</li>
+        <li><strong>CONTRIBUTING.md</strong> and <strong>CHANGES.md</strong>.</li>
+      </ul>
+
+      <h2>Upgrade from 1.0.0 to 2.0.0</h2>
+      <ol>
+        <li>Back up <code>sessions.db</code> if you have chat history to keep.</li>
+        <li>Review <code>.env</code>. The fallback variables are new and optional; primary LLM defaults have changed.</li>
+        <li>Delete <code>web/vendor/</code> if incomplete. The next backend startup downloads the files automatically.</li>
+        <li>Restart the backend.</li>
+      </ol>
+      <p>
+        No breaking changes to the HTTP API, WebSocket protocol, graph
+        node schema, or MCP tool interface.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — Extensive_Documentation.md
+       ============================================================= -->
+  <section class="file-section" id="f-extensive" data-name="extensive documentation setup wrappers launchers gitignore env requirements runpy pyinstaller">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Extensive_Documentation.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">Project root — cross-cutting documentation</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Extensive_Documentation.md</h1>
+
+      <p>
+        Cross-cutting documentation covering the wrappers, launchers,
+        gitignore, env template, requirements, developer workflow, and
+        PyInstaller packaging that are not tied to a single module.
+      </p>
+
+      <h2>Sections</h2>
+      <table>
+        <thead>
+          <tr><th>Section</th><th>Covers</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Setup wrappers</td>
+            <td><code>setup.sh</code> / <code>setup.ps1</code> — the two-command bootstrap for end users</td>
+          </tr>
+          <tr>
+            <td>Launchers</td>
+            <td><code>start.sh</code> / <code>start.bat</code> — use the portable runtime</td>
+          </tr>
+          <tr>
+            <td>.gitignore explained</td>
+            <td>What is ignored and why, bucket by bucket</td>
+          </tr>
+          <tr>
+            <td>.env.example contract</td>
+            <td>The canonical list of every setting the app understands</td>
+          </tr>
+          <tr>
+            <td>requirements.txt notes</td>
+            <td>Four categories of dependencies and why llama-cpp-python is on-demand</td>
+          </tr>
+          <tr>
+            <td>run.py workflow</td>
+            <td>The developer entry point: setup, backend, desktop, native, mcp, vendor</td>
+          </tr>
+          <tr>
+            <td>PyInstaller spec</td>
+            <td>What gets bundled, what is excluded, and size expectations</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Key insights</h2>
+
+      <h3>The PATH trick</h3>
+      <p>
+        Both launchers prepend <code>runtime/python/bin</code> and
+        <code>runtime/php</code> to <code>PATH</code>. Any subprocess
+        the backend spawns — MCP server, PHP-CGI, future tools —
+        resolves to the portable binaries rather than any system
+        install.
+      </p>
+
+      <h3>Why scripts/serve.py</h3>
+      <p>
+        <code>serve.py</code> handles three things that would otherwise
+        require the user to remember them: Windows event-loop policy,
+        <code>sys.path</code> / <code>PYTHONPATH</code> for the
+        reloader child, and forcing <code>loop="asyncio"</code> so
+        uvicorn does not pick uvloop.
+      </p>
+
+      <h3>PyInstaller size breakdown</h3>
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Compressed</th><th>Extracted</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>PyQt6 + Qt6 core</td><td>40 MB</td><td>120 MB</td></tr>
+          <tr><td>PyQt6-WebEngine (Chromium)</td><td>120 MB</td><td>280 MB</td></tr>
+          <tr><td>Python runtime</td><td>15 MB</td><td>45 MB</td></tr>
+          <tr><td>Backend + MCP + web</td><td>1 MB</td><td>2 MB</td></tr>
+          <tr><td><strong>Total</strong></td><td><strong>~180 MB</strong></td><td><strong>~450 MB</strong></td></tr>
+        </tbody>
+      </table>
+      <p>
+        If you do not need the embedded browser, comment out the
+        WebEngine hidden imports and set
+        <code>WEBENGINE_AVAILABLE = False</code> in
+        <code>desktop/app.py</code>. The bundle shrinks by ~120 MB.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — LICENSE.md
+       ============================================================= -->
+  <section class="file-section" id="f-license" data-name="license MIT third party trademarks">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>LICENSE.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">Project root — MIT license</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>LICENSE.md</h1>
+
+      <p>
+        MIT licensed. The 3olution name and the gradient "3" logo are
+        trademarks of 3olution — using them in a fork or derivative
+        work requires written permission.
+      </p>
+
+      <h2>Third-party components</h2>
+      <p>
+        Components bundled or downloaded at setup time retain their
+        own licenses:
+      </p>
+      <table>
+        <thead>
+          <tr><th>Component</th><th>License</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>python-build-standalone</td><td>PSF License / MIT-adjacent</td></tr>
+          <tr><td>static-php-cli</td><td>MIT License / PHP License 3.01</td></tr>
+          <tr><td>SQLite</td><td>Public Domain</td></tr>
+          <tr><td>LiteGraph.js</td><td>MIT License</td></tr>
+          <tr><td>FastAPI, uvicorn, pydantic, openai, httpx, loguru, PyQt6, mcp</td><td>Their respective licenses</td></tr>
+        </tbody>
+      </table>
+      <p>
+        Users redistributing the portable runtime are responsible for
+        complying with the licenses of the bundled binaries.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       ROOT FILE — File_Tree.txt
+       ============================================================= -->
+  <section class="file-section" id="f-filetree" data-name="file tree txt project layout">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>File_Tree.txt <span class="file-badge txt">text</span></h2>
+        <span class="file-path">Project root — plain-text tree</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">txt</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>File_Tree.txt</h1>
+
+      <p>
+        A plain-text version of the project tree, intended for quick
+        reference from a terminal or a code review. It is essentially
+        the same tree shown in <a href="#doc-tree">Project Tree</a>
+        above, with inline annotations for each file.
+      </p>
+
+      <p>
+        The tree includes every file and folder at every level,
+        marking runtime-generated paths with
+        <em>[gitignored]</em> and inline comments explaining what each
+        entry is for.
+      </p>
+
+      <h2>How to regenerate</h2>
+      <p>
+        On Windows, use the
+        <a href="#f-treeps1">Project_Tree.ps1</a> script. It
+        recreates the directory skeleton from the tree definition,
+        optionally with placeholder files.
+      </p>
+      <p>
+        On Unix, use the standard <code>tree</code> command:
+      </p>
+      <pre>tree -L 3 --dirsfirst -I '.venv|__pycache__|runtime|node_modules'</pre>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       UTILITY — pyinstaller.spec
+       ============================================================= -->
+  <section class="file-section" id="f-pyinstaller" data-name="pyinstaller spec packaging desktop bundle">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>pyinstaller.spec <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">Project root — desktop packaging</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">build</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>pyinstaller.spec</h1>
+
+      <p>
+        PyInstaller spec file that builds a single-folder distribution
+        of the desktop client. The backend is bundled as source code
+        and spawned as a subprocess by
+        <code>backend_launcher.py</code> at runtime.
+      </p>
+
+      <h2>Build</h2>
+      <pre>pip install pyinstaller
+pyinstaller pyinstaller.spec</pre>
+
+      <h2>Output</h2>
+      <pre>dist/3olutionAgentGraph/3olutionAgentGraph        (Unix)
+dist/3olutionAgentGraph/3olutionAgentGraph.exe    (Windows)</pre>
+
+      <h2>What gets bundled</h2>
+      <ul>
+        <li><code>desktop/</code> — the PyQt6 application (entry point)</li>
+        <li><code>backend/</code> — the FastAPI backend, spawned at runtime</li>
+        <li><code>mcp_server/</code> — the MCP tool server</li>
+        <li><code>web/</code> — the chat UI, graph editor, settings page</li>
+        <li><code>scripts/</code> — serve.py and download_vendor.py</li>
+        <li><code>php_app/</code> — the PHP notes app (optional at runtime)</li>
+        <li><code>models/</code> — empty; the user drops GGUF files here</li>
+        <li><code>bootstrap/</code> — kept for reference</li>
+        <li><code>.env.example</code> — for the user to copy</li>
+      </ul>
+
+      <h2>What gets excluded</h2>
+      <p>
+        Development-only packages and unused Qt modules are excluded
+        to cut roughly 150 MB off the bundle:
+      </p>
+      <ul>
+        <li><code>tkinter</code>, <code>matplotlib</code>, <code>numpy</code>, <code>scipy</code>, <code>pandas</code></li>
+        <li><code>pytest</code>, <code>IPython</code>, <code>jupyter</code></li>
+        <li><code>PyQt6.QtQuick</code>, <code>PyQt6.QtQml</code>, <code>PyQt6.Qt3DCore</code>, <code>PyQt6.QtBluetooth</code></li>
+        <li><code>PyQt6.QtSerialPort</code>, <code>PyQt6.QtSql</code>, <code>PyQt6.QtTest</code>, <code>PyQt6.QtDesigner</code>, <code>PyQt6.QtHelp</code></li>
+      </ul>
+
+      <h2>Windows notes</h2>
+      <p>
+        UPX compression is disabled. It corrupts PyQt6 DLLs on
+        Windows. The output is a single folder, not a single file — a
+        one-file build with PyQt6-WebEngine is fragile and slow to
+        start (every launch extracts ~280 MB of Chromium to a temp
+        folder).
+      </p>
+
+      <h2>macOS notes</h2>
+      <p>
+        Uncomment the <code>BUNDLE()</code> block at the bottom of the
+        spec to produce a double-clickable <code>.app</code>. Gatekeeper
+        will block the unsigned bundle until you run:
+      </p>
+      <pre>xattr -dr com.apple.quarantine dist/3olutionAgentGraph.app</pre>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       UTILITY — fix_php.bat / fix_php.ps1
+       ============================================================= -->
+  <section class="file-section" id="f-fixphpbat" data-name="fix_php bat ps1 permissions windows defender ACL">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>fix_php.bat / fix_php.ps1 <span class="file-badge">shell</span></h2>
+        <span class="file-path">Project root — PHP permission repair</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">util</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>fix_php.bat / fix_php.ps1</h1>
+
+      <p>
+        A pair of scripts that diagnose and fix PHP execution
+        permissions on Windows. They resolve the most common causes of
+        the <code>WinError 5: Access is denied</code> error that
+        appears when the backend tries to spawn <code>php.exe</code>.
+      </p>
+
+      <h2>What the script does</h2>
+      <ol>
+        <li><strong>Verifies the binary exists</strong> and is not suspiciously small.</li>
+        <li><strong>Removes Mark of the Web</strong> (Zone.Identifier ADS) with <code>Unblock-File</code>.</li>
+        <li><strong>Resets ACLs</strong> on <code>runtime/php</code> and <code>php_app</code> using <code>icacls /reset</code> and re-grants the current user full control.</li>
+        <li><strong>Adds Windows Defender exclusions</strong> for both folders and the <code>php.exe</code> process.</li>
+        <li><strong>Detects third-party antivirus</strong> via the Security Center WMI namespace and prints vendor-specific exclusion instructions.</li>
+        <li><strong>Tests execution</strong> by running <code>php.exe --version</code>.</li>
+      </ol>
+
+      <h2>Usage</h2>
+      <pre>fix_php.bat                  # run all fixes
+fix_php.bat -SkipDefender    # skip Defender exclusion
+fix_php.bat -SkipAcl         # skip ACL reset
+fix_php.bat -SkipUnblock     # skip Mark of the Web removal
+fix_php.bat -NoElevate       # do not prompt for elevation</pre>
+
+      <h2>Self-elevation</h2>
+      <p>
+        The <code>.bat</code> wrapper invokes PowerShell with
+        <code>-ExecutionPolicy Bypass</code> so it runs regardless of
+        the machine's default policy. The <code>.ps1</code> script
+        self-elevates via UAC when it needs administrator rights
+        (for ACL changes and Defender exclusions).
+      </p>
+
+      <h2>Exit codes</h2>
+      <table>
+        <thead>
+          <tr><th>Code</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>0</td><td>PHP works. Restart the backend.</td></tr>
+          <tr><td>1</td><td>PHP still broken. Follow the printed instructions.</td></tr>
+          <tr><td>2</td><td>Needs elevation. Right-click and choose <em>Run as administrator</em>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       UTILITY — test_php.py
+       ============================================================= -->
+  <section class="file-section" id="f-testphp" data-name="test_php.py diagnostic subprocess permission">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>test_php.py <span class="file-badge">python</span></h2>
+        <span class="file-path">Project root — PHP launch diagnostic</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">util</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>test_php.py</h1>
+
+      <p>
+        Reproduces the exact subprocess call that
+        <code>backend/php_server.py</code> makes, with the same
+        environment, working directory, and arguments. Prints the
+        exact exception class and message when PHP fails to launch.
+      </p>
+
+      <h2>When to use it</h2>
+      <p>
+        When the <code>/php/</code> route returns a 500 with a generic
+        error and the backend log does not make the cause obvious.
+        This script isolates the PHP launch from the FastAPI layer so
+        the failure mode is unambiguous.
+      </p>
+
+      <h2>Run</h2>
+      <pre>runtime\python\python.exe test_php.py</pre>
+
+      <h2>What it prints</h2>
+      <ul>
+        <li>Python interpreter path</li>
+        <li>PHP binary path and size</li>
+        <li>The exact <code>subprocess.run</code> invocation with all CGI environment variables</li>
+        <li>Exit code, stdout, and stderr from PHP</li>
+        <li>The exact exception class and message on failure</li>
+      </ul>
+
+      <h2>Exit codes</h2>
+      <table>
+        <thead>
+          <tr><th>Code</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>0</td><td>PHP ran successfully</td></tr>
+          <tr><td>1</td><td>PHP binary missing</td></tr>
+          <tr><td>2</td><td>PHP exited with non-zero code</td></tr>
+          <tr><td>3</td><td>PermissionError — the same error the backend gets</td></tr>
+          <tr><td>4</td><td>FileNotFoundError</td></tr>
+          <tr><td>5</td><td>Timeout</td></tr>
+          <tr><td>6</td><td>Unexpected exception</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       UTILITY — Project_Tree.ps1
+       ============================================================= -->
+  <section class="file-section" id="f-treeps1" data-name="project tree ps1 recreate directory skeleton">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>3olution_Agent_Graph_Project_Tree.ps1 <span class="file-badge">powershell</span></h2>
+        <span class="file-path">Project root — recreate the directory tree</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">util</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>3olution_Agent_Graph_Project_Tree.ps1</h1>
+
+      <p>
+        Recreates the complete directory skeleton of the project on
+        Windows. Useful when bootstrapping a fresh working copy from
+        the <code>File_Tree.txt</code> definition, or when adding a
+        new folder and wanting to keep the tree in sync.
+      </p>
+
+      <h2>Parameters</h2>
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>-Root PATH</code></td><td>Target directory. Defaults to the current directory.</td></tr>
+          <tr><td><code>-WithFiles</code></td><td>Also create empty placeholder files.</td></tr>
+          <tr><td><code>-Force</code></td><td>Allow writing into a non-empty existing directory without prompting.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Examples</h2>
+      <pre>.\New-ProjectTree.ps1 -Root C:\dev\agent-graph -WithFiles</pre>
+
+      <h2>What it creates</h2>
+      <ul>
+        <li>Every directory listed in the file tree</li>
+        <li>Optionally, every file listed in the file tree (as empty placeholders)</li>
+        <li>Existing paths are left untouched unless <code>-Force</code> is set</li>
+      </ul>
+
+      <h2>Output</h2>
+      <pre>  [dir]  bootstrap
+  [dir]  backend
+  [dir]  backend/routes
+  ...
+  [file] run.py
+  [file] setup.sh
+  ...
+
+Done. Root: C:\dev\agent-graph
+  Directories created : 24
+  Files created       : 82
+  Already existed     : 0</pre>
+    </div>
+  </section>
+
+</main>
+
+<button class="to-top" id="toTop" title="Back to top">↑</button>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Highlight all code blocks ----------
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      try { hljs.highlightElement(el); } catch (e) {}
+    });
+  }
+
+  // ---------- Line count for each file ----------
+  document.querySelectorAll('.file-section').forEach(function (sec) {
+    var code = sec.querySelector('pre code');
+    var badge = sec.querySelector('[data-lines]');
+    if (!badge) return;
+    if (code) {
+      var text = code.textContent || '';
+      var lines = text.split('\n').length;
+      badge.textContent = lines + ' lines';
+    } else {
+      badge.textContent = 'doc';
+    }
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.file-section');
+      if (!sec) return;
+      var code = sec.querySelector('pre code');
+      var md = sec.querySelector('.md-content');
+      var text = code ? code.textContent : (md ? md.innerText : '');
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = '✗ Failed';
+        setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600);
+      });
+    });
+  });
+
+  // ---------- Active nav tracking ----------
+  var navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+  var sections = Array.from(document.querySelectorAll('.file-section'));
+  var crumbs = document.getElementById('crumbs');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s.offsetTop <= scrollY) current = s;
+      else break;
+    }
+    navLinks.forEach(function (a) { a.classList.remove('active'); });
+    if (current) {
+      var link = document.querySelector('.nav-list a[href="#' + current.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        var path = current.querySelector('.file-path');
+        if (path && crumbs) {
+          crumbs.textContent = '3olution Agent Graph / ' + path.textContent;
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ---------- Search filter ----------
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+  var navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var q = searchInput.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      document.querySelectorAll('.nav-list li').forEach(function (li) {
+        var text = li.textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        li.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+      });
+
+      navGroups.forEach(function (g) {
+        var list = g.nextElementSibling;
+        if (!list || !list.classList.contains('nav-list')) return;
+        var hasVisible = list.querySelector('li:not(.hidden)');
+        g.style.display = hasVisible ? '' : 'none';
+      });
+
+      sections.forEach(function (sec) {
+        var name = (sec.getAttribute('data-name') || '') + ' ' +
+                   (sec.querySelector('.file-path')?.textContent || '') + ' ' +
+                   (sec.querySelector('h2')?.textContent || '');
+        name = name.toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        sec.classList.toggle('hidden', !match);
+      });
+
+      if (noResults) noResults.classList.toggle('visible', visibleCount === 0);
+    });
+  }
+
+  // ---------- Back to top ----------
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('visible', window.scrollY > 500);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---------- Mobile sidebar toggle ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (window.innerWidth <= 700) sidebar.classList.remove('open');
+      });
+    });
+  }
+
+})();
+</script>
+</body>
 </html>

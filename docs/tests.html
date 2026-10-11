@@ -1,0 +1,3038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — Test Suite</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 320px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+.nav-list { list-style: none; margin: 0; padding: 0; }
+.nav-list li { margin: 0; }
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-list a:hover { background: var(--bg-elev); color: var(--text); }
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+.nav-icon.txt { background: #6e7681; }
+.nav-icon.test { background: #3fb950; }
+main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.topbar .stats { font-size: 12px; color: var(--text-mute); display: flex; gap: 16px; }
+.topbar .stats span { display: flex; align-items: center; gap: 5px; }
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+.hero p { margin: 0; color: var(--text-dim); font-size: 14.5px; max-width: 780px; }
+.hero .links { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.hero .links a:hover { border-color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.file-section.hidden { display: none; }
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.file-title { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+.file-badge.doc {
+  background: rgba(124, 58, 237, 0.14);
+  color: #a371f7;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.file-badge.md {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.28);
+}
+.file-badge.txt {
+  background: rgba(139, 148, 158, 0.14);
+  color: var(--text-dim);
+  border-color: rgba(139, 148, 158, 0.28);
+}
+.file-badge.test {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.3);
+}
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, 0.08); }
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.hljs { background: transparent !important; padding: 0 !important; }
+.md-content {
+  padding: 24px 28px;
+  max-height: 900px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.md-content th { background: var(--bg-elev); color: var(--text); font-weight: 600; }
+.md-content td { color: var(--text-dim); }
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+.md-content kbd {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11.5px;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+}
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 900px) {
+  :root { --sidebar-w: 270px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+.nav-list li.hidden { display: none; }
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><a href="index.html" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;"><span class="logo-mark">3</span> Test Suite</a></h1>
+    <div class="sub"><a href="index.html" style="color:inherit;text-decoration:none;">← Back to Knowledge Base</a> · pytest · pure-logic coverage</div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search docs &amp; tests…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Documentation</div>
+  <ul class="nav-list" data-group="docs">
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>Overview</a></li>
+    <li><a href="#doc-running"><span class="nav-icon md"></span>Running the tests</a></li>
+    <li><a href="#doc-dependencies"><span class="nav-icon md"></span>Dependencies &amp; async</a></li>
+    <li><a href="#doc-engine"><span class="nav-icon md"></span>test_engine.py</a></li>
+    <li><a href="#doc-nodes"><span class="nav-icon md"></span>test_nodes.py</a></li>
+    <li><a href="#doc-not-tested"><span class="nav-icon md"></span>What is not tested</a></li>
+    <li><a href="#doc-extending"><span class="nav-icon md"></span>Extending the suite</a></li>
+  </ul>
+
+  <div class="nav-group">Source Files</div>
+  <ul class="nav-list" data-group="source">
+    <li><a href="#f-init"><span class="nav-icon test"></span>__init__.py</a></li>
+    <li><a href="#f-engine"><span class="nav-icon test"></span>test_engine.py</a></li>
+    <li><a href="#f-nodes"><span class="nav-icon test"></span>test_nodes.py</a></li>
+  </ul>
+
+  <div class="no-results" id="noResults">No matching files.</div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">tests / overview</span>
+    </div>
+    <div class="stats">
+      <span>📄 <strong id="statFiles">3</strong> files</span>
+      <span>🧪 <strong>45+</strong> tests</span>
+      <span>⚡ <strong>pytest-asyncio</strong></span>
+      <span>🐍 <strong>Python 3.12</strong></span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Test Suite</h1>
+    <p>
+      A focused pytest suite that covers the pure-logic parts of the
+      codebase — the graph engine's topological sort, the JSON-safety
+      helper, and every built-in node function. The integration surface
+      (FastAPI routes, MCP subprocess, LLM clients) is deliberately
+      excluded because it depends on external services that would
+      require mocking infrastructure outweighing the value of the tests.
+    </p>
+    <div class="links">
+      <a href="index.html">← Back to Knowledge Base</a>
+      <a href="https://3olution.com" target="_blank" rel="noopener">🌐 3olution.com</a>
+      <a href="#doc-running">▶ Run the tests</a>
+      <a href="#doc-engine">⚙ test_engine.py</a>
+      <a href="#doc-nodes">🔧 test_nodes.py</a>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       DOC — Overview
+       ============================================================= -->
+  <section class="file-section" id="doc-overview" data-name="overview test suite coverage documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Overview <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">tests/ — what is covered and why</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Overview</h1>
+
+      <p>
+        The <code>tests/</code> folder contains a small but dense pytest
+        suite. It targets the parts of the project where:
+      </p>
+
+      <ul>
+        <li>
+          A bug is <strong>most likely to hide</strong> — the topological
+          sort algorithm and the node functions have non-trivial logic.
+        </li>
+        <li>
+          A fast test loop is <strong>most valuable</strong> — the
+          engine can be iterated on without spinning up a server or a
+          model.
+        </li>
+        <li>
+          Coverage is <strong>cheap to write</strong> — no mocking, no
+          fixtures, no external services.
+        </li>
+      </ul>
+
+      <h2>File layout</h2>
+      <pre>tests/
+├── __init__.py         package marker + usage docs
+├── test_engine.py      pure logic: topological sort, JSON safety
+└── test_nodes.py       built-in node functions and graph parsing</pre>
+
+      <h2>Coverage at a glance</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Test file</th>
+            <th>Tests</th>
+            <th>Covers</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_engine.py</code></td>
+            <td>15</td>
+            <td>
+              <code>_topo_sort()</code> (linear, fan-out, fan-in,
+              diamond, disconnected, empty, single, cycles, dangling
+              edges) and <code>_safe()</code>
+            </td>
+          </tr>
+          <tr>
+            <td><code>test_nodes.py</code></td>
+            <td>30+</td>
+            <td>
+              Registry, input nodes, output nodes, LLM prompt builder,
+              text templating, control flow (branch, merge, foreach),
+              utility nodes, <code>Graph.from_dict()</code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Design principles</h2>
+
+      <h3>1. Pure logic only</h3>
+      <p>
+        Every test calls a function directly with plain Python data and
+        asserts on the return value. No HTTP requests, no subprocesses,
+        no model inference. The suite runs in under a second.
+      </p>
+
+      <h3>2. No global state</h3>
+      <p>
+        The node tests import the registry, which is populated at
+        package-load time. Beyond that, no test writes to shared state.
+        Tests can run in any order and in parallel.
+      </p>
+
+      <h3>3. Explicit async markers</h3>
+      <p>
+        Every async test is decorated with
+        <code>@pytest.mark.asyncio</code>. The suite does not depend on
+        a <code>pytest.ini</code> or <code>pyproject.toml</code>
+        configuration — it runs from a plain
+        <code>pip install pytest pytest-asyncio</code>.
+      </p>
+
+      <h3>4. Failure messages that name the problem</h3>
+      <p>
+        Test names describe the behaviour under test, not the function
+        being called. <code>test_topo_sort_diamond</code> reads better
+        in a failure report than
+        <code>test_toposort_4</code>.
+      </p>
+
+      <div class="callout success">
+        <strong>The canary test.</strong>
+        <code>test_registry_has_builtins</code> asserts that at least
+        16 node types are registered. If the registry ever ends up
+        empty — a broken import in <code>nodes.py</code>, a circular
+        dependency — this test fails with a clear message before the
+        other 30+ node tests fail with confusing "None has no
+        attribute" errors.
+      </div>
+
+      <h2>What the tests are not</h2>
+      <p>
+        This is not a full integration test suite. It does not exercise
+        the FastAPI application, the MCP protocol, the LLM client, or
+        any of the runtime subprocesses. See
+        <a href="#doc-not-tested">What is not tested</a> for the full
+        list and the reasoning.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Running the tests
+       ============================================================= -->
+  <section class="file-section" id="doc-running" data-name="running tests pytest commands documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Running the Tests <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">tests/ — invocation &amp; filters</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Running the Tests</h1>
+
+      <h2>Full suite, verbose</h2>
+      <pre>pytest tests/ -v</pre>
+      <p>
+        Runs every test in both files. The <code>-v</code> flag prints
+        one line per test with its name and PASSED/FAILED status.
+      </p>
+
+      <h2>Full suite, quiet</h2>
+      <pre>pytest tests/</pre>
+      <p>
+        Prints one dot per test, then a summary. Useful in a CI log
+        where the individual test names would be noise.
+      </p>
+
+      <h2>One file</h2>
+      <pre>pytest tests/test_engine.py -v
+pytest tests/test_nodes.py -v</pre>
+
+      <h2>One test</h2>
+      <pre>pytest tests/test_engine.py::test_topo_sort_diamond -v</pre>
+
+      <h2>Pattern matching</h2>
+      <pre>pytest tests/ -k "topo_sort" -v
+pytest tests/ -k "branch or merge" -v
+pytest tests/ -k "not delay" -v</pre>
+
+      <p>
+        The <code>-k</code> flag filters test names by substring or
+        expression. It is the fastest way to iterate on a specific
+        area without re-running everything.
+      </p>
+
+      <h2>Stop at first failure</h2>
+      <pre>pytest tests/ -x -v</pre>
+      <p>
+        Useful during development — a single failure is easier to read
+        than a cascade of downstream failures caused by it.
+      </p>
+
+      <h2>Show local variables in failures</h2>
+      <pre>pytest tests/ -l</pre>
+      <p>
+        Prints the value of local variables at the point of a failure.
+        Combine with <code>-v</code> for full context.
+      </p>
+
+      <h2>Summary of the useful flags</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Flag</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>-v</code></td>
+            <td>Verbose — one line per test</td>
+          </tr>
+          <tr>
+            <td><code>-x</code></td>
+            <td>Stop at the first failure</td>
+          </tr>
+          <tr>
+            <td><code>-k EXPR</code></td>
+            <td>Only run tests matching the name expression</td>
+          </tr>
+          <tr>
+            <td><code>-l</code></td>
+            <td>Show local variables on failure</td>
+          </tr>
+          <tr>
+            <td><code>-q</code></td>
+            <td>Quiet — minimal output</td>
+          </tr>
+          <tr>
+            <td><code>--tb=short</code></td>
+            <td>Shorter tracebacks</td>
+          </tr>
+          <tr>
+            <td><code>--tb=line</code></td>
+            <td>One line per traceback — for large failures</td>
+          </tr>
+          <tr>
+            <td><code>-p no:cacheprovider</code></td>
+            <td>Skip the <code>.pytest_cache</code> directory</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Exit codes</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0</td>
+            <td>All tests passed</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>At least one test failed</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Interrupted (Ctrl+C)</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Internal error — a bug in pytest itself</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Command-line usage error</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>No tests collected</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Typical first run</h2>
+      <pre>$ pytest tests/ -v
+========================= test session starts ==========================
+platform win32 -- Python 3.12.11, pytest-8.3.0, pluggy-1.5.0
+rootdir: C:\...\3olution_Agent_Graph_Project
+plugins: asyncio-0.24.0
+collected 45 items
+
+tests/test_engine.py::test_topo_sort_linear PASSED              [  2%]
+tests/test_engine.py::test_topo_sort_fan_out PASSED             [  4%]
+tests/test_engine.py::test_topo_sort_fan_in PASSED              [  6%]
+tests/test_engine.py::test_topo_sort_diamond PASSED             [  8%]
+tests/test_engine.py::test_topo_sort_disconnected PASSED        [ 11%]
+tests/test_engine.py::test_topo_sort_single_node PASSED         [ 13%]
+tests/test_engine.py::test_topo_sort_empty PASSED               [ 15%]
+tests/test_engine.py::test_topo_sort_cycle_raises PASSED        [ 17%]
+tests/test_engine.py::test_topo_sort_self_loop_raises PASSED    [ 20%]
+tests/test_engine.py::test_topo_sort_three_node_cycle_raises ... [ 22%]
+...
+========================= 45 passed in 0.42s ==========================</pre>
+
+      <div class="callout">
+        <strong>The suite runs in under a second.</strong>
+        If it takes longer, something is wrong — most likely a test is
+        accidentally calling an external service, or the
+        <code>util.delay</code> test is using a non-trivial sleep.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Dependencies & async
+       ============================================================= -->
+  <section class="file-section" id="doc-dependencies" data-name="dependencies pytest pytest-asyncio async markers documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Dependencies &amp; Async <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">tests/ — install &amp; configuration</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Dependencies &amp; Async</h1>
+
+      <h2>What to install</h2>
+      <pre>pip install pytest pytest-asyncio</pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Package</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>pytest</code></td>
+            <td>The test runner. Discovers <code>test_*.py</code>, collects <code>test_*</code> functions, and reports results.</td>
+          </tr>
+          <tr>
+            <td><code>pytest-asyncio</code></td>
+            <td>Support for <code>async def</code> test functions. Required for the node tests, which call async node functions.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        Both are in the project's <code>requirements-dev.txt</code> (if
+        present) or can be installed ad-hoc. Neither is required by the
+        backend itself — a production deployment does not need them.
+      </p>
+
+      <h2>Async configuration</h2>
+      <p>
+        <code>pytest-asyncio</code> requires one of two configurations
+        to know which tests to run in async mode:
+      </p>
+
+      <h3>Option 1 — explicit markers (this suite's choice)</h3>
+      <p>
+        Every async test is decorated with
+        <code>@pytest.mark.asyncio</code>:
+      </p>
+
+      <pre>@pytest.mark.asyncio
+async def test_input_text():
+    nt = get("input.text")
+    result = await nt.fn(None, {}, {"value": "hello"})
+    assert result == {"text": "hello"}</pre>
+
+      <p>
+        This is what <code>test_nodes.py</code> does. The advantage is
+        that the suite is self-contained — no
+        <code>pytest.ini</code> or <code>pyproject.toml</code>
+        needed.
+      </p>
+
+      <h3>Option 2 — global auto mode</h3>
+      <p>
+        Set <code>asyncio_mode = "auto"</code> in a config file:
+      </p>
+
+      <pre>[tool.pytest.ini_options]
+asyncio_mode = "auto"</pre>
+
+      <p>
+        Then every <code>async def</code> test runs automatically
+        without a marker. This is what larger projects often choose,
+        but it requires a configuration file.
+      </p>
+
+      <div class="callout">
+        <strong>Why the suite uses option 1.</strong>
+        A project that ships tests should not require a configuration
+        file just to run them. The explicit-marker approach lets a user
+        copy <code>tests/</code> into another project and run it
+        immediately.
+      </div>
+
+      <h2>Async event loop</h2>
+      <p>
+        Each async test gets a fresh event loop by default. This matters
+        because node functions are stateless — they do not hold any
+        cross-test state — but it also means a bug that only shows up
+        on the second invocation of a function would not be caught.
+        For the current suite, that is not a concern.
+      </p>
+
+      <h2>Importing from the backend</h2>
+      <p>
+        The tests import from <code>backend.graph.*</code>. This
+        requires the project root to be on <code>sys.path</code>. When
+        running <code>pytest</code> from the project root, this is
+        automatic — pytest adds the current directory to
+        <code>sys.path</code> as long as the tests folder contains an
+        <code>__init__.py</code>.
+      </p>
+
+      <p>
+        If you run <code>pytest</code> from a different directory:
+      </p>
+      <pre>cd /path/to/project
+pytest tests/ -v</pre>
+      <p>
+        Or set <code>PYTHONPATH</code>:
+      </p>
+      <pre>PYTHONPATH=. pytest tests/ -v</pre>
+
+      <h2>What the imports look like</h2>
+      <pre>from backend.graph.engine import _safe, _topo_sort
+from backend.graph.model import Edge, Graph, Node
+from backend.graph.registry import get</pre>
+
+      <p>
+        All three come from the graph subpackage. Importing
+        <code>backend.graph</code> at module load time triggers the
+        registry's built-in node registration as a side effect — which
+        is what makes the <code>get("input.text")</code> lookups in
+        <code>test_nodes.py</code> work.
+      </p>
+
+      <h2>No conftest.py</h2>
+      <p>
+        The suite does not use a <code>conftest.py</code>. There are no
+        fixtures, no shared setup, no teardown. Every test is
+        self-contained.
+      </p>
+
+      <h2>No coverage configuration</h2>
+      <p>
+        Running <code>pytest --cov=backend</code> would work if
+        <code>pytest-cov</code> is installed, but the suite does not
+        include a coverage threshold or configuration. Coverage of
+        integration code is not the goal — coverage of the pure-logic
+        parts is, and that is already near 100%.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — test_engine.py
+       ============================================================= -->
+  <section class="file-section" id="doc-engine" data-name="test_engine topological sort safe json documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>test_engine.py <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">tests/test_engine.py — what is covered</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>test_engine.py</h1>
+
+      <p>
+        Covers the pure-logic parts of
+        <code>backend/graph/engine.py</code>. The full
+        <code>execute()</code> generator is not tested because it
+        depends on a populated registry, a live app state dict, and
+        every node's implementation being deterministic — all
+        integration-level concerns.
+      </p>
+
+      <p>
+        The topological sort is the critical algorithm — everything
+        else in the engine is a straightforward loop around it.
+      </p>
+
+      <h2>Tests in this file</h2>
+
+      <h3>_topo_sort — happy path</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Graph shape</th>
+            <th>Assertion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_topo_sort_linear</code></td>
+            <td><code>a → b → c</code></td>
+            <td>Result is exactly <code>[a, b, c]</code></td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_fan_out</code></td>
+            <td><code>root → left</code>, <code>root → right</code></td>
+            <td>Root first; the two children in either order</td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_fan_in</code></td>
+            <td><code>a → merge</code>, <code>b → merge</code></td>
+            <td>Both roots before merge</td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_diamond</code></td>
+            <td><code>a → b → d</code>, <code>a → c → d</code></td>
+            <td><code>a</code> first, <code>d</code> last, <code>b</code> and <code>c</code> before <code>d</code></td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_disconnected</code></td>
+            <td>Two independent chains</td>
+            <td>Both chains sorted, all four nodes present</td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_single_node</code></td>
+            <td>One node, no edges</td>
+            <td>Result is <code>[only]</code></td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_empty</code></td>
+            <td>No nodes, no edges</td>
+            <td>Result is <code>[]</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>_topo_sort — error cases</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Input</th>
+            <th>Assertion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_topo_sort_cycle_raises</code></td>
+            <td>Two-node cycle <code>a ↔ b</code></td>
+            <td><code>ValueError</code> with <code>"cycle"</code> in the message</td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_self_loop_raises</code></td>
+            <td>Self-loop <code>a → a</code></td>
+            <td><code>ValueError</code> with <code>"cycle"</code></td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_three_node_cycle_raises</code></td>
+            <td><code>a → b → c → a</code></td>
+            <td><code>ValueError</code> with <code>"cycle"</code></td>
+          </tr>
+          <tr>
+            <td><code>test_topo_sort_ignores_dangling_edges</code></td>
+            <td>Edges referencing unknown nodes</td>
+            <td>Result is just <code>[a]</code>; the bad edges are silently ignored</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Why the <code>"cycle"</code> substring matters.</strong>
+        Callers detect the cycle case by matching the message, so the
+        test asserts on the substring rather than the exact wording.
+        That way the test does not break if the message is reworded,
+        but it does break if the word <code>cycle</code> disappears —
+        which would break the caller.
+      </div>
+
+      <h3>_safe — JSON-safety helper</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Input</th>
+            <th>Assertion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_safe_primitive</code></td>
+            <td>str, int, float, bool, None</td>
+            <td>Every primitive passes through unchanged</td>
+          </tr>
+          <tr>
+            <td><code>test_safe_container</code></td>
+            <td>list, dict</td>
+            <td>Containers of serialisable values pass through</td>
+          </tr>
+          <tr>
+            <td><code>test_safe_unserialisable</code></td>
+            <td><code>datetime</code> instance</td>
+            <td>Result is a <code>str</code> containing the year</td>
+          </tr>
+          <tr>
+            <td><code>test_safe_custom_object</code></td>
+            <td>User class with <code>__str__</code></td>
+            <td>Result is the output of <code>str(obj)</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The purpose of <code>_safe()</code> is to keep the
+        <code>graph_done</code> event from raising when a node returns
+        something JSON cannot serialise. The tests confirm that the
+        function handles the two realistic cases — a
+        <code>datetime</code> and a custom class — by stringifying
+        them.
+      </p>
+
+      <h2>What is not tested in this file</h2>
+      <ul>
+        <li>
+          <code>execute()</code> — the async generator that runs a
+          graph. It depends on the registry, the app state, and node
+          implementations. Testing it would require a full fixture
+          setup.
+        </li>
+        <li>
+          <code>ExecutionContext</code> — the helper class that holds
+          outputs during a run. It is exercised indirectly by
+          <code>execute()</code>, but not tested in isolation.
+        </li>
+        <li>
+          <code>_gather_inputs()</code> — reads edge values from the
+          execution context. Its logic is simple enough that a bug
+          would be caught by an integration test at the route level.
+        </li>
+      </ul>
+
+      <h2>Why 15 tests for two functions?</h2>
+      <p>
+        The topological sort is a small algorithm with a lot of edge
+        cases. Every shape of graph — chain, fan, diamond,
+        disconnected, cyclic — has a different failure mode. A bug
+        that breaks the diamond case might pass the linear case, and
+        vice versa. Covering all the shapes is the only way to be
+        confident the algorithm is correct.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — test_nodes.py
+       ============================================================= -->
+  <section class="file-section" id="doc-nodes" data-name="test_nodes built-in node implementations documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>test_nodes.py <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">tests/test_nodes.py — what is covered</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>test_nodes.py</h1>
+
+      <p>
+        Every test instantiates a node via the registry and calls its
+        function directly. This bypasses the engine, the LLM client,
+        and the MCP client — the goal is to verify the node's pure
+        logic.
+      </p>
+
+      <p>
+        Nodes that call the LLM or MCP (<code>llm.chat</code>,
+        <code>tool.list</code>, <code>tool.call</code>, and
+        <code>custom.llm_json</code> in custom_nodes) are not tested
+        here because they require external services to be running. A
+        future integration-test file could cover them with mocks.
+      </p>
+
+      <h2>Coverage groups</h2>
+
+      <h3>Registry</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Asserts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_registry_has_builtins</code></td>
+            <td>At least 16 node types registered; every expected name present</td>
+          </tr>
+          <tr>
+            <td><code>test_registry_lookup_missing</code></td>
+            <td>Unknown name returns <code>None</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Input nodes</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Asserts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_input_text</code></td>
+            <td>Returns the value unchanged as <code>{"text": ...}</code></td>
+          </tr>
+          <tr>
+            <td><code>test_input_text_default</code></td>
+            <td>Missing value falls back to empty string</td>
+          </tr>
+          <tr>
+            <td><code>test_input_number</code></td>
+            <td>Returns a <code>float</code></td>
+          </tr>
+          <tr>
+            <td><code>test_input_number_string_coercion</code></td>
+            <td>String input is coerced to float</td>
+          </tr>
+          <tr>
+            <td><code>test_input_json_valid</code></td>
+            <td>Valid JSON parses into the expected Python structure</td>
+          </tr>
+          <tr>
+            <td><code>test_input_json_invalid</code></td>
+            <td>Invalid JSON raises <code>ValueError</code> with a clear message</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Output nodes</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Asserts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_output_text</code></td>
+            <td>Returns the input string as <code>{"result": ...}</code></td>
+          </tr>
+          <tr>
+            <td><code>test_output_text_none</code></td>
+            <td>Missing input becomes empty string, not <code>None</code></td>
+          </tr>
+          <tr>
+            <td><code>test_output_text_coerces</code></td>
+            <td>Non-string input is stringified</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>LLM nodes (pure logic only)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Asserts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_llm_prompt_system_and_user</code></td>
+            <td>Both inputs → two-message list, system first</td>
+          </tr>
+          <tr>
+            <td><code>test_llm_prompt_user_only</code></td>
+            <td>Missing system prompt is omitted</td>
+          </tr>
+          <tr>
+            <td><code>test_llm_prompt_from_params</code></td>
+            <td>Params fill in when inputs are absent</td>
+          </tr>
+          <tr>
+            <td><code>test_llm_prompt_empty</code></td>
+            <td>Both missing → empty message list</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        <code>llm.chat</code> itself is not tested — it needs an LLM
+        client in the execution context. The prompt builder is pure
+        and easy to test; the client call is not.
+      </p>
+
+      <h3>Text nodes</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Asserts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_text_template_basic</code></td>
+            <td>Python-style template substitution works</td>
+          </tr>
+          <tr>
+            <td><code>test_text_template_missing_key</code></td>
+            <td>A missing key raises a clear <code>ValueError</code></td>
+          </tr>
+          <tr>
+            <td><code>test_text_template_non_dict_vars</code></td>
+            <td>Scalar vars are wrapped in <code>{"value": ...}</code></td>
+          </tr>
+          <tr>
+            <td><code>test_text_join_default_separator</code></td>
+            <td>Default separator is a newline</td>
+          </tr>
+          <tr>
+            <td><code>test_text_join_custom_separator</code></td>
+            <td>Custom separator is honoured; ints are stringified</td>
+          </tr>
+          <tr>
+            <td><code>test_text_join_empty</code></td>
+            <td>Empty list produces an empty string</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Control nodes</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Asserts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_control_branch_true</code></td>
+            <td><code>True</code> routes value to <code>true</code> output</td>
+          </tr>
+          <tr>
+            <td><code>test_control_branch_false</code></td>
+            <td><code>False</code> routes value to <code>false</code> output</td>
+          </tr>
+          <tr>
+            <td><code>test_control_branch_string_condition</code></td>
+            <td>Common truthy/falsy strings are recognised</td>
+          </tr>
+          <tr>
+            <td><code>test_control_merge_first</code></td>
+            <td>First non-null input wins</td>
+          </tr>
+          <tr>
+            <td><code>test_control_merge_second_when_first_none</code></td>
+            <td>Falls through to the second when the first is <code>None</code></td>
+          </tr>
+          <tr>
+            <td><code>test_control_merge_both_none</code></td>
+            <td>Both null → result is null</td>
+          </tr>
+          <tr>
+            <td><code>test_control_foreach_basic</code></td>
+            <td>Loop runs once per item; result count matches</td>
+          </tr>
+          <tr>
+            <td><code>test_control_foreach_non_list</code></td>
+            <td>Scalar items wrap into a one-element list</td>
+          </tr>
+          <tr>
+            <td><code>test_control_foreach_requires_op</code></td>
+            <td>Missing op param raises a clear error</td>
+          </tr>
+          <tr>
+            <td><code>test_control_foreach_unknown_op</code></td>
+            <td>Unregistered op raises a clear error</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Utility nodes</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Asserts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_util_constant</code></td>
+            <td>Returns the configured value unchanged</td>
+          </tr>
+          <tr>
+            <td><code>test_util_constant_none</code></td>
+            <td>Missing value → <code>None</code></td>
+          </tr>
+          <tr>
+            <td><code>test_util_log_passthrough</code></td>
+            <td>Prints the value and returns it unchanged</td>
+          </tr>
+          <tr>
+            <td><code>test_util_delay_passthrough</code></td>
+            <td>Waits the configured time, then returns the value</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Graph.from_dict</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Asserts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_graph_from_dict_basic</code></td>
+            <td>Standard serialised format round-trips correctly</td>
+          </tr>
+          <tr>
+            <td><code>test_graph_from_dict_accepts_pos</code></td>
+            <td>The LiteGraph spelling <code>pos</code> is accepted</td>
+          </tr>
+          <tr>
+            <td><code>test_graph_from_dict_drops_dangling_edges</code></td>
+            <td>Edges referencing unknown nodes are dropped</td>
+          </tr>
+          <tr>
+            <td><code>test_graph_from_dict_drops_unknown_fields</code></td>
+            <td>Extra node/edge keys are silently ignored</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>The <code>Graph.from_dict</code> tests are the edge
+        between the graph model and the outside world.</strong>
+        The frontend sends JSON. If a field name changes, or an extra
+        field appears, these tests catch it before the engine sees a
+        malformed graph.
+      </div>
+
+      <h2>What is not tested in this file</h2>
+      <ul>
+        <li>
+          <code>llm.chat</code> — needs an LLM client in the app state.
+        </li>
+        <li>
+          <code>tool.list</code>, <code>tool.call</code> — need an MCP
+          client in the app state.
+        </li>
+        <li>
+          <code>control.foreach</code> with an op that itself calls an
+          external service — the test uses <code>input.number</code>
+          as the inner op precisely because it is pure.
+        </li>
+        <li>
+          <code>custom_nodes</code> — the example nodes are loaded by
+          the custom-node loader but not tested by this suite. They
+          are demonstrations, not core functionality.
+        </li>
+      </ul>
+
+      <h2>Why the tests use the registry instead of importing node functions directly</h2>
+      <p>
+        Node functions like <code>_input_text</code> are module-private
+        (leading underscore). Importing them directly would couple the
+        tests to internal naming. Going through
+        <code>registry.get("input.text")</code> is the public interface
+        — the same one the engine uses — so the tests exercise the
+        same code path the production system does.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — What is not tested
+       ============================================================= -->
+  <section class="file-section" id="doc-not-tested" data-name="what is not tested integration concerns documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>What Is Not Tested <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">tests/ — the integration boundary</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>What Is Not Tested</h1>
+
+      <p>
+        The suite is intentionally narrow. This page lists what is
+        excluded and why, so that a reader does not mistake the
+        coverage for a full integration test suite.
+      </p>
+
+      <h2>The exclusion table</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Why not</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>FastAPI routes</td>
+            <td>Requires a live HTTP server; covered indirectly by <code>_check_router()</code> at startup</td>
+          </tr>
+          <tr>
+            <td>LLM client (<code>backend/llm.py</code>)</td>
+            <td>Depends on an external OpenAI-compatible endpoint</td>
+          </tr>
+          <tr>
+            <td>MCP client (<code>backend/mcp_client.py</code>)</td>
+            <td>Requires a live MCP subprocess</td>
+          </tr>
+          <tr>
+            <td>llama-cpp manager</td>
+            <td>Requires the native library and a GGUF file</td>
+          </tr>
+          <tr>
+            <td>PHP executor</td>
+            <td>Requires a <code>php-cgi</code> binary</td>
+          </tr>
+          <tr>
+            <td>Desktop client</td>
+            <td>Requires a GUI environment</td>
+          </tr>
+          <tr>
+            <td>Agent loop (<code>backend/agent.py</code>)</td>
+            <td>Drives the LLM and MCP clients — same dependencies</td>
+          </tr>
+          <tr>
+            <td>Storage (<code>backend/storage.py</code>)</td>
+            <td>Currently uncovered; a legitimate next target because it has no external dependencies</td>
+          </tr>
+          <tr>
+            <td>Bootstrap (<code>bootstrap/setup.py</code>)</td>
+            <td>Downloads binaries; testing it would require network access and a sandbox</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Why the trade-off is deliberate</h2>
+      <p>
+        Testing integration code requires mocking infrastructure that
+        quickly outweighs the value of the tests. Consider what a
+        mocked test of <code>/api/chat</code> would need:
+      </p>
+
+      <ul>
+        <li>A fake <code>LLMClient</code> that returns canned streaming deltas.</li>
+        <li>A fake <code>MCPClient</code> that returns canned tool schemas and results.</li>
+        <li>A fake <code>SessionStore</code> that accepts and discards writes.</li>
+        <li>A fake app state dict with those three objects wired in.</li>
+        <li>Assembled per-test or via a fixture.</li>
+      </ul>
+
+      <p>
+        The test would then verify that the route calls the fake LLM
+        and writes to the fake store — which is testing the mocks, not
+        the route. If the real <code>LLMClient</code> or the real
+        <code>MCPClient</code> has a bug, the mocked test would not
+        catch it.
+      </p>
+
+      <div class="callout warn">
+        <strong>The alternative is real integration tests.</strong>
+        Those would require a running Ollama instance, a built MCP
+        server, and a controllable LLM — a full CI environment rather
+        than a unit test suite. That is a legitimate future extension,
+        not a current gap in coverage.
+      </div>
+
+      <h2>What covers these layers today</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Runtime validation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>FastAPI routes</td>
+            <td><code>_check_router()</code> at startup asserts each router has the expected number of routes</td>
+          </tr>
+          <tr>
+            <td>LLM client</td>
+            <td><code>LLMClient.warmup()</code> pings the primary endpoint at startup and logs success or failure</td>
+          </tr>
+          <tr>
+            <td>MCP client</td>
+            <td><code>MCPClient.connect()</code> spawns the subprocess and initialises the session; a failure is logged clearly</td>
+          </tr>
+          <tr>
+            <td>llama-cpp</td>
+            <td><code>LlamaServerManager.start()</code> spawns the subprocess and waits for readiness; a failure is logged with the last 30 lines of subprocess output</td>
+          </tr>
+          <tr>
+            <td>PHP</td>
+            <td><code>php_status()</code> reports binary path, version, and CGI availability; the settings page surfaces it</td>
+          </tr>
+          <tr>
+            <td>Desktop client</td>
+            <td>Manual testing — there is no CI story for a GUI</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The startup diagnostics in <code>backend/main.py</code> are
+        the current mechanism for catching integration failures. They
+        are not a substitute for automated tests, but they are the
+        right scope for a project this size.
+      </p>
+
+      <h2>The storage.py gap</h2>
+      <p>
+        Of the excluded layers, <code>backend/storage.py</code> is the
+        most testable. It has no external dependencies — the SQLite
+        file is created in a temporary directory, every method is
+        <code>async</code> and pure with respect to the rest of the
+        app, and the operations are simple CRUD.
+      </p>
+
+      <p>
+        A future <code>test_storage.py</code> could cover:
+      </p>
+      <ul>
+        <li>Session upsert and load</li>
+        <li>Session delete returning True/False</li>
+        <li>Graph run save with pruning</li>
+        <li>Graph run list, load, delete</li>
+        <li>Pagination and limit clamping</li>
+      </ul>
+
+      <p>
+        It would need one fixture — a temporary database path — and
+        would add maybe 20 tests. It is the obvious next file.
+      </p>
+
+      <h2>What would stay excluded even after that</h2>
+      <p>
+        Even with <code>test_storage.py</code>, the following would
+        remain integration-level:
+      </p>
+      <ul>
+        <li>Anything that talks to a network endpoint</li>
+        <li>Anything that spawns a subprocess (MCP, llama-server, PHP)</li>
+        <li>Anything that imports <code>fastapi</code> and exercises a route</li>
+        <li>Anything that requires a GPU or a specific CPU feature</li>
+      </ul>
+
+      <p>
+        That is the boundary. The suite will never cover those, and
+        it does not need to — the boundary is drawn where automated
+        testing stops being cheaper than manual verification.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Extending the suite
+       ============================================================= -->
+  <section class="file-section" id="doc-extending" data-name="extending tests adding new tests documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Extending the Suite <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">tests/ — adding new test files</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Extending the Suite</h1>
+
+      <h2>Adding a new test file</h2>
+      <p>
+        Create <code>tests/test_&lt;area&gt;.py</code>. pytest
+        discovers any file matching <code>test_*.py</code> in the
+        <code>tests/</code> directory.
+      </p>
+
+      <pre>tests/
+├── __init__.py
+├── test_engine.py       ← existing
+├── test_nodes.py        ← existing
+└── test_storage.py      ← new file, auto-discovered</pre>
+
+      <h2>Adding a test function</h2>
+      <p>
+        A test function must:
+      </p>
+      <ul>
+        <li>Start with <code>test_</code>.</li>
+        <li>Take no arguments (unless using fixtures).</li>
+        <li>Use assertions to express the expected outcome.</li>
+      </ul>
+
+      <pre>def test_something():
+    assert 1 + 1 == 2</pre>
+
+      <h2>Adding an async test</h2>
+      <p>
+        Decorate with <code>@pytest.mark.asyncio</code> and mark the
+        function <code>async def</code>:
+      </p>
+
+      <pre>import pytest
+
+@pytest.mark.asyncio
+async def test_async_operation():
+    result = await some_async_function()
+    assert result == expected</pre>
+
+      <p>
+        The suite uses explicit markers rather than auto-mode, so
+        forgetting the decorator means the test is silently collected
+        but never awaited. pytest-asyncio will warn about this — look
+        for the <code>PytestUnraisableExceptionWarning</code> or a
+        similar message in the output.
+      </p>
+
+      <h2>Using fixtures</h2>
+      <p>
+        The current suite has no fixtures, but pytest supports them
+        cleanly. A fixture is a function decorated with
+        <code>@pytest.fixture</code> that returns a value; a test
+        that names a fixture as an argument receives that value.
+      </p>
+
+      <pre>import pytest
+
+@pytest.fixture
+def temp_db(tmp_path):
+    """A fresh SQLite path in a temp directory."""
+    return str(tmp_path / "test.db")
+
+def test_storage_init(temp_db):
+    from backend.storage import SessionStore
+    store = SessionStore(temp_db)
+    # ...</pre>
+
+      <p>
+        <code>tmp_path</code> is a pytest built-in that gives each
+        test a unique temporary directory. It is cleaned up
+        automatically.
+      </p>
+
+      <h2>Parametrised tests</h2>
+      <p>
+        When the same logic needs to be verified against multiple
+        inputs, use <code>@pytest.mark.parametrize</code> instead of
+        copy-pasting the test:
+      </p>
+
+      <pre>@pytest.mark.parametrize("inputs,expected", [
+    ({}, ""),
+    ({"value": "hi"}, "hi"),
+    ({"value": 42}, 42),
+])
+def test_something(inputs, expected):
+    assert process(inputs) == expected</pre>
+
+      <p>
+        pytest runs the test once per tuple and reports each as a
+        separate PASSED/FAILED line.
+      </p>
+
+      <h2>Expected exceptions</h2>
+      <pre>with pytest.raises(ValueError, match="cycle"):
+    _topo_sort(graph)</pre>
+
+      <p>
+        The <code>match</code> argument is a regex matched against the
+        exception's string. It is a substring match by default, so
+        <code>match="cycle"</code> succeeds if the message contains
+        that word anywhere.
+      </p>
+
+      <h2>Testing the storage layer — a worked example</h2>
+      <p>
+        A new <code>test_storage.py</code> would follow the same
+        pattern as the existing files. Sketch of the setup:
+      </p>
+
+      <pre>from __future__ import annotations
+
+import pytest
+
+from backend.storage import SessionStore
+
+
+@pytest.fixture
+def store(tmp_path):
+    """A SessionStore backed by a fresh temp database."""
+    return SessionStore(str(tmp_path / "test.db"), max_graph_runs=10)
+
+
+@pytest.mark.asyncio
+async def test_save_and_load_session(store):
+    await store.init()
+    await store.save("s1", [{"role": "user", "content": "hi"}])
+    loaded = await store.load("s1")
+    assert loaded == [{"role": "user", "content": "hi"}]
+
+
+@pytest.mark.asyncio
+async def test_load_missing_session(store):
+    await store.init()
+    assert await store.load("does-not-exist") is None</pre>
+
+      <p>
+        The fixture <code>tmp_path</code> gives each test its own
+        directory, so tests do not interfere with each other and the
+        real <code>sessions.db</code> is never touched.
+      </p>
+
+      <h2>Naming conventions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Pattern</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>test_&lt;function&gt;</code></td>
+            <td>Tests a specific function's happy path</td>
+          </tr>
+          <tr>
+            <td><code>test_&lt;function&gt;_&lt;case&gt;</code></td>
+            <td>Tests a specific edge case of that function</td>
+          </tr>
+          <tr>
+            <td><code>test_&lt;function&gt;_raises</code></td>
+            <td>Tests that a function raises for invalid input</td>
+          </tr>
+          <tr>
+            <td><code>test_&lt;thing&gt;_&lt;behaviour&gt;</code></td>
+            <td>Tests a behaviour rather than a function name</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The suite currently follows this loosely.
+        <code>test_topo_sort_diamond</code> names the shape under test;
+        <code>test_control_branch_string_condition</code> names the
+        behaviour. Both are fine — the goal is a name that reads well
+        in a failure report.
+      </p>
+
+      <h2>What to do when a test is too hard to write</h2>
+      <p>
+        If a test requires more setup than the thing it verifies, that
+        is a signal about the code, not the test. Two options:
+      </p>
+      <ol>
+        <li>
+          <strong>Extract the pure logic.</strong>
+          If the function under test calls three external services
+          before doing something interesting, split out the
+          interesting part as a pure function and test that.
+        </li>
+        <li>
+          <strong>Accept the exclusion.</strong>
+          Some code is integration code by nature and does not
+          benefit from unit testing. Add the case to
+          <a href="#doc-not-tested">What is not tested</a> and move
+          on.
+        </li>
+      </ol>
+
+      <div class="callout success">
+        <strong>A test that takes an hour to write and never
+        fails is a net loss.</strong>
+        The current suite is fast, targeted, and small. Keeping it
+        that way is more valuable than chasing coverage numbers.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — __init__.py
+       ============================================================= -->
+  <section class="file-section" id="f-init" data-name="tests __init__.py package marker documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>__init__.py <span class="file-badge test">test</span></h2>
+        <span class="file-path">tests/__init__.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+3olution Agent Graph — test suite.
+https://3olution.com
+
+Run all tests:
+
+    pytest tests/ -v
+
+Run a specific file:
+
+    pytest tests/test_engine.py -v
+    pytest tests/test_nodes.py -v
+
+Run tests matching a pattern:
+
+    pytest tests/ -k "topo_sort" -v
+
+================================================================
+  DEPENDENCIES
+================================================================
+
+  pytest          test runner
+  pytest-asyncio  async test support (required for test_nodes.py)
+
+Install both:
+
+    pip install pytest pytest-asyncio
+
+================================================================
+  WHY SO FEW TESTS
+================================================================
+
+  This suite deliberately covers only the pure-logic parts of the
+  codebase — the graph engine's topological sort and the built-in
+  node implementations. Those are the parts where a subtle bug is
+  most likely to hide and where a fast test loop is most valuable.
+
+  The integration surface (FastAPI routes, MCP subprocess, LLM
+  clients) is not covered by unit tests because:
+
+    1. Every route ultimately depends on an external service
+       (Ollama, llama-cpp, MCP server). Testing them requires
+       mocking infrastructure that quickly outweighs the value of
+       the tests.
+
+    2. The startup diagnostics in backend/main.py already provide
+       runtime validation. A broken route fails loudly on startup
+       via _check_router().
+
+  Adding integration tests is a legitimate future extension —
+  see the README's "Future Extensions" section.
+
+================================================================
+  ASYNC TESTS
+================================================================
+
+  pytest-asyncio must be configured to run tests in async mode.
+  Two options:
+
+    1. Set it in pytest.ini / pyproject.toml:
+
+           [tool.pytest.ini_options]
+           asyncio_mode = "auto"
+
+    2. Mark each async test with @pytest.mark.asyncio:
+
+           @pytest.mark.asyncio
+           async def test_something():
+               ...
+
+  This suite uses option 2 (explicit markers) so it does not
+  require a pytest.ini file. That keeps the project root clean
+  and lets users drop the tests into another project without
+  needing to configure pytest.
+"""
+
+__all__ = []</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — test_engine.py
+       ============================================================= -->
+  <section class="file-section" id="f-engine" data-name="test_engine.py topological sort safe source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>test_engine.py <span class="file-badge test">test</span></h2>
+        <span class="file-path">tests/test_engine.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Tests for the graph execution engine.
+https://3olution.com
+
+Covers the pure-logic parts of backend/graph/engine.py:
+
+    _topo_sort()   — Kahn's algorithm for topological sorting
+    _safe()        — JSON-safety helper used when serialising outputs
+
+The full execute() generator is not tested here because it depends
+on the registry being populated with node types, the shared app
+state being populated with LLM/MCP clients, and every node's
+implementation being deterministic. Those dependencies are
+integration-level concerns.
+
+The topological sort is the critical algorithm — everything else
+in the engine is a straightforward loop around it.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from backend.graph.engine import _safe, _topo_sort
+from backend.graph.model import Edge, Graph, Node
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Helpers
+# ══════════════════════════════════════════════════════════════════════
+
+def _node(node_id: str, node_type: str = "input.text") -&gt; Node:
+    """Short constructor for a Node with sensible defaults."""
+    return Node(id=node_id, type=node_type)
+
+
+def _edge(
+    edge_id: str,
+    from_node: str,
+    from_output: str,
+    to_node: str,
+    to_input: str,
+) -&gt; Edge:
+    """Short constructor for an Edge."""
+    return Edge(
+        id=edge_id,
+        from_node=from_node,
+        from_output=from_output,
+        to_node=to_node,
+        to_input=to_input,
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  _topo_sort — happy path
+# ══════════════════════════════════════════════════════════════════════
+
+def test_topo_sort_linear():
+    """
+    A three-node chain sorts in strict order: a → b → c.
+
+    This is the simplest possible graph shape and verifies the core
+    invariant: every node appears after all of its dependencies.
+    """
+    g = Graph(
+        nodes=[
+            _node("a"),
+            _node("b", "llm.chat"),
+            _node("c", "output.text"),
+        ],
+        edges=[
+            _edge("e1", "a", "text", "b", "messages"),
+            _edge("e2", "b", "response", "c", "text"),
+        ],
+    )
+    assert _topo_sort(g) == ["a", "b", "c"]
+
+
+def test_topo_sort_fan_out():
+    """
+    A single root feeding two children places the root first and
+    the two children in either order after it.
+    """
+    g = Graph(
+        nodes=[
+            _node("root"),
+            _node("left", "output.text"),
+            _node("right", "output.text"),
+        ],
+        edges=[
+            _edge("e1", "root", "text", "left", "text"),
+            _edge("e2", "root", "text", "right", "text"),
+        ],
+    )
+    order = _topo_sort(g)
+
+    assert order[0] == "root"
+    assert set(order[1:]) == {"left", "right"}
+
+
+def test_topo_sort_fan_in():
+    """
+    Two roots merging into one sink places both roots before the sink.
+    """
+    g = Graph(
+        nodes=[
+            _node("a"),
+            _node("b"),
+            _node("merge", "control.merge"),
+        ],
+        edges=[
+            _edge("e1", "a", "text", "merge", "a"),
+            _edge("e2", "b", "text", "merge", "b"),
+        ],
+    )
+    order = _topo_sort(g)
+
+    assert order[-1] == "merge"
+    assert set(order[:-1]) == {"a", "b"}
+
+
+def test_topo_sort_diamond():
+    """
+    A diamond graph (a → b, a → c, b → d, c → d) has exactly one
+    valid topological order for the endpoints: a first, d last.
+    """
+    g = Graph(
+        nodes=[
+            _node("a"),
+            _node("b"),
+            _node("c"),
+            _node("d"),
+        ],
+        edges=[
+            _edge("e1", "a", "text", "b", "text"),
+            _edge("e2", "a", "text", "c", "text"),
+            _edge("e3", "b", "text", "d", "a"),
+            _edge("e4", "c", "text", "d", "b"),
+        ],
+    )
+    order = _topo_sort(g)
+
+    assert order[0] == "a"
+    assert order[-1] == "d"
+    assert order.index("b") &lt; order.index("d")
+    assert order.index("c") &lt; order.index("d")
+
+
+def test_topo_sort_disconnected():
+    """
+    A graph with two disconnected components still sorts every node.
+
+    Kahn's algorithm handles disconnected graphs naturally: every
+    node with indegree 0 is enqueued as a starting point.
+    """
+    g = Graph(
+        nodes=[
+            _node("a"),
+            _node("b"),
+            _node("x"),
+            _node("y"),
+        ],
+        edges=[
+            _edge("e1", "a", "text", "b", "text"),
+            _edge("e2", "x", "text", "y", "text"),
+        ],
+    )
+    order = _topo_sort(g)
+
+    assert len(order) == 4
+    assert order.index("a") &lt; order.index("b")
+    assert order.index("x") &lt; order.index("y")
+
+
+def test_topo_sort_single_node():
+    """
+    A single node with no edges is trivially sortable.
+    """
+    g = Graph(nodes=[_node("only")], edges=[])
+    assert _topo_sort(g) == ["only"]
+
+
+def test_topo_sort_empty():
+    """
+    An empty graph sorts to an empty list.
+    """
+    g = Graph(nodes=[], edges=[])
+    assert _topo_sort(g) == []
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  _topo_sort — error cases
+# ══════════════════════════════════════════════════════════════════════
+
+def test_topo_sort_cycle_raises():
+    """
+    A two-node cycle (a ↔ b) raises ValueError.
+
+    The error message must contain the substring "cycle" so callers
+    can detect this specific failure mode without string-matching
+    the whole message.
+    """
+    g = Graph(
+        nodes=[_node("a"), _node("b", "llm.chat")],
+        edges=[
+            _edge("e1", "a", "text", "b", "messages"),
+            _edge("e2", "b", "response", "a", "text"),
+        ],
+    )
+    with pytest.raises(ValueError, match="cycle"):
+        _topo_sort(g)
+
+
+def test_topo_sort_self_loop_raises():
+    """
+    A self-loop (a → a) is a cycle of length 1.
+    """
+    g = Graph(
+        nodes=[_node("a")],
+        edges=[_edge("e1", "a", "text", "a", "text")],
+    )
+    with pytest.raises(ValueError, match="cycle"):
+        _topo_sort(g)
+
+
+def test_topo_sort_three_node_cycle_raises():
+    """
+    A longer cycle (a → b → c → a) is still detected.
+    """
+    g = Graph(
+        nodes=[_node("a"), _node("b"), _node("c")],
+        edges=[
+            _edge("e1", "a", "text", "b", "text"),
+            _edge("e2", "b", "text", "c", "text"),
+            _edge("e3", "c", "text", "a", "text"),
+        ],
+    )
+    with pytest.raises(ValueError, match="cycle"):
+        _topo_sort(g)
+
+
+def test_topo_sort_ignores_dangling_edges():
+    """
+    Edges that reference unknown nodes are ignored.
+
+    This is a defensive behaviour: Graph.from_dict() already drops
+    such edges, but _topo_sort re-checks to avoid a KeyError if the
+    Graph is constructed directly.
+    """
+    g = Graph(
+        nodes=[_node("a")],
+        edges=[
+            _edge("e1", "a", "text", "ghost", "text"),
+            _edge("e2", "phantom", "text", "a", "text"),
+        ],
+    )
+    assert _topo_sort(g) == ["a"]
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  _safe — JSON serialisation helper
+# ══════════════════════════════════════════════════════════════════════
+
+def test_safe_primitive():
+    """Primitives pass through unchanged."""
+    assert _safe("hello") == "hello"
+    assert _safe(42) == 42
+    assert _safe(3.14) == 3.14
+    assert _safe(True) is True
+    assert _safe(None) is None
+
+
+def test_safe_container():
+    """JSON-serialisable containers pass through unchanged."""
+    assert _safe([1, 2, 3]) == [1, 2, 3]
+    assert _safe({"a": 1, "b": 2}) == {"a": 1, "b": 2}
+
+
+def test_safe_unserialisable():
+    """
+    Objects that json.dumps cannot serialise are converted to str().
+
+    This is what keeps the graph_done event from raising when a
+    custom node returns a datetime or a custom class instance.
+    """
+    from datetime import datetime, timezone
+
+    dt = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
+    result = _safe(dt)
+
+    assert isinstance(result, str)
+    assert "2025" in result
+
+
+def test_safe_custom_object():
+    """A user-defined class instance is stringified."""
+    class Widget:
+        def __str__(self) -&gt; str:
+            return "&lt;widget&gt;"
+
+    assert _safe(Widget()) == "&lt;widget&gt;"</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — test_nodes.py
+       ============================================================= -->
+  <section class="file-section" id="f-nodes" data-name="test_nodes.py built-in nodes source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>test_nodes.py <span class="file-badge test">test</span></h2>
+        <span class="file-path">tests/test_nodes.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Tests for the built-in graph node implementations.
+https://3olution.com
+
+Each test instantiates a node via the registry and calls its
+function directly. This bypasses the engine, the LLM client, and
+the MCP client — the goal is to verify the node's pure logic.
+
+Nodes that call the LLM or MCP (llm.chat, tool.list, tool.call,
+llm_json in custom_nodes) are not tested here because they require
+external services to be running. A future integration-test file
+could cover them with mocks.
+"""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from backend.graph.registry import get
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Registry
+# ══════════════════════════════════════════════════════════════════════
+
+def test_registry_has_builtins():
+    """
+    Importing backend.graph must register every built-in node type.
+
+    This is the canary test: if the registry ends up empty, every
+    other test in this file fails with a confusing message. Asserting
+    the count here makes the failure obvious.
+    """
+    from backend.graph import registry
+
+    all_types = registry.all_types()
+    assert len(all_types) &gt;= 16, (
+        f"Expected at least 16 built-in node types, "
+        f"found {len(all_types)}"
+    )
+
+    names = {nt.name for nt in all_types}
+    assert "input.text" in names
+    assert "input.number" in names
+    assert "input.json" in names
+    assert "output.text" in names
+    assert "llm.prompt" in names
+    assert "llm.chat" in names
+    assert "tool.list" in names
+    assert "tool.call" in names
+    assert "text.template" in names
+    assert "text.join" in names
+    assert "control.branch" in names
+    assert "control.merge" in names
+    assert "control.foreach" in names
+    assert "util.constant" in names
+    assert "util.log" in names
+    assert "util.delay" in names
+
+
+def test_registry_lookup_missing():
+    """Looking up an unknown type returns None."""
+    assert get("does.not.exist") is None
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Input nodes
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.mark.asyncio
+async def test_input_text():
+    nt = get("input.text")
+    assert nt is not None
+
+    result = await nt.fn(None, {}, {"value": "hello world"})
+    assert result == {"text": "hello world"}
+
+
+@pytest.mark.asyncio
+async def test_input_text_default():
+    """Missing params fall back to an empty string."""
+    nt = get("input.text")
+    result = await nt.fn(None, {}, {})
+    assert result == {"text": ""}
+
+
+@pytest.mark.asyncio
+async def test_input_number():
+    nt = get("input.number")
+    result = await nt.fn(None, {}, {"value": 42})
+    assert result == {"number": 42.0}
+    assert isinstance(result["number"], float)
+
+
+@pytest.mark.asyncio
+async def test_input_number_string_coercion():
+    """String input is coerced to float."""
+    nt = get("input.number")
+    result = await nt.fn(None, {}, {"value": "3.14"})
+    assert result == {"number": 3.14}
+
+
+@pytest.mark.asyncio
+async def test_input_json_valid():
+    nt = get("input.json")
+    result = await nt.fn(None, {}, {"value": '{"a": 1, "b": [2, 3]}'})
+    assert result == {"data": {"a": 1, "b": [2, 3]}}
+
+
+@pytest.mark.asyncio
+async def test_input_json_invalid():
+    """Invalid JSON raises ValueError, which the engine catches."""
+    nt = get("input.json")
+    with pytest.raises(ValueError, match="Invalid JSON"):
+        await nt.fn(None, {}, {"value": "not json"})
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Output nodes
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.mark.asyncio
+async def test_output_text():
+    nt = get("output.text")
+    result = await nt.fn(None, {"text": "final answer"}, {})
+    assert result == {"result": "final answer"}
+
+
+@pytest.mark.asyncio
+async def test_output_text_none():
+    """A missing input becomes an empty string, not None."""
+    nt = get("output.text")
+    result = await nt.fn(None, {}, {})
+    assert result == {"result": ""}
+
+
+@pytest.mark.asyncio
+async def test_output_text_coerces():
+    """Non-string inputs are stringified."""
+    nt = get("output.text")
+    result = await nt.fn(None, {"text": 42}, {})
+    assert result == {"result": "42"}
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  LLM nodes (pure logic only)
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.mark.asyncio
+async def test_llm_prompt_system_and_user():
+    nt = get("llm.prompt")
+    result = await nt.fn(
+        None,
+        {"system": "You are helpful.", "user": "Hi"},
+        {},
+    )
+    assert result == {
+        "messages": [
+            {"role": "system", "content": "You are helpful."},
+            {"role": "user", "content": "Hi"},
+        ]
+    }
+
+
+@pytest.mark.asyncio
+async def test_llm_prompt_user_only():
+    """A missing system prompt is simply omitted from the list."""
+    nt = get("llm.prompt")
+    result = await nt.fn(None, {"user": "Hi"}, {})
+    assert result == {
+        "messages": [{"role": "user", "content": "Hi"}],
+    }
+
+
+@pytest.mark.asyncio
+async def test_llm_prompt_from_params():
+    """Params fill in when inputs are absent."""
+    nt = get("llm.prompt")
+    result = await nt.fn(
+        None,
+        {},
+        {"system": "Sys", "user": "Usr"},
+    )
+    assert result == {
+        "messages": [
+            {"role": "system", "content": "Sys"},
+            {"role": "user", "content": "Usr"},
+        ]
+    }
+
+
+@pytest.mark.asyncio
+async def test_llm_prompt_empty():
+    """Both missing produces an empty message list."""
+    nt = get("llm.prompt")
+    result = await nt.fn(None, {}, {})
+    assert result == {"messages": []}
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Text nodes
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.mark.asyncio
+async def test_text_template_basic():
+    nt = get("text.template")
+    result = await nt.fn(
+        None,
+        {"vars": {"name": "World"}},
+        {"template": "Hello {name}!"},
+    )
+    assert result == {"text": "Hello World!"}
+
+
+@pytest.mark.asyncio
+async def test_text_template_missing_key():
+    """A missing key raises a clear ValueError."""
+    nt = get("text.template")
+    with pytest.raises(ValueError, match="Template error"):
+        await nt.fn(
+            None,
+            {"vars": {"name": "World"}},
+            {"template": "Hello {missing}!"},
+        )
+
+
+@pytest.mark.asyncio
+async def test_text_template_non_dict_vars():
+    """A scalar vars input is wrapped in {'value': ...}."""
+    nt = get("text.template")
+    result = await nt.fn(
+        None,
+        {"vars": "Alice"},
+        {"template": "Hi {value}"},
+    )
+    assert result == {"text": "Hi Alice"}
+
+
+@pytest.mark.asyncio
+async def test_text_join_default_separator():
+    nt = get("text.join")
+    result = await nt.fn(
+        None,
+        {"items": ["a", "b", "c"]},
+        {},
+    )
+    assert result == {"text": "a\nb\nc"}
+
+
+@pytest.mark.asyncio
+async def test_text_join_custom_separator():
+    nt = get("text.join")
+    result = await nt.fn(
+        None,
+        {"items": [1, 2, 3]},
+        {"separator": ", "},
+    )
+    assert result == {"text": "1, 2, 3"}
+
+
+@pytest.mark.asyncio
+async def test_text_join_empty():
+    nt = get("text.join")
+    result = await nt.fn(None, {"items": []}, {})
+    assert result == {"text": ""}
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Control nodes
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.mark.asyncio
+async def test_control_branch_true():
+    nt = get("control.branch")
+    result = await nt.fn(
+        None,
+        {"condition": True, "value": "yes"},
+        {},
+    )
+    assert result == {"true": "yes", "false": None}
+
+
+@pytest.mark.asyncio
+async def test_control_branch_false():
+    nt = get("control.branch")
+    result = await nt.fn(
+        None,
+        {"condition": False, "value": "yes"},
+        {},
+    )
+    assert result == {"true": None, "false": "yes"}
+
+
+@pytest.mark.asyncio
+async def test_control_branch_string_condition():
+    """Common truthy/falsy strings are recognised."""
+    nt = get("control.branch")
+
+    for truthy in ("true", "TRUE", "1", "yes", "y"):
+        result = await nt.fn(
+            None, {"condition": truthy, "value": "x"}, {},
+        )
+        assert result["true"] == "x", f"{truthy!r} should be truthy"
+
+    for falsy in ("false", "0", "no", "n", ""):
+        result = await nt.fn(
+            None, {"condition": falsy, "value": "x"}, {},
+        )
+        assert result["false"] == "x", f"{falsy!r} should be falsy"
+
+
+@pytest.mark.asyncio
+async def test_control_merge_first():
+    nt = get("control.merge")
+    result = await nt.fn(None, {"a": "first", "b": "second"}, {})
+    assert result == {"value": "first"}
+
+
+@pytest.mark.asyncio
+async def test_control_merge_second_when_first_none():
+    nt = get("control.merge")
+    result = await nt.fn(None, {"a": None, "b": "second"}, {})
+    assert result == {"value": "second"}
+
+
+@pytest.mark.asyncio
+async def test_control_merge_both_none():
+    nt = get("control.merge")
+    result = await nt.fn(None, {"a": None, "b": None}, {})
+    assert result == {"value": None}
+
+
+@pytest.mark.asyncio
+async def test_control_foreach_basic():
+    """
+    control.foreach runs its inner op once per item.
+
+    We use util.constant as the inner op — it just returns a fixed
+    value, so we can verify the loop count and structure without
+    depending on any external service.
+    """
+    nt = get("control.foreach")
+    result = await nt.fn(
+        None,
+        {"items": [1, 2, 3]},
+        {"op": "input.number", "op_params": {"value": 99}},
+    )
+    assert "results" in result
+    assert len(result["results"]) == 3
+    for r in result["results"]:
+        assert r == {"number": 99.0}
+
+
+@pytest.mark.asyncio
+async def test_control_foreach_non_list():
+    """A scalar items input is wrapped in a one-element list."""
+    nt = get("control.foreach")
+    result = await nt.fn(
+        None,
+        {"items": 42},
+        {"op": "input.number", "op_params": {}},
+    )
+    assert len(result["results"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_control_foreach_requires_op():
+    """A missing op param is a clear error."""
+    nt = get("control.foreach")
+    with pytest.raises(ValueError, match="'op' param required"):
+        await nt.fn(None, {"items": [1, 2]}, {})
+
+
+@pytest.mark.asyncio
+async def test_control_foreach_unknown_op():
+    """An unregistered op name is a clear error."""
+    nt = get("control.foreach")
+    with pytest.raises(ValueError, match="unknown op"):
+        await nt.fn(
+            None,
+            {"items": [1, 2]},
+            {"op": "not.a.real.node"},
+        )
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Utility nodes
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.mark.asyncio
+async def test_util_constant():
+    nt = get("util.constant")
+    result = await nt.fn(None, {}, {"value": {"nested": [1, 2, 3]}})
+    assert result == {"value": {"nested": [1, 2, 3]}}
+
+
+@pytest.mark.asyncio
+async def test_util_constant_none():
+    nt = get("util.constant")
+    result = await nt.fn(None, {}, {})
+    assert result == {"value": None}
+
+
+@pytest.mark.asyncio
+async def test_util_log_passthrough(capsys):
+    """util.log prints and passes through unchanged."""
+    nt = get("util.log")
+    result = await nt.fn(None, {"value": "test message"}, {})
+    assert result == {"value": "test message"}
+
+    captured = capsys.readouterr()
+    assert "test message" in captured.out
+
+
+@pytest.mark.asyncio
+async def test_util_delay_passthrough():
+    """util.delay waits then passes the value through."""
+    nt = get("util.delay")
+    result = await nt.fn(None, {"value": "after delay"}, {"seconds": 0.01})
+    assert result == {"value": "after delay"}
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Graph.from_dict — shape conversion
+# ══════════════════════════════════════════════════════════════════════
+
+def test_graph_from_dict_basic():
+    """Standard serialised format round-trips correctly."""
+    from backend.graph.model import Graph
+
+    payload = {
+        "id": "test",
+        "name": "Test",
+        "nodes": [
+            {
+                "id": "n1",
+                "type": "input.text",
+                "inputs": {},
+                "params": {"value": "hi"},
+                "position": [100, 200],
+                "title": "Text",
+            },
+        ],
+        "edges": [],
+    }
+    g = Graph.from_dict(payload)
+
+    assert g.id == "test"
+    assert g.name == "Test"
+    assert len(g.nodes) == 1
+    assert g.nodes[0].id == "n1"
+    assert g.nodes[0].position == (100, 200)
+
+
+def test_graph_from_dict_accepts_pos():
+    """The LiteGraph spelling 'pos' is accepted as an alias."""
+    from backend.graph.model import Graph
+
+    payload = {
+        "nodes": [
+            {
+                "id": "n1",
+                "type": "input.text",
+                "pos": [300, 400],
+            },
+        ],
+    }
+    g = Graph.from_dict(payload)
+
+    assert g.nodes[0].position == (300, 400)
+
+
+def test_graph_from_dict_drops_dangling_edges():
+    """Edges referencing unknown nodes are silently dropped."""
+    from backend.graph.model import Graph
+
+    payload = {
+        "nodes": [{"id": "n1", "type": "input.text"}],
+        "edges": [
+            {
+                "id": "e1",
+                "from_node": "n1",
+                "from_output": "text",
+                "to_node": "ghost",
+                "to_input": "text",
+            },
+        ],
+    }
+    g = Graph.from_dict(payload)
+    assert len(g.edges) == 0
+
+
+def test_graph_from_dict_drops_unknown_fields():
+    """Extra keys in nodes and edges are silently dropped."""
+    from backend.graph.model import Graph
+
+    payload = {
+        "nodes": [
+            {
+                "id": "n1",
+                "type": "input.text",
+                "some_random_field": "should be dropped",
+            },
+        ],
+        "edges": [
+            {
+                "id": "e1",
+                "from_node": "n1",
+                "from_output": "text",
+                "to_node": "n1",
+                "to_input": "text",
+                "extra": "dropped",
+            },
+        ],
+    }
+    # This should not raise, even though some_random_field is not
+    # a valid Node field.
+    g = Graph.from_dict(payload)
+    assert len(g.nodes) == 1
+    assert not hasattr(g.nodes[0], "some_random_field")</code></pre></div>
+  </section>
+
+</main>
+
+<button class="to-top visible" id="toTop" title="Back to top">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/markdown.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Highlight all code blocks ----------
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      try { hljs.highlightElement(el); } catch (e) {}
+    });
+  }
+
+  // ---------- Line count for each file ----------
+  document.querySelectorAll('.file-section').forEach(function (sec) {
+    var code = sec.querySelector('pre code');
+    var badge = sec.querySelector('[data-lines]');
+    if (!badge) return;
+    if (code) {
+      var text = code.textContent || '';
+      var lines = text.split('\n').length;
+      badge.textContent = lines + ' lines';
+    } else {
+      badge.textContent = 'doc';
+    }
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.file-section');
+      if (!sec) return;
+      var code = sec.querySelector('pre code');
+      var md = sec.querySelector('.md-content');
+      var text = code ? code.textContent : (md ? md.innerText : '');
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = '✗ Failed';
+        setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600);
+      });
+    });
+  });
+
+  // ---------- Active nav tracking ----------
+  var navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+  var sections = Array.from(document.querySelectorAll('.file-section'));
+  var crumbs = document.getElementById('crumbs');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s.offsetTop <= scrollY) current = s;
+      else break;
+    }
+    navLinks.forEach(function (a) { a.classList.remove('active'); });
+    if (current) {
+      var link = document.querySelector('.nav-list a[href="#' + current.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        var path = current.querySelector('.file-path');
+        if (path && crumbs) {
+          crumbs.textContent = path.textContent;
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ---------- Search filter ----------
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+  var navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var q = searchInput.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      document.querySelectorAll('.nav-list li').forEach(function (li) {
+        var text = li.textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        li.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+      });
+
+      navGroups.forEach(function (g) {
+        var list = g.nextElementSibling;
+        if (!list || !list.classList.contains('nav-list')) return;
+        var hasVisible = list.querySelector('li:not(.hidden)');
+        g.style.display = hasVisible ? '' : 'none';
+      });
+
+      sections.forEach(function (sec) {
+        var name = (sec.getAttribute('data-name') || '') + ' ' +
+                   (sec.querySelector('.file-path')?.textContent || '') + ' ' +
+                   (sec.querySelector('h2')?.textContent || '');
+        name = name.toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        sec.classList.toggle('hidden', !match);
+      });
+
+      if (noResults) noResults.classList.toggle('visible', visibleCount === 0);
+    });
+  }
+
+  // ---------- Back to top ----------
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('visible', window.scrollY > 500);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---------- Mobile sidebar toggle ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (window.innerWidth <= 700) sidebar.classList.remove('open');
+      });
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

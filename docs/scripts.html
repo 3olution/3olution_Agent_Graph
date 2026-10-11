@@ -1,0 +1,3198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — Scripts Folder</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 320px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+.nav-list { list-style: none; margin: 0; padding: 0; }
+.nav-list li { margin: 0; }
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-list a:hover { background: var(--bg-elev); color: var(--text); }
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+.nav-icon.txt { background: #6e7681; }
+.nav-icon.sh { background: #89e051; }
+.nav-icon.ps1 { background: #012456; }
+main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.topbar .stats { font-size: 12px; color: var(--text-mute); display: flex; gap: 16px; }
+.topbar .stats span { display: flex; align-items: center; gap: 5px; }
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+.hero p { margin: 0; color: var(--text-dim); font-size: 14.5px; max-width: 780px; }
+.hero .links { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.hero .links a:hover { border-color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.file-section.hidden { display: none; }
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.file-title { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+.file-badge.doc {
+  background: rgba(124, 58, 237, 0.14);
+  color: #a371f7;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.file-badge.md {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.28);
+}
+.file-badge.txt {
+  background: rgba(139, 148, 158, 0.14);
+  color: var(--text-dim);
+  border-color: rgba(139, 148, 158, 0.28);
+}
+.file-badge.sh {
+  background: rgba(137, 224, 81, 0.12);
+  color: #89e051;
+  border-color: rgba(137, 224, 81, 0.28);
+}
+.file-badge.ps1 {
+  background: rgba(1, 36, 86, 0.4);
+  color: #4a9eff;
+  border-color: rgba(74, 158, 255, 0.3);
+}
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, 0.08); }
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.hljs { background: transparent !important; padding: 0 !important; }
+.md-content {
+  padding: 24px 28px;
+  max-height: 900px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.md-content th { background: var(--bg-elev); color: var(--text); font-weight: 600; }
+.md-content td { color: var(--text-dim); }
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+.md-content kbd {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11.5px;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+}
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 900px) {
+  :root { --sidebar-w: 270px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+.nav-list li.hidden { display: none; }
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><a href="index.html" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;"><span class="logo-mark">3</span> Scripts Folder</a></h1>
+    <div class="sub"><a href="index.html" style="color:inherit;text-decoration:none;">← Back to Knowledge Base</a> · Launchers, Downloaders &amp; Runtime Aids</div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search docs &amp; files…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Documentation</div>
+  <ul class="nav-list" data-group="docs">
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>Overview</a></li>
+    <li><a href="#doc-serve"><span class="nav-icon md"></span>serve.py — three fixes</a></li>
+    <li><a href="#doc-vendor"><span class="nav-icon md"></span>download_vendor algorithm</a></li>
+    <li><a href="#doc-wrappers"><span class="nav-icon md"></span>Shell wrappers</a></li>
+    <li><a href="#doc-llama-runner"><span class="nav-icon md"></span>llama_cpp_runner</a></li>
+    <li><a href="#doc-sessions"><span class="nav-icon md"></span>sessions.db</a></li>
+    <li><a href="#doc-troubleshooting"><span class="nav-icon md"></span>Troubleshooting</a></li>
+  </ul>
+
+  <div class="nav-group">Source Files</div>
+  <ul class="nav-list" data-group="source">
+    <li><a href="#f-serve"><span class="nav-icon py"></span>serve.py</a></li>
+    <li><a href="#f-vendor-py"><span class="nav-icon py"></span>download_vendor.py</a></li>
+    <li><a href="#f-vendor-sh"><span class="nav-icon sh"></span>download_vendor.sh</a></li>
+    <li><a href="#f-vendor-ps1"><span class="nav-icon ps1"></span>download_vendor.ps1</a></li>
+    <li><a href="#f-llama-runner"><span class="nav-icon py"></span>llama_cpp_runner.py</a></li>
+  </ul>
+
+  <div class="no-results" id="noResults">No matching files.</div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">scripts / overview</span>
+    </div>
+    <div class="stats">
+      <span>📄 <strong id="statFiles">5</strong> files</span>
+      <span>🐍 <strong>3</strong> Python</span>
+      <span>🐚 <strong>1</strong> shell</span>
+      <span>🪟 <strong>1</strong> PowerShell</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Scripts Folder</h1>
+    <p>
+      Five small programs that sit between the user and the backend.
+      Two of them are launch helpers — <code>serve.py</code> starts
+      uvicorn with three Windows/console fixes applied, and
+      <code>llama_cpp_runner.py</code> launches the
+      <code>llama_cpp.server</code> module while bypassing its broken
+      argument parser. The other three are the LiteGraph vendor
+      downloader, in three flavours: a full-featured Python version
+      and two thin shell wrappers for environments without Python.
+    </p>
+    <div class="links">
+      <a href="index.html">← Back to Knowledge Base</a>
+      <a href="https://3olution.com" target="_blank" rel="noopener">🌐 3olution.com</a>
+      <a href="#doc-serve">🚀 serve.py</a>
+      <a href="#doc-vendor">📥 Vendor downloader</a>
+      <a href="#doc-llama-runner">🦙 llama_cpp_runner</a>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       DOC — Overview
+       ============================================================= -->
+  <section class="file-section" id="doc-overview" data-name="overview scripts folder launchers downloaders documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Overview <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">scripts/ — what lives here</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Overview</h1>
+
+      <p>
+        The <code>scripts/</code> folder contains the programs that
+        launch the backend and fetch the one external asset the graph
+        editor needs. They are not part of the FastAPI application —
+        they are what <em>runs</em> the application. None of them is
+        imported by <code>backend/</code>; each is a standalone entry
+        point.
+      </p>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>serve.py</code></td>
+            <td>Uvicorn entry point with three cross-platform fixes applied</td>
+          </tr>
+          <tr>
+            <td><code>download_vendor.py</code></td>
+            <td>Cross-platform LiteGraph downloader with mirror fallback and two validation gates</td>
+          </tr>
+          <tr>
+            <td><code>download_vendor.sh</code></td>
+            <td>Bash wrapper — for environments with curl but no Python</td>
+          </tr>
+          <tr>
+            <td><code>download_vendor.ps1</code></td>
+            <td>PowerShell wrapper — for Windows users who prefer not to invoke Python directly</td>
+          </tr>
+          <tr>
+            <td><code>llama_cpp_runner.py</code></td>
+            <td>Direct runner for <code>llama_cpp.server</code> that bypasses the module's argument parser</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>How the launchers stack</h2>
+      <pre>start.sh / start.bat        ← user-facing portable launchers
+        │
+        └── run.py backend     ← developer launcher
+                │
+                └── scripts/serve.py    ← uvicorn entry point
+                        │
+                        └── backend.main:app   ← the FastAPI application
+
+(Optional, spawned by the backend at startup:)
+backend/llama_server.py
+        │
+        └── scripts/llama_cpp_runner.py   ← llama_cpp.server replacement</pre>
+
+      <p>
+        The user normally interacts with the top of that stack. Each
+        lower layer is a fallback: if <code>run.py</code> is not
+        available, run <code>serve.py</code> directly; if neither is,
+        run uvicorn directly on <code>backend.main:app</code> (losing
+        the three fixes described below).
+      </p>
+
+      <h2>Why these are separate files</h2>
+      <p>
+        Each of them fixes a problem that is:
+      </p>
+      <ul>
+        <li><strong>Easy to miss.</strong> The symptom is subtle — a random MCP handshake failure, a ModuleNotFoundError only in the reloader child, thousands of duplicate log lines.</li>
+        <li><strong>Hard to diagnose.</strong> The cause is not in the code that fails; it is in how the process was launched.</li>
+        <li><strong>Not portable to fix in <code>backend/</code>.</strong> The fixes have to run before the app is imported, before uvicorn creates its event loop, and before the reloader spawns its child process.</li>
+      </ul>
+
+      <p>
+        Bundling them into a script that the user runs, rather than
+        distributing instructions, is the difference between a project
+        that works out of the box and a project that requires a wiki
+        page of gotchas.
+      </p>
+
+      <h2>Which file should I use?</h2>
+      <table>
+        <thead><tr><th>Task</th><th>Command</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Start the backend (normal)</td>
+            <td><code>./start.sh</code> or <code>start.bat</code></td>
+          </tr>
+          <tr>
+            <td>Start the backend (dev, with reload)</td>
+            <td><code>python run.py backend</code></td>
+          </tr>
+          <tr>
+            <td>Start the backend (bypass all wrappers)</td>
+            <td><code>python scripts/serve.py</code></td>
+          </tr>
+          <tr>
+            <td>Fetch LiteGraph (normal)</td>
+            <td><code>python scripts/download_vendor.py</code></td>
+          </tr>
+          <tr>
+            <td>Fetch LiteGraph (no Python available)</td>
+            <td><code>bash scripts/download_vendor.sh</code> or <code>powershell scripts\download_vendor.ps1</code></td>
+          </tr>
+          <tr>
+            <td>Debug llama-cpp startup</td>
+            <td><code>runtime/python/python.exe scripts/llama_cpp_runner.py</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Nothing in this folder imports from <code>backend/</code>.</strong>
+        Each file is self-contained. This is deliberate — it means you
+        can copy a single script to another machine and it will still
+        work, and it means a syntax error in one script cannot break
+        the backend.
+      </div>
+
+      <h2>Related folders</h2>
+      <ul>
+        <li><code>bootstrap/</code> — sets up <code>runtime/</code> (Python, PHP, SQLite)</li>
+        <li><code>backend/</code> — the FastAPI application that <code>serve.py</code> launches</li>
+        <li><code>runtime/</code> — the portable binaries these scripts invoke</li>
+        <li><code>web/vendor/</code> — where <code>download_vendor.py</code> writes its output</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — serve.py
+       ============================================================= -->
+  <section class="file-section" id="doc-serve" data-name="serve.py three fixes uvicorn windows event loop sys.path access log documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>serve.py — Three Fixes <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">scripts/serve.py — why it exists</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>serve.py — the three fixes</h1>
+
+      <p>
+        <code>serve.py</code> is a thin wrapper around
+        <code>uvicorn.run()</code>. If you have ever run
+        <code>uvicorn backend.main:app</code> directly and hit one of
+        three specific problems, this file is the fix.
+      </p>
+
+      <table>
+        <thead><tr><th>Problem</th><th>Fix</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Windows event loop breaks MCP stdio</td>
+            <td>Set <code>SelectorEventLoopPolicy</code> before importing uvicorn</td>
+            <td>Lines at module top</td>
+          </tr>
+          <tr>
+            <td>Reloader child cannot find <code>backend</code></td>
+            <td>Set both <code>sys.path</code> and <code>PYTHONPATH</code> before importing uvicorn</td>
+            <td>Lines at module top</td>
+          </tr>
+          <tr>
+            <td>Access log floods the log sink</td>
+            <td>Disabled unless <code>AGENT_UVICORN_ACCESS_LOG=1</code></td>
+            <td>In <code>uvicorn.run(...)</code> call</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The <strong>order of operations matters</strong>: the loop
+        policy must be set before <code>import uvicorn</code>, and
+        <code>sys.path</code> / <code>PYTHONPATH</code> must be set
+        before uvicorn spawns its reloader child. Both are done at
+        module top, guarded so a double-import does not duplicate the
+        entries.
+      </p>
+
+      <h2>Fix 1 — Windows event loop</h2>
+      <p>
+        On Windows, Python 3.8+ defaults to
+        <code>ProactorEventLoop</code>. Proactor supports
+        <code>asyncio.create_subprocess_exec</code> but has known bugs
+        reading from subprocess pipes. The MCP SDK's stdio transport
+        reads from pipes continuously, so the MCP handshake fails
+        roughly one time in five.
+      </p>
+
+      <p>
+        The fix is to switch to <code>SelectorEventLoop</code>, which
+        has reliable pipe reading. It lacks
+        <code>create_subprocess_exec</code>, but uvicorn does not use
+        that for its default HTTP/WebSocket transports (they use
+        sockets, which Selector handles fine). The MCP SDK dispatches
+        its own subprocess creation internally, so it works under
+        either policy.
+      </p>
+
+      <p>
+        Crucially, the policy must be set <em>before</em>
+        <code>import uvicorn</code> — uvicorn creates its loop at
+        import time, so setting the policy afterwards has no effect.
+      </p>
+
+      <pre>if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+import uvicorn  # must come after</pre>
+
+      <h2>Fix 2 — sys.path for the reloader child</h2>
+      <p>
+        Running <code>python scripts/serve.py</code> puts
+        <code>scripts/</code> on <code>sys.path[0]</code>, not the
+        project root. When uvicorn with <code>--reload</code> spawns a
+        child process, that child re-imports
+        <code>backend.main</code> — and fails with
+        <code>ModuleNotFoundError</code> because the project root is
+        not on its <code>sys.path</code>.
+      </p>
+
+      <p>
+        Two things are needed:
+      </p>
+      <ul>
+        <li>
+          <code>sys.path</code> in <em>this</em> process (for direct
+          imports).
+        </li>
+        <li>
+          <code>PYTHONPATH</code> in the environment (for the child
+          process).
+        </li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Windows-specific gotcha.</strong>
+        Windows uses <code>multiprocessing</code> spawn for the
+        reloader child, which does <em>not</em> inherit
+        <code>sys.path</code> mutations from the parent. Only the
+        environment variable survives. Both must be set.
+      </div>
+
+      <pre>PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_root_str = str(PROJECT_ROOT)
+
+if _root_str not in sys.path:
+    sys.path.insert(0, _root_str)
+
+_existing_pp = os.environ.get("PYTHONPATH", "")
+if _root_str not in _existing_pp.split(os.pathsep):
+    os.environ["PYTHONPATH"] = (
+        _root_str + (os.pathsep + _existing_pp if _existing_pp else "")
+    )</pre>
+
+      <p>
+        The guards (<code>if not in</code>) make this idempotent.
+        Importing the module twice — or running it under a launcher
+        that already set <code>PYTHONPATH</code> — does not duplicate
+        the entry.
+      </p>
+
+      <h2>Fix 3 — access log noise</h2>
+      <p>
+        Uvicorn's per-request access log is verbose. The web UI polls
+        <code>/api/health</code>, <code>/api/ollama/ps</code>, and
+        <code>/api/llama/runtime/status</code> every few seconds while
+        a page is open. In a four-hour session that is thousands of
+        identical <code>INFO: ... "GET /api/health HTTP/1.1" 200 OK</code>
+        lines — a real problem for the desktop log dock and the
+        rotating file sink.
+      </p>
+
+      <p>
+        Access logging is disabled by default. To re-enable, set
+        <code>AGENT_UVICORN_ACCESS_LOG=1</code> in <code>.env</code>.
+      </p>
+
+      <pre>ACCESS_LOG = os.environ.get("AGENT_UVICORN_ACCESS_LOG", "0") == "1"
+
+uvicorn.run(
+    ...,
+    access_log=ACCESS_LOG,
+)</pre>
+
+      <p>
+        4xx and 5xx lines are <em>not</em> suppressed by this
+        mechanism — they are written by the app's own logger, not
+        uvicorn's access log. Those still appear and are still worth
+        paying attention to.
+      </p>
+
+      <h2>Configuration variables</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Default</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>AGENT_HOST</code></td><td><code>127.0.0.1</code></td><td>Uvicorn bind address</td></tr>
+          <tr><td><code>AGENT_PORT</code></td><td><code>8000</code></td><td>Uvicorn bind port</td></tr>
+          <tr><td><code>AGENT_RELOAD</code></td><td><code>0</code></td><td><code>1</code> to enable <code>--reload</code></td></tr>
+          <tr><td><code>AGENT_LOG_LEVEL</code></td><td><code>info</code></td><td>Uvicorn log level</td></tr>
+          <tr><td><code>AGENT_UVICORN_ACCESS_LOG</code></td><td><code>0</code></td><td><code>1</code> to enable per-request access log</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Running serve.py directly</h2>
+      <pre>python scripts/serve.py</pre>
+      <p>
+        This is the same as running <code>python run.py backend</code>
+        with no reload flag, or <code>./start.sh</code>. All three
+        eventually call <code>uvicorn.run</code> with the three fixes
+        applied.
+      </p>
+
+      <div class="callout success">
+        <strong>The fix is a no-op on Linux and macOS.</strong>
+        The event loop policy is Windows-only. On Unix,
+        <code>serve.py</code>'s only real job is the
+        <code>sys.path</code> / <code>PYTHONPATH</code> dance — and
+        even that is more forgiving because Unix spawn inherits more
+        state than Windows spawn.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — download_vendor algorithm
+       ============================================================= -->
+  <section class="file-section" id="doc-vendor" data-name="download_vendor algorithm validation gates mirrors documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>download_vendor Algorithm <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">scripts/download_vendor.py — two gates, two mirrors</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>download_vendor.py — the algorithm</h1>
+
+      <p>
+        The downloader fetches two files from the
+        <code>jagenjo/litegraph.js</code> repository into
+        <code>web/vendor/</code>. Nothing more complicated than that —
+        except for two validation gates and a mirror fallback, which
+        together make the operation trustworthy.
+      </p>
+
+      <h2>The pseudocode</h2>
+      <pre>for each file (litegraph.min.js, litegraph.css):
+    if file exists and size &gt;= MIN_SIZE:
+        skip
+
+    for each mirror URL:
+        try download
+        if downloaded size &lt; MIN_SIZE:
+            reject, try next mirror
+        if REQUIRED_SUBSTRING not in content:
+            reject, try next mirror
+        write to disk
+        return success
+
+    return failure</pre>
+
+      <h2>Why two gates</h2>
+      <p>
+        A naive downloader writes whatever the server returns. That
+        works 99% of the time and fails in three specific ways the
+        other 1%.
+      </p>
+
+      <h3>Gate 1 — size floor</h3>
+      <p>
+        A 404 HTML page is a few KB. A captive-portal login page is
+        similar. If you write either to
+        <code>web/vendor/litegraph.min.js</code>, the graph editor
+        loads a file that contains an HTML error page instead of
+        JavaScript, and every attempt to use it fails with a confusing
+        syntax error.
+      </p>
+
+      <p>
+        The minimum-size check rejects anything smaller than expected:
+      </p>
+
+      <table>
+        <thead><tr><th>File</th><th>Minimum size</th><th>Actual size</th></tr></thead>
+        <tbody>
+          <tr><td><code>litegraph.min.js</code></td><td>50,000 bytes</td><td>~85 KB</td></tr>
+          <tr><td><code>litegraph.css</code></td><td>1,000 bytes</td><td>~4 KB</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Gate 2 — required substring</h3>
+      <p>
+        A captive portal can return a 200 with a full-sized error
+        page. A proxy can rewrite content. A CDN can serve a cached
+        redirect. The size check alone would not catch these.
+      </p>
+
+      <p>
+        So the downloader looks for a substring the real file must
+        contain:
+      </p>
+
+      <table>
+        <thead><tr><th>File</th><th>Required substring</th></tr></thead>
+        <tbody>
+          <tr><td><code>litegraph.min.js</code></td><td><code>LiteGraph</code></td></tr>
+          <tr><td><code>litegraph.css</code></td><td><code>litegraph</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        The JS file's top-level namespace is <code>LiteGraph</code>,
+        so the string appears in the minified bundle. The CSS file
+        references classes like <code>.litegraph</code>, so its string
+        is there too.
+      </p>
+
+      <div class="callout success">
+        <strong>Atomic write.</strong>
+        Both gates run before <code>dest.write_bytes(data)</code>. If
+        either fails, the file is not written — the previous (possibly
+        working) copy is untouched. The caller sees either a
+        completely valid file or the previous state, never a partial
+        or corrupted download.
+      </div>
+
+      <h2>The mirror fallback</h2>
+      <p>
+        Two mirrors are tried for each file, in order:
+      </p>
+
+      <ol>
+        <li>
+          <strong>jsDelivr</strong> —
+          <code>https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/...</code>
+          Fast global CDN with a generous cache. Usually succeeds in
+          under a second.
+        </li>
+        <li>
+          <strong>raw.githubusercontent.com</strong> —
+          GitHub's raw content host. Slower but rarely blocked.
+        </li>
+      </ol>
+
+      <p>
+        The first mirror is tried, both gates applied, and if either
+        fails the next mirror is tried. Only when both mirrors fail
+        does the operation report failure.
+      </p>
+
+      <h2>Skip logic</h2>
+      <p>
+        If the target file already exists and is at least the minimum
+        size, the downloader skips it entirely. This makes the common
+        case — "run the script after a fresh clone" — a no-op once the
+        files are present.
+      </p>
+
+      <p>
+        The <code>--force</code> flag overrides the skip. It is used
+        by the developer launcher's <code>python run.py vendor</code>
+        command to refresh a possibly-stale copy.
+      </p>
+
+      <h2>Exit codes and downstream behaviour</h2>
+      <table>
+        <thead><tr><th>Exit code</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>Both files are present and valid</td></tr>
+          <tr><td>1</td><td>One or more downloads failed</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        A non-zero exit is not fatal. The backend's startup code
+        treats a missing vendor file as a warning, and the graph
+        editor falls back to loading LiteGraph from jsDelivr at
+        runtime. The user sees a working editor with a slightly slower
+        first load.
+      </p>
+
+      <h2>Manual fallback</h2>
+      <p>
+        If all mirrors fail — an unusual network, an aggressive
+        firewall — the downloader prints the exact URLs and the
+        destination paths. Downloading the two files by hand and
+        dropping them into <code>web/vendor/</code> works identically.
+      </p>
+
+      <h2>Who calls it</h2>
+      <table>
+        <thead><tr><th>Caller</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td><code>backend/main.py</code> (lifespan)</td><td>On startup, if the files are missing</td></tr>
+          <tr><td><code>scripts/serve.py</code></td><td>Not directly — the backend does it</td></tr>
+          <tr><td><code>run.py setup</code></td><td>Developer workflow</td></tr>
+          <tr><td><code>run.py vendor</code></td><td>Force-refresh workflow</td></tr>
+          <tr><td><code>start.sh</code> / <code>start.bat</code></td><td>Portable workflow, before launching the backend</td></tr>
+          <tr><td><code>bootstrap/setup.py</code></td><td>Called as <code>download_vendor(plat)</code> during stage 5</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Shell wrappers
+       ============================================================= -->
+  <section class="file-section" id="doc-wrappers" data-name="shell wrappers download_vendor sh ps1 documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Shell Wrappers <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">download_vendor.sh / .ps1 — when to use them</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Shell Wrappers</h1>
+
+      <p>
+        Two shell scripts wrap the vendor download. They exist for
+        three specific scenarios and are otherwise redundant with the
+        Python version.
+      </p>
+
+      <h2>When to use them</h2>
+
+      <h3>1. Python is unavailable</h3>
+      <p>
+        A bare Linux container with <code>curl</code> but no Python
+        yet. The user wants to vendor LiteGraph before installing
+        Python — for example, as the first step of a build script that
+        will then <code>apt install python3</code>.
+      </p>
+
+      <h3>2. Provisioning scripts</h3>
+      <p>
+        A CI runner or a cloud-init script might prefer
+        <code>bash scripts/download_vendor.sh</code> over invoking
+        Python. The bash version has no dependency on the Python
+        installation path or version.
+      </p>
+
+      <h3>3. Debugging</h3>
+      <p>
+        The shell versions have no Python overhead, and
+        <code>curl</code>'s output is visible inline. When diagnosing
+        a network issue — a proxy rewriting content, a firewall
+        blocking jsDelivr — the shell version tells you exactly what
+        <code>curl</code> saw.
+      </p>
+
+      <h2>When not to use them</h2>
+      <div class="callout warn">
+        <strong>For normal use, prefer <code>python scripts/download_vendor.py</code>.</strong>
+        The Python version has better validation, mirror fallback,
+        and cross-platform consistency. The shell wrappers are a
+        fallback, not a replacement.
+      </div>
+
+      <h2>Feature comparison</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>download_vendor.py</th>
+            <th>download_vendor.sh</th>
+            <th>download_vendor.ps1</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mirror fallback</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+          </tr>
+          <tr>
+            <td>Size validation</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+          </tr>
+          <tr>
+            <td>Content substring check</td>
+            <td>✅</td>
+            <td>❌</td>
+            <td>❌</td>
+          </tr>
+          <tr>
+            <td>Cross-platform</td>
+            <td>✅</td>
+            <td>Unix only</td>
+            <td>Windows only</td>
+          </tr>
+          <tr>
+            <td>No Python dependency</td>
+            <td>❌</td>
+            <td>✅</td>
+            <td>✅</td>
+          </tr>
+          <tr>
+            <td>Verbose failure output</td>
+            <td>✅</td>
+            <td>Partial</td>
+            <td>Partial</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The two shell versions validate size only. They do not check
+        the file's content, because <code>curl</code> and
+        <code>Invoke-WebRequest</code> do not have a built-in way to
+        search a file for a substring without extra tooling.
+      </p>
+
+      <h2>The .sh version in detail</h2>
+      <p>
+        Uses <code>curl</code> with two flags that matter:
+      </p>
+      <ul>
+        <li>
+          <code>-f</code> — fail on HTTP error codes. Without this,
+          <code>curl</code> writes the error page body to the output
+          file and exits 0.
+        </li>
+        <li>
+          <code>-sSL</code> — silent, show errors, follow redirects.
+        </li>
+      </ul>
+
+      <pre>curl -fsSL --max-time 60 "$primary" -o "$dest"</pre>
+
+      <p>
+        The script checks that <code>curl</code> is installed before
+        doing anything, and prints the Python alternative if it is
+        missing:
+      </p>
+      <pre>if ! command -v curl &gt;/dev/null 2&gt;&amp;1; then
+    echo "Error: curl is not installed." &gt;&amp;2
+    echo "Install it with your package manager, or run:" &gt;&amp;2
+    echo "    python scripts/download_vendor.py" &gt;&amp;2
+    exit 1
+fi</pre>
+
+      <h2>The .ps1 version in detail</h2>
+      <p>
+        Uses <code>Invoke-WebRequest</code> with
+        <code>-UseBasicParsing</code>. The flag matters because on
+        older PowerShell versions, the default parser tries to load
+        the Windows Internet Explorer COM object — which fails on
+        Server Core and in restricted environments.
+      </p>
+
+      <pre>Invoke-WebRequest -Uri $Primary -OutFile $Dest -UseBasicParsing</pre>
+
+      <p>
+        The <code>#Requires -Version 5.0</code> directive at the top
+        ensures the script fails early and clearly on PowerShell 4 or
+        earlier, rather than hitting a syntax error three lines in.
+      </p>
+
+      <h2>Running the .ps1 under execution policy</h2>
+      <p>
+        PowerShell by default refuses to run unsigned scripts. Bypass
+        the policy for a single invocation:
+      </p>
+      <pre>powershell -ExecutionPolicy Bypass -File scripts\download_vendor.ps1</pre>
+
+      <p>
+        Or for the current session only:
+      </p>
+      <pre>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\scripts\download_vendor.ps1</pre>
+
+      <p>
+        Do not use <code>Unrestricted</code> at the machine or user
+        scope — it affects every script on the system.
+      </p>
+
+      <h2>Both accept a --force flag</h2>
+      <pre>bash scripts/download_vendor.sh --force
+powershell -ExecutionPolicy Bypass -File scripts\download_vendor.ps1 -Force</pre>
+
+      <p>
+        Without <code>--force</code>, a file that already exists and
+        is at least the minimum size is skipped.
+      </p>
+
+      <h2>Exit codes</h2>
+      <table>
+        <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>Both files present and valid</td></tr>
+          <tr><td>1</td><td>Failure — curl missing, download failed, or file too small</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — llama_cpp_runner
+       ============================================================= -->
+  <section class="file-section" id="doc-llama-runner" data-name="llama_cpp_runner llama-cpp server port override documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>llama_cpp_runner <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">scripts/llama_cpp_runner.py — why it bypasses the parser</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>llama_cpp_runner</h1>
+
+      <p>
+        Some builds of <code>llama_cpp.server</code> silently drop the
+        <code>--port</code> command-line flag and fall back to
+        uvicorn's default of 8000 — which collides with the backend's
+        own port. Setting <code>LLAMA_CPP_PORT</code> in the
+        environment does not help in those builds either.
+      </p>
+
+      <p>
+        This script bypasses the module's argument parser entirely. It
+        reads configuration from environment variables, constructs the
+        settings objects directly, and calls
+        <code>uvicorn.run()</code> with an explicit port.
+      </p>
+
+      <h2>The port collision problem</h2>
+      <p>
+        The backend listens on port 8000 by default. If
+        <code>llama_cpp.server</code> also defaults to 8000, the
+        second process to bind fails with
+        <code>Address already in use</code> — or worse, succeeds on a
+        different interface and the two servers fight over requests.
+      </p>
+
+      <p>
+        The backend's <code>llama_server.py</code> passes
+        <code>--port 8080</code> when spawning the module. On the
+        builds where that flag is dropped, the module still tries
+        8000. The runner avoids the whole problem by not relying on
+        the module's command-line interface at all.
+      </p>
+
+      <h2>Model ID resolution</h2>
+      <p>
+        The server exposes the value of
+        <code>ModelSettings.model</code> as the model ID in
+        <code>/v1/models</code>, and requires the same string back in
+        the <code>model</code> field of chat and embeddings requests.
+      </p>
+
+      <p>
+        The runner resolves the model path to an absolute path before
+        constructing <code>ModelSettings</code>. The backend's
+        <code>llm.py</code> resolves the same path before sending
+        requests, so the two agree.
+      </p>
+
+      <h2>Chat format handling</h2>
+      <p>
+        This is the part that surprises people.
+      </p>
+
+      <p>
+        If <code>LLAMA_CPP_CHAT_FORMAT</code> is set to a non-empty
+        value, it is passed to <code>ModelSettings</code> and
+        <strong>overrides</strong> the model's embedded chat template.
+        This is usually the wrong thing to do — nearly every modern
+        GGUF ships its own template in
+        <code>tokenizer.chat_template</code>, and forcing a different
+        one causes the model to produce garbage or an immediate EOS
+        token.
+      </p>
+
+      <p>
+        If <code>LLAMA_CPP_CHAT_FORMAT</code> is empty (or unset), the
+        runner does <em>not</em> pass <code>chat_format</code> to
+        <code>ModelSettings</code>. The model's embedded template is
+        used automatically, which is correct for Llama-3.2, Qwen,
+        Mistral, Gemma, and every other modern model.
+      </p>
+
+      <div class="callout warn">
+        <strong>Set <code>LLAMA_CPP_CHAT_FORMAT</code> only when you
+        know you need it.</strong>
+        The default of "empty = use the model's own template" is
+        correct for almost every model released in the last two
+        years. Overriding it is a deliberate choice, not a
+        convenience.
+      </div>
+
+      <h2>Settings construction robustness</h2>
+      <p>
+        The <code>llama_cpp.server.settings</code> module has changed
+        its field set across versions. A runner that assumes a
+        specific version breaks on the next release. This runner
+        tolerates variation:
+      </p>
+
+      <pre>def _build_model_settings(ModelSettings, kwargs: dict):
+    """Construct ModelSettings, tolerating field-set variations."""
+    try:
+        return ModelSettings(**kwargs)
+    except TypeError:
+        minimal = {"model": kwargs["model"]}
+        ms = ModelSettings(**minimal)
+        for key, value in kwargs.items():
+            if key == "model":
+                continue
+            try:
+                setattr(ms, key, value)
+            except Exception:
+                pass
+        return ms</pre>
+
+      <p>
+        It first tries the straightforward constructor. If that
+        raises <code>TypeError</code> — meaning some field is not
+        recognized — it constructs a minimal object and sets each
+        additional field individually, ignoring ones that fail.
+      </p>
+
+      <h2>create_app invocation patterns</h2>
+      <p>
+        The <code>create_app</code> function has changed its signature
+        more than once. The runner tries six different calling
+        conventions, from most likely to least:
+      </p>
+
+      <table>
+        <thead><tr><th>Pattern</th><th>Call shape</th></tr></thead>
+        <tbody>
+          <tr><td><code>list-kwarg</code></td><td><code>create_app(model_settings=[ms], server_settings=ss)</code></td></tr>
+          <tr><td><code>dict-kwarg</code></td><td><code>create_app(model_settings={ms.model: ms}, server_settings=ss)</code></td></tr>
+          <tr><td><code>list-positional</code></td><td><code>create_app([ms], ss)</code></td></tr>
+          <tr><td><code>single-kwarg</code></td><td><code>create_app(model_settings=ms, server_settings=ss)</code></td></tr>
+          <tr><td><code>single-positional</code></td><td><code>create_app(ms, ss)</code></td></tr>
+          <tr><td><code>list-only</code></td><td><code>create_app([ms])</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        The first that succeeds wins. If all six raise, the runner
+        reports a clear error and exits non-zero.
+      </p>
+
+      <h2>Environment variables read</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Default</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>LLAMA_CPP_MODEL</code></td><td>(required)</td><td>Absolute or relative path to a <code>.gguf</code> file</td></tr>
+          <tr><td><code>LLAMA_CPP_HOST</code></td><td><code>127.0.0.1</code></td><td>Bind address</td></tr>
+          <tr><td><code>LLAMA_CPP_PORT</code></td><td><code>8081</code></td><td>Bind port</td></tr>
+          <tr><td><code>LLAMA_CPP_N_CTX</code></td><td><code>4096</code></td><td>Context window</td></tr>
+          <tr><td><code>LLAMA_CPP_N_GPU_LAYERS</code></td><td><code>0</code></td><td>GPU layers to offload</td></tr>
+          <tr><td><code>LLAMA_CPP_CHAT_FORMAT</code></td><td>(empty)</td><td>Empty means "use the model's own template"</td></tr>
+          <tr><td><code>LLAMA_CPP_API_KEY</code></td><td>(empty)</td><td>Optional bearer token</td></tr>
+          <tr><td><code>LLAMA_CPP_EMBEDDING</code></td><td><code>false</code></td><td><code>true</code> to enable <code>/v1/embeddings</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Running it manually</h2>
+      <p>
+        To debug a llama-cpp startup failure, run the runner directly
+        with the same environment the backend would use:
+      </p>
+
+      <pre>&gt; set LLAMA_CPP_MODEL=models\my-model.gguf
+&gt; set LLAMA_CPP_PORT=8080
+&gt; runtime\python\python.exe scripts\llama_cpp_runner.py
+
+[llama_cpp_runner] resolved model path: C:\...\models\my-model.gguf
+[llama_cpp_runner] host=127.0.0.1 port=8080
+[llama_cpp_runner] n_ctx=4096 n_gpu_layers=0
+[llama_cpp_runner] chat_format=(unset — using model's embedded template)
+[llama_cpp_runner] embedding=False
+[llama_cpp_runner] create_app signature: (model_settings, server_settings)
+[llama_cpp_runner] create_app succeeded via 'list-kwarg'
+[llama_cpp_runner] starting uvicorn on 127.0.0.1:8080
+INFO:     Started server process [12345]
+INFO:     Uvicorn running on http://127.0.0.1:8080</pre>
+
+      <p>
+        All diagnostics go to <code>stderr</code> so they do not
+        interfere with any structured output the caller might be
+        capturing.
+      </p>
+
+      <h2>Exit codes</h2>
+      <table>
+        <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>uvicorn exited cleanly</td></tr>
+          <tr><td>1</td><td>llama-cpp-python is not installed or broken</td></tr>
+          <tr><td>2</td><td>LLAMA_CPP_MODEL is missing or the file does not exist</td></tr>
+          <tr><td>3</td><td>ModelSettings construction failed</td></tr>
+          <tr><td>5</td><td>create_app failed for every known calling pattern</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — sessions.db
+       ============================================================= -->
+  <section class="file-section" id="doc-sessions" data-name="sessions.db sqlite runtime file documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>sessions.db <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">runtime SQLite file — created by backend/storage.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>sessions.db — the runtime SQLite file</h1>
+
+      <p>
+        Not a script, but documented here because it is one of the
+        runtime artifacts the scripts manage and the backend writes to.
+        <code>sessions.db</code> is created by
+        <code>backend/storage.py</code> on the first run of the
+        backend and lives at the project root.
+      </p>
+
+      <p>
+        It is not committed to git:
+      </p>
+
+      <pre>*.db
+*.sqlite
+*.sqlite3</pre>
+
+      <h2>What is in the file</h2>
+      <p>Two tables:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Table</th>
+            <th>Purpose</th>
+            <th>Populated by</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>sessions</code></td>
+            <td>Conversation history, one row per <code>session_id</code></td>
+            <td>Chat routes when a <code>session_id</code> is provided</td>
+          </tr>
+          <tr>
+            <td><code>graph_runs</code></td>
+            <td>Graph execution history with full event streams</td>
+            <td><code>/api/graph/run</code> and <code>/ws/graph</code> after each run</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>File lifecycle</h2>
+      <pre>First backend start:
+    backend/storage.py::SessionStore.init()
+        → opens sessions.db
+        → CREATE TABLE IF NOT EXISTS sessions (...)
+        → CREATE TABLE IF NOT EXISTS graph_runs (...)
+        → CREATE INDEX IF NOT EXISTS ...
+        → closes
+
+First chat with session_id:
+    POST /api/chat
+        → agent.run(...)
+        → agent.store.save(session_id, messages)
+        → opens sessions.db
+        → INSERT INTO sessions ... ON CONFLICT UPDATE
+        → closes
+
+First graph run:
+    POST /api/graph/run
+        → engine.execute(...)
+        → routes._summarize_events(events)
+        → store.save_run(payload, events, status, final_text)
+        → opens sessions.db
+        → INSERT INTO graph_runs ...
+        → DELETE older runs beyond max_graph_runs
+        → closes</pre>
+
+      <p>
+        Every method opens a fresh connection, executes, and closes.
+        This is the "no connection pool" pattern — it is slightly less
+        efficient but sidesteps every "database is locked" scenario.
+        SQLite's single-writer semantics are respected automatically.
+      </p>
+
+      <h2>Where the file lives</h2>
+      <p>
+        The path is configured in <code>.env</code>:
+      </p>
+      <pre>AGENT_SESSION_DB=sessions.db</pre>
+
+      <p>
+        A bare filename resolves relative to the process working
+        directory — which is the project root when the backend is
+        launched via <code>run.py</code>, <code>start.sh</code>, or
+        <code>scripts/serve.py</code>. An absolute path passes through
+        unchanged.
+      </p>
+
+      <h2>Inspecting the file</h2>
+      <p>
+        To inspect the database manually with the portable SQLite CLI:
+      </p>
+
+      <pre># List tables
+runtime/sqlite/sqlite3 sessions.db ".tables"
+
+# Count sessions
+runtime/sqlite/sqlite3 sessions.db "SELECT COUNT(*) FROM sessions;"
+
+# Show the newest session
+runtime/sqlite/sqlite3 sessions.db \
+    "SELECT id, updated_at FROM sessions ORDER BY updated_at DESC LIMIT 5;"
+
+# Show recent graph runs
+runtime/sqlite/sqlite3 sessions.db \
+    "SELECT id, graph_name, status, finished_at FROM graph_runs ORDER BY finished_at DESC LIMIT 5;"</pre>
+
+      <p>
+        Or with the system <code>sqlite3</code>:
+      </p>
+      <pre>sqlite3 sessions.db ".tables"</pre>
+
+      <h2>Resetting</h2>
+      <p>
+        To clear all conversation and graph-run history without
+        touching the rest of the application:
+      </p>
+      <pre>rm sessions.db
+# The next backend start recreates it empty.</pre>
+
+      <p>Or keep the schema and clear only the data:</p>
+      <pre>sqlite3 sessions.db "DELETE FROM sessions; DELETE FROM graph_runs;"</pre>
+
+      <h2>Size estimates</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Per row</th>
+            <th>1000 rows</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Session (typical 20-message chat)</td>
+            <td>5–20 KB</td>
+            <td>5–20 MB</td>
+          </tr>
+          <tr>
+            <td>Graph run (typical 20-event execution)</td>
+            <td>2–15 KB</td>
+            <td>2–15 MB</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The <code>max_graph_runs</code> config caps graph-runs growth
+        at 100 rows by default. Session growth is unbounded — but a
+        session is only one row no matter how many turns it has, so
+        the file grows with the number of distinct sessions, not the
+        number of messages.
+      </p>
+
+      <div class="callout">
+        <strong>This is user data.</strong>
+        Unlike the <code>runtime/</code> folder, deleting
+        <code>sessions.db</code> is not recoverable. Back it up
+        before resetting if the history matters.
+      </div>
+
+      <h2>Backup</h2>
+      <p>
+        A direct <code>cp</code> is unsafe under WAL mode — it can miss
+        un-checkpointed writes. Use the SQLite CLI's
+        <code>.backup</code> command for a consistent snapshot:
+      </p>
+      <pre>runtime/sqlite/sqlite3 sessions.db ".backup sessions-backup.db"</pre>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Troubleshooting
+       ============================================================= -->
+  <section class="file-section" id="doc-troubleshooting" data-name="troubleshooting scripts errors documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Troubleshooting <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">scripts/ — common problems</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Troubleshooting</h1>
+
+      <h2>MCP handshake fails on Windows with "Connection closed"</h2>
+      <p>
+        The classic Proactor-vs-Selector bug. The MCP SDK is reading
+        from a subprocess pipe and hitting a known Windows asyncio
+        issue.
+      </p>
+
+      <p><strong>Fix:</strong> launch the backend via
+        <code>scripts/serve.py</code> (or any launcher that calls it)
+        rather than importing uvicorn directly. The script sets the
+        event loop policy before uvicorn creates its loop.
+      </p>
+
+      <p>
+        If you are already using <code>serve.py</code> and still see
+        this error, the most likely cause is that a tool module in
+        <code>mcp_server/tools/</code> is printing to stdout during
+        import. Search the folder for <code>print(</code> — there
+        should be zero hits.
+      </p>
+
+      <h2>"ModuleNotFoundError: No module named 'backend'"</h2>
+      <p>
+        Only happens with <code>--reload</code>. The reloader's child
+        process does not have the project root on its
+        <code>sys.path</code>.
+      </p>
+
+      <p><strong>Fix:</strong> <code>serve.py</code> sets both
+        <code>sys.path</code> and <code>PYTHONPATH</code> at module
+        top, before uvicorn imports anything. On Windows, only the
+        environment variable survives the multiprocessing spawn —
+        which is why both are set.
+      </p>
+
+      <p>
+        If the error persists, check that <code>PYTHONPATH</code> is
+        actually being exported. Run:
+      </p>
+      <pre>&gt; set PYTHONPATH
+&gt; python scripts\serve.py</pre>
+
+      <h2>Thousands of "GET /api/health 200" lines in the log</h2>
+      <p>
+        Uvicorn's access log. The web UI polls several endpoints every
+        few seconds.
+      </p>
+
+      <p><strong>Fix:</strong> leave
+        <code>AGENT_UVICORN_ACCESS_LOG</code> at its default of
+        <code>0</code>. If you have explicitly set it to
+        <code>1</code> and want to disable it, change it back.
+      </p>
+
+      <h2>download_vendor.py reports "archive is too small"</h2>
+      <p>
+        The size gate fired. Either:
+      </p>
+      <ul>
+        <li>
+          A captive portal or proxy returned an HTML login page
+          instead of the JS/CSS file.
+        </li>
+        <li>
+          jsDelivr is serving a truncated response (rare, but it
+          happens during CDN failovers).
+        </li>
+        <li>
+          The fallback mirror (raw.githubusercontent.com) is returning
+          a GitHub error page.
+        </li>
+      </ul>
+
+      <p><strong>Check:</strong></p>
+      <pre>curl -I https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/build/litegraph.min.js
+HTTP/2 200
+content-type: application/javascript; charset=utf-8
+content-length: 87432</pre>
+
+      <p>
+        If <code>content-type</code> is <code>text/html</code>, you
+        are behind a login wall. Configure your proxy or use a
+        different network.
+      </p>
+
+      <h2>download_vendor.py reports "does not contain 'LiteGraph'"</h2>
+      <p>
+        The size gate passed but the content gate did not. Something
+        served a file of the right size that is not the real
+        LiteGraph bundle.
+      </p>
+
+      <p>
+        A common cause: a corporate proxy that replaces JS files with
+        its own "site blocked" page. The page happens to be at least
+        50 KB because it embeds CSS and images.
+      </p>
+
+      <p><strong>Fix:</strong> download the files manually from a
+        network the proxy does not intercept, and drop them into
+        <code>web/vendor/</code>. The downloader will then skip them
+        on the next run.
+      </p>
+
+      <h2>Graph editor loads with CDN warning</h2>
+      <p>
+        The vendor files are missing from
+        <code>web/vendor/</code>, and the editor is loading LiteGraph
+        from jsDelivr at runtime.
+      </p>
+
+      <p>This is not an error — it is a designed fallback. To fix it
+        permanently:
+      </p>
+      <pre>python scripts/download_vendor.py</pre>
+
+      <p>
+        Or on a network where Python is not available:
+      </p>
+      <pre>bash scripts/download_vendor.sh</pre>
+
+      <h2>llama_cpp_runner exits with code 2</h2>
+      <p>
+        <code>LLAMA_CPP_MODEL</code> is unset, or the file it points
+        to does not exist. The runner prints the resolved path in its
+        first log line — check that the path is what you expect:
+      </p>
+      <pre>[llama_cpp_runner] resolved model path: C:\...\models\my-model.gguf
+[llama_cpp_runner] model file does not exist: C:\...\models\my-model.gguf</pre>
+
+      <p>
+        Relative paths are resolved against the runner's working
+        directory, which is the project root when the backend spawns
+        it. Running the runner from a different folder changes the
+        resolution.
+      </p>
+
+      <h2>llama_cpp_runner exits with code 5</h2>
+      <p>
+        <code>create_app</code> failed for all six calling
+        conventions. This means the installed
+        <code>llama-cpp-python</code> has a signature the runner does
+        not know about.
+      </p>
+
+      <p>
+        The runner logs every attempt:
+      </p>
+      <pre>[llama_cpp_runner] create_app pattern 'list-kwarg' raised TypeError: ...
+[llama_cpp_runner] create_app pattern 'dict-kwarg' raised TypeError: ...
+...</pre>
+
+      <p>
+        The exception from the last attempt is the most informative.
+        In practice this happens when a very old or very new version
+        of <code>llama-cpp-python</code> is installed. Upgrading or
+        downgrading to the version pinned in
+        <code>requirements.txt</code> resolves it.
+      </p>
+
+      <h2>llama-cpp server starts on port 8000 instead of 8080</h2>
+      <p>
+        The module's argument parser dropped the
+        <code>--port</code> flag. This is the bug the runner exists
+        to fix.
+      </p>
+
+      <p>
+        If the backend is spawning the module directly (not via the
+        runner), check <code>backend/llama_server.py</code>'s
+        <code>_build_python_command</code>. It should be calling
+        <code>scripts/llama_cpp_runner.py</code>, not
+        <code>-m llama_cpp.server</code>.
+      </p>
+
+      <h2>Backend starts but llama-cpp is idle</h2>
+      <p>
+        The runner could not load a model. Check the backend log:
+      </p>
+      <pre>[llama_cpp_runner] LLAMA_CPP_MODEL is required</pre>
+
+      <p>
+        Or:
+      </p>
+      <pre>[llama_cpp_runner] model file does not exist: ...</pre>
+
+      <p>
+        Set <code>AGENT_LLAMA_CPP_MODEL</code> in <code>.env</code> to
+        a filename that exists in <code>models/</code>, or drop a
+        <code>.gguf</code> file into <code>models/</code> with the
+        configured name.
+      </p>
+
+      <h2>Model produces garbage output</h2>
+      <p>
+        Almost always a chat format mismatch. The runner uses the
+        model's own embedded template by default, which is correct
+        for modern models. If you have set
+        <code>LLAMA_CPP_CHAT_FORMAT</code> explicitly, unset it:
+      </p>
+      <pre>LLAMA_CPP_CHAT_FORMAT=</pre>
+
+      <p>
+        The runner will then let the model use its own template. If
+        the model still produces garbage, the GGUF file itself is
+        missing the template metadata — check the model card on Hugging
+        Face for the correct format and set
+        <code>LLAMA_CPP_CHAT_FORMAT</code> accordingly.
+      </p>
+
+      <h2>Still stuck?</h2>
+      <p>Capture and include:</p>
+      <ul>
+        <li>Which script you ran and the exact command line</li>
+        <li>The full stdout + stderr of that script</li>
+        <li>The contents of <code>.env</code> with secrets redacted</li>
+        <li>Whether you are on Windows, Linux, or macOS</li>
+        <li>The Python version (<code>python --version</code>)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — serve.py
+       ============================================================= -->
+  <section class="file-section" id="f-serve" data-name="serve.py uvicorn entry point windows fix source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>serve.py <span class="file-badge">python</span></h2>
+        <span class="file-path">scripts/serve.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">#!/usr/bin/env python3
+"""
+3olution Agent Graph — uvicorn entry point.
+https://3olution.com
+
+This module exists because launching uvicorn directly has three
+problems that are easy to miss and hard to diagnose:
+
+    1. Windows event loop
+    2. sys.path for the reloader child
+    3. Access log noise
+
+================================================================
+  PROBLEM 1: WINDOWS EVENT LOOP
+================================================================
+
+  On Windows, the MCP SDK's stdio transport requires
+  ProactorEventLoop to spawn subprocesses. But ProactorEventLoop
+  on Python 3.8+ has a known quirk: it cannot reliably read from
+  the subprocess's pipes, causing the MCP handshake to randomly
+  hang or fail.
+
+  The correct policy for a process that spawns subprocesses AND
+  reads from their pipes is SelectorEventLoop. But Selector does
+  not implement create_subprocess_exec, which uvicorn itself
+  needs... except it doesn't, not for the default HTTP/WebSocket
+  transports. Those use sockets, which Selector handles fine.
+
+  The MCP SDK v2+ handles this internally by dispatching
+  subprocess creation through its own thread pool, so it works
+  under either policy. But the fix for the general case is to set
+  Selector early — before uvicorn imports its asyncio loop.
+
+  We set it here, at the top of this module, before importing
+  uvicorn. Setting it inside backend/main.py is too late: uvicorn
+  creates its loop before it imports the app.
+
+================================================================
+  PROBLEM 2: sys.path FOR THE RELOADER CHILD
+================================================================
+
+  Running `python scripts/serve.py` puts scripts/ on sys.path[0],
+  not the project root. When uvicorn (with --reload) spawns a
+  child process, that child re-imports backend.main, which fails
+  with ModuleNotFoundError because the project root is not on
+  sys.path.
+
+  Two things are needed:
+
+    - sys.path in THIS process (for direct imports)
+    - PYTHONPATH in the environment (for the child process)
+
+  Windows uses `multiprocessing` spawn for the reloader child,
+  which does NOT inherit sys.path mutations from the parent. Only
+  the environment variable survives.
+
+================================================================
+  PROBLEM 3: ACCESS LOG NOISE
+================================================================
+
+  Uvicorn's per-request access log is verbose. The web UI polls
+  /api/health, /api/ollama/ps, and /api/llama/runtime/status every
+  few seconds while a page is open. In a four-hour session that is
+  thousands of identical log lines — a real problem for the
+  desktop log dock and the rotating file sink.
+
+  Access logging is disabled by default here. Re-enable by setting
+  AGENT_UVICORN_ACCESS_LOG=1 in .env.
+
+================================================================
+  USAGE
+================================================================
+
+  From the command line:
+
+      python scripts/serve.py
+
+  Or via the developer launcher:
+
+      python run.py backend
+
+  Or via the portable launcher:
+
+      ./start.sh          # Linux / macOS
+      start.bat           # Windows
+
+  Or directly with uvicorn (bypasses this file's fixes):
+
+      uvicorn backend.main:app --reload
+
+  Environment variables read:
+
+      AGENT_HOST                  bind address (default 127.0.0.1)
+      AGENT_PORT                  bind port (default 8000)
+      AGENT_RELOAD                "1" to enable --reload (default "0")
+      AGENT_LOG_LEVEL             uvicorn log level (default "info")
+      AGENT_UVICORN_ACCESS_LOG    "1" to enable access log (default "0")
+"""
+
+from __future__ import annotations
+
+import asyncio
+import os
+import sys
+from pathlib import Path
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Fix 1 — make `backend` importable
+# ══════════════════════════════════════════════════════════════════════
+#
+#  Must run BEFORE importing uvicorn (which imports the app).
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_root_str = str(PROJECT_ROOT)
+
+# sys.path — for imports in this process.
+if _root_str not in sys.path:
+    sys.path.insert(0, _root_str)
+
+# PYTHONPATH — for the reloader child process.
+# Windows multiprocessing spawn does not inherit sys.path mutations,
+# only the environment.
+_existing_pp = os.environ.get("PYTHONPATH", "")
+if _root_str not in _existing_pp.split(os.pathsep):
+    os.environ["PYTHONPATH"] = (
+        _root_str + (os.pathsep + _existing_pp if _existing_pp else "")
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Fix 2 — Windows event loop policy
+# ══════════════════════════════════════════════════════════════════════
+#
+#  Set this BEFORE importing uvicorn. uvicorn will pick up the
+#  policy when it creates its loop.
+
+if sys.platform == "win32":
+    # SelectorEventLoop has reliable pipe reading, which the MCP
+    # SDK's stdio transport depends on. The MCP SDK dispatches
+    # subprocess creation internally so it does not need Proactor.
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Now it is safe to import uvicorn
+# ══════════════════════════════════════════════════════════════════════
+
+import uvicorn  # noqa: E402
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Configuration
+# ══════════════════════════════════════════════════════════════════════
+
+HOST = os.environ.get("AGENT_HOST", "127.0.0.1")
+PORT = int(os.environ.get("AGENT_PORT", "8000"))
+RELOAD = os.environ.get("AGENT_RELOAD", "0") == "1"
+LOG_LEVEL = os.environ.get("AGENT_LOG_LEVEL", "info").lower()
+
+# Access log — off by default. See Problem 3 in the module docstring.
+ACCESS_LOG = os.environ.get("AGENT_UVICORN_ACCESS_LOG", "0") == "1"
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Entry point
+# ══════════════════════════════════════════════════════════════════════
+
+def main() -> None:
+    """Run uvicorn with the correct loop and the project on sys.path."""
+    uvicorn.run(
+        "backend.main:app",
+        host=HOST,
+        port=PORT,
+        reload=RELOAD,
+        log_level=LOG_LEVEL,
+        loop="asyncio",      # honor the policy set above
+        access_log=ACCESS_LOG,
+        # The reloader watches only the project root, not the whole
+        # filesystem. Adding .venv/ would cause reloads on every
+        # pip operation.
+        reload_dirs=[str(PROJECT_ROOT)] if RELOAD else None,
+    )
+
+
+if __name__ == "__main__":
+    main()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — download_vendor.py
+       ============================================================= -->
+  <section class="file-section" id="f-vendor-py" data-name="download_vendor.py litegraph downloader source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>download_vendor.py <span class="file-badge">python</span></h2>
+        <span class="file-path">scripts/download_vendor.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">#!/usr/bin/env python3
+"""
+3olution Agent Graph — cross-platform LiteGraph.js vendor downloader.
+https://3olution.com
+
+Downloads the two LiteGraph.js files the graph editor needs into
+`web/vendor/`. Uses only the Python standard library, so it runs on
+any Python 3.8+ installation without extra dependencies.
+
+================================================================
+  WHAT IT DOWNLOADS
+================================================================
+
+  Two files from the jagenjo/litegraph.js repository:
+
+      build/litegraph.min.js    → web/vendor/litegraph.min.js
+      css/litegraph.css         → web/vendor/litegraph.css
+
+  These files are NOT committed to git (see .gitignore). They are
+  fetched on demand by:
+
+      - scripts/serve.py          (on startup, if missing)
+      - backend/main.py           (in lifespan, if missing)
+      - run.py setup              (developer workflow)
+      - run.py vendor             (force refresh)
+      - start.sh / start.bat      (portable workflow)
+
+================================================================
+  MIRRORS
+================================================================
+
+  Two mirrors are tried for each file, in order:
+
+      1. jsDelivr (fast global CDN, generous cache)
+      2. raw.githubusercontent.com (GitHub direct)
+
+  The first mirror usually succeeds. The second exists for
+  environments where jsDelivr is blocked or slow.
+
+================================================================
+  VALIDATION
+================================================================
+
+  Each downloaded file is validated before being written to disk:
+
+    - Minimum size: a 404 HTML page is only a few KB, so a size
+      floor rejects error pages. The JS minimum is 50 KB; the CSS
+      minimum is 1 KB.
+    - Required substring: the JS file must contain "LiteGraph"; the
+      CSS file must contain "litegraph". This catches cases where
+      a proxy returns a generic 200 page instead of the real file.
+
+  Only after both checks pass is the file moved into place. A
+  partial or corrupted download never overwrites a working file.
+
+================================================================
+  USAGE
+================================================================
+
+    python scripts/download_vendor.py
+        Download both files into web/vendor/.
+
+    python scripts/download_vendor.py --force
+        Re-download even if the files already exist.
+
+    python scripts/download_vendor.py --quiet
+        Suppress per-file progress output. Used by scripts that
+        invoke this programmatically.
+
+  The exit code is 0 if both files are present after the run, and
+  1 if any file could not be downloaded. The caller can decide
+  whether that is fatal — in practice, the graph editor falls back
+  to loading LiteGraph from jsDelivr at runtime, so a failed
+  download is not catastrophic.
+
+================================================================
+  EXIT CODES
+================================================================
+
+    0   both files are present
+    1   one or more downloads failed
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Paths and constants
+# ══════════════════════════════════════════════════════════════════════
+
+ROOT = Path(__file__).resolve().parent.parent
+VENDOR = ROOT / "web" / "vendor"
+
+# Each entry: filename -> list of mirror URLs (tried in order).
+FILES: dict[str, list[str]] = {
+    "litegraph.min.js": [
+        "https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/build/litegraph.min.js",
+        "https://raw.githubusercontent.com/jagenjo/litegraph.js/master/build/litegraph.min.js",
+    ],
+    "litegraph.css": [
+        "https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/css/litegraph.css",
+        "https://raw.githubusercontent.com/jagenjo/litegraph.js/master/css/litegraph.css",
+    ],
+}
+
+# Minimum plausible size in bytes; anything smaller is a failed download.
+MIN_SIZE: dict[str, int] = {
+    "litegraph.min.js": 50_000,   # ~85 KB in practice
+    "litegraph.css": 1_000,       # ~4 KB in practice
+}
+
+# A sanity-check substring that must appear in the file's content.
+REQUIRED_SUBSTRING: dict[str, str] = {
+    "litegraph.min.js": "LiteGraph",
+    "litegraph.css": "litegraph",
+}
+
+# Network timeout for individual requests.
+TIMEOUT_SECONDS = 30.0
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Quiet helper
+# ══════════════════════════════════════════════════════════════════════
+
+class _Logger:
+    """Print messages unless --quiet is set."""
+
+    def __init__(self, quiet: bool) -> None:
+        self.quiet = quiet
+
+    def __call__(self, msg: str = "") -> None:
+        if not self.quiet:
+            print(msg)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Downloader
+# ══════════════════════════════════════════════════════════════════════
+
+def _download_one(
+    name: str,
+    urls: list[str],
+    force: bool,
+    log: _Logger,
+) -> bool:
+    """
+    Download a single file, trying each mirror in order.
+
+    Returns True on success, False on failure. Never raises.
+    """
+    dest = VENDOR / name
+
+    # Skip if the file already looks good.
+    if dest.exists() and not force:
+        size = dest.stat().st_size
+        if size &gt;= MIN_SIZE[name]:
+            log(f"  ✓ {name} already present ({size:,} bytes) — skipping")
+            return True
+        log(
+            f"  ! {name} present but suspiciously small "
+            f"({size} bytes) — re-downloading"
+        )
+
+    last_error: Exception | None = None
+
+    for url in urls:
+        try:
+            log(f"  → Downloading {name}")
+            log(f"      from {url}")
+
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": "3olution-setup/1.0 (+https://3olution.com)"},
+            )
+            with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as response:
+                data = response.read()
+
+            # Size check.
+            if len(data) &lt; MIN_SIZE[name]:
+                raise ValueError(
+                    f"downloaded file is too small "
+                    f"({len(data)} bytes &lt; {MIN_SIZE[name]} bytes)"
+                )
+
+            # Content check.
+            text = data.decode("utf-8", errors="replace")
+            if REQUIRED_SUBSTRING[name] not in text:
+                raise ValueError(
+                    f"downloaded file does not contain "
+                    f"'{REQUIRED_SUBSTRING[name]}' — wrong URL?"
+                )
+
+            # Write only after both checks pass.
+            dest.write_bytes(data)
+            log(f"  ✓ {name} ({len(data):,} bytes)")
+            return True
+
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            ValueError,
+            TimeoutError,
+            OSError,
+        ) as exc:
+            last_error = exc
+            log(f"      ✗ failed: {exc}")
+            continue
+
+    log(f"  ✗ {name}: all mirrors failed ({last_error})")
+    return False
+
+
+def download_all(force: bool = False, quiet: bool = False) -&gt; bool:
+    """
+    Download every vendor file.
+
+    Returns True if all files were downloaded successfully, False
+    otherwise.
+    """
+    log = _Logger(quiet)
+    VENDOR.mkdir(parents=True, exist_ok=True)
+    log(f"Vendor directory: {VENDOR}")
+
+    ok = True
+    for name, urls in FILES.items():
+        if not _download_one(name, urls, force, log):
+            ok = False
+    return ok
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Manual instructions
+# ══════════════════════════════════════════════════════════════════════
+
+def _print_manual_instructions() -&gt; None:
+    """Print fallback instructions for a failed download."""
+    print()
+    print("Manual fallback: download these two files into web/vendor/:")
+    for name, urls in FILES.items():
+        print(f"  {name}:")
+        for u in urls:
+            print(f"    {u}")
+    print()
+    print("Place both files at:")
+    print(f"  {VENDOR / 'litegraph.min.js'}")
+    print(f"  {VENDOR / 'litegraph.css'}")
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  CLI
+# ══════════════════════════════════════════════════════════════════════
+
+def parse_args() -&gt; argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description=(
+            "Download LiteGraph.js vendor files for the 3olution Agent Graph."
+        ),
+    )
+    p.add_argument(
+        "--force", action="store_true",
+        help="Re-download even if the files already exist.",
+    )
+    p.add_argument(
+        "--quiet", action="store_true",
+        help="Suppress per-file progress output.",
+    )
+    return p.parse_args()
+
+
+def main() -&gt; int:
+    args = parse_args()
+
+    ok = download_all(force=args.force, quiet=args.quiet)
+
+    if not args.quiet:
+        print()
+        if ok:
+            print("All vendor files present.")
+        else:
+            print("Some downloads failed.")
+            _print_manual_instructions()
+
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — download_vendor.sh
+       ============================================================= -->
+  <section class="file-section" id="f-vendor-sh" data-name="download_vendor.sh bash litegraph downloader source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>download_vendor.sh <span class="file-badge sh">shell</span></h2>
+        <span class="file-path">scripts/download_vendor.sh</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-bash">#!/usr/bin/env bash
+#
+# 3olution Agent Graph — download LiteGraph.js vendor files.
+# https://3olution.com
+#
+# Thin wrapper around scripts/download_vendor.py. This script exists
+# for users who prefer bash to invoking Python directly, or who need
+# to vendor the LiteGraph files in an environment where only curl and
+# tar are available.
+#
+# It downloads the two files directly via curl rather than shelling
+# out to the Python downloader. That is deliberate: the whole point
+# of this wrapper is to be usable without Python.
+#
+# Usage:
+#   bash scripts/download_vendor.sh              # skip if present
+#   bash scripts/download_vendor.sh --force      # force re-download
+#
+# Exit codes:
+#   0   both files present
+#   1   curl missing, download failed, or file too small
+#
+# For a cross-platform downloader with better validation and mirror
+# fallback, use scripts/download_vendor.py instead.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &amp;&amp; pwd)"
+VENDOR_DIR="$SCRIPT_DIR/../web/vendor"
+FORCE=0
+
+# ──────────────────────────────────────────────────────────────────────
+#  Parse arguments
+# ──────────────────────────────────────────────────────────────────────
+
+for arg in "$@"; do
+    case "$arg" in
+        --force|-f) FORCE=1 ;;
+        --help|-h)
+            cat &lt;&lt;EOF
+Usage: bash scripts/download_vendor.sh [--force]
+
+Options:
+  --force, -f   Re-download even if files exist
+  --help,  -h   Show this message
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $arg" &gt;&amp;2
+            exit 1
+            ;;
+    esac
+done
+
+# ──────────────────────────────────────────────────────────────────────
+#  Verify curl is available
+# ──────────────────────────────────────────────────────────────────────
+
+if ! command -v curl &gt;/dev/null 2&gt;&amp;1; then
+    echo "Error: curl is not installed." &gt;&amp;2
+    echo "Install it with your package manager, or run:" &gt;&amp;2
+    echo "    python scripts/download_vendor.py" &gt;&amp;2
+    exit 1
+fi
+
+mkdir -p "$VENDOR_DIR"
+
+echo "Vendor directory: $VENDOR_DIR"
+
+# ──────────────────────────────────────────────────────────────────────
+#  Mirror URLs
+# ──────────────────────────────────────────────────────────────────────
+#
+# jsDelivr is preferred (fast, cached). raw.githubusercontent.com is
+# the fallback.
+
+JS_PRIMARY="https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/build/litegraph.min.js"
+JS_FALLBACK="https://raw.githubusercontent.com/jagenjo/litegraph.js/master/build/litegraph.min.js"
+
+CSS_PRIMARY="https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/css/litegraph.css"
+CSS_FALLBACK="https://raw.githubusercontent.com/jagenjo/litegraph.js/master/css/litegraph.css"
+
+# ──────────────────────────────────────────────────────────────────────
+#  Download function with mirror fallback and size validation
+# ──────────────────────────────────────────────────────────────────────
+
+download_with_fallback() {
+    local dest="$1"
+    local primary="$2"
+    local fallback="$3"
+    local min_size="$4"
+
+    # Skip if present, sufficiently large, and not forcing.
+    if [ -f "$dest" ] &amp;&amp; [ "$FORCE" -eq 0 ]; then
+        local existing_size
+        existing_size=$(wc -c &lt; "$dest" | tr -d ' ')
+        if [ "$existing_size" -ge "$min_size" ]; then
+            echo "  ✓ $(basename "$dest") already present (${existing_size} bytes) — skipping"
+            return 0
+        fi
+        echo "  ! $(basename "$dest") too small (${existing_size} bytes) — re-downloading"
+    fi
+
+    echo "  → Downloading $(basename "$dest")"
+
+    if curl -fsSL --max-time 60 "$primary" -o "$dest" 2&gt;/dev/null; then
+        :
+    elif curl -fsSL --max-time 60 "$fallback" -o "$dest" 2&gt;/dev/null; then
+        echo "     (from fallback mirror)"
+    else
+        echo "  ✗ both mirrors failed for $(basename "$dest")" &gt;&amp;2
+        return 1
+    fi
+
+    local size
+    size=$(wc -c &lt; "$dest" | tr -d ' ')
+    if [ "$size" -lt "$min_size" ]; then
+        echo "  ✗ $(basename "$dest") is too small (${size} bytes &lt; ${min_size})" &gt;&amp;2
+        return 1
+    fi
+
+    echo "  ✓ $(basename "$dest") (${size} bytes)"
+    return 0
+}
+
+# ──────────────────────────────────────────────────────────────────────
+#  Run downloads
+# ──────────────────────────────────────────────────────────────────────
+
+download_with_fallback \
+    "$VENDOR_DIR/litegraph.min.js" \
+    "$JS_PRIMARY" \
+    "$JS_FALLBACK" \
+    50000
+
+download_with_fallback \
+    "$VENDOR_DIR/litegraph.css" \
+    "$CSS_PRIMARY" \
+    "$CSS_FALLBACK" \
+    1000
+
+echo ""
+echo "Done. Files in $VENDOR_DIR:"
+ls -lh "$VENDOR_DIR"</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — download_vendor.ps1
+       ============================================================= -->
+  <section class="file-section" id="f-vendor-ps1" data-name="download_vendor.ps1 powershell litegraph downloader source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>download_vendor.ps1 <span class="file-badge ps1">powershell</span></h2>
+        <span class="file-path">scripts/download_vendor.ps1</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-powershell"># 3olution Agent Graph — download LiteGraph.js vendor files (Windows).
+# https://3olution.com
+#
+# Thin wrapper around scripts/download_vendor.py. This script exists
+# for users who prefer PowerShell to invoking Python directly.
+#
+# Usage:
+#   powershell -ExecutionPolicy Bypass -File scripts\download_vendor.ps1
+#   powershell -ExecutionPolicy Bypass -File scripts\download_vendor.ps1 -Force
+#
+# Exit codes:
+#   0   both files present
+#   1   download failed or file too small
+#
+# For a cross-platform downloader with better validation and mirror
+# fallback, use scripts\download_vendor.py instead.
+
+#Requires -Version 5.0
+
+param(
+    [switch]$Force = $false
+)
+
+$ErrorActionPreference = "Stop"
+
+# ──────────────────────────────────────────────────────────────────────
+#  Paths
+# ──────────────────────────────────────────────────────────────────────
+
+$ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
+$VendorDir  = Join-Path $ScriptDir "..\web\vendor"
+$VendorDir  = [System.IO.Path]::GetFullPath($VendorDir)
+
+New-Item -ItemType Directory -Force -Path $VendorDir | Out-Null
+
+Write-Host "Vendor directory: $VendorDir"
+
+# ──────────────────────────────────────────────────────────────────────
+#  URLs
+# ──────────────────────────────────────────────────────────────────────
+#
+# jsDelivr is preferred. raw.githubusercontent.com is the fallback.
+
+$jsPrimary  = "https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/build/litegraph.min.js"
+$jsFallback = "https://raw.githubusercontent.com/jagenjo/litegraph.js/master/build/litegraph.min.js"
+
+$cssPrimary  = "https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/css/litegraph.css"
+$cssFallback = "https://raw.githubusercontent.com/jagenjo/litegraph.js/master/css/litegraph.css"
+
+# ──────────────────────────────────────────────────────────────────────
+#  Helper: download with fallback and validation
+# ──────────────────────────────────────────────────────────────────────
+
+function Download-WithFallback {
+    param(
+        [string]$Dest,
+        [string]$Primary,
+        [string]$Fallback,
+        [int]$MinSize
+    )
+
+    $name = Split-Path -Leaf $Dest
+
+    # Skip if present and sufficiently large.
+    if ((Test-Path $Dest) -and (-not $Force)) {
+        $existingSize = (Get-Item $Dest).Length
+        if ($existingSize -ge $MinSize) {
+            Write-Host "  ✓ $name already present ($existingSize bytes) — skipping"
+            return
+        }
+        Write-Host "  ! $name too small ($existingSize bytes) — re-downloading"
+    }
+
+    Write-Host "  → Downloading $name"
+
+    $downloaded = $false
+
+    try {
+        Invoke-WebRequest -Uri $Primary -OutFile $Dest -UseBasicParsing
+        $downloaded = $true
+    } catch {
+        Write-Host "     primary mirror failed: $_"
+    }
+
+    if (-not $downloaded) {
+        try {
+            Invoke-WebRequest -Uri $Fallback -OutFile $Dest -UseBasicParsing
+            Write-Host "     (from fallback mirror)"
+            $downloaded = $true
+        } catch {
+            Write-Host "  ✗ both mirrors failed for $name"
+            throw
+        }
+    }
+
+    $size = (Get-Item $Dest).Length
+    if ($size -lt $MinSize) {
+        throw "$name is too small ($size bytes < $MinSize)"
+    }
+
+    Write-Host "  ✓ $name ($size bytes)"
+}
+
+# ──────────────────────────────────────────────────────────────────────
+#  Download both files
+# ──────────────────────────────────────────────────────────────────────
+
+Download-WithFallback `
+    -Dest (Join-Path $VendorDir "litegraph.min.js") `
+    -Primary $jsPrimary `
+    -Fallback $jsFallback `
+    -MinSize 50000
+
+Download-WithFallback `
+    -Dest (Join-Path $VendorDir "litegraph.css") `
+    -Primary $cssPrimary `
+    -Fallback $cssFallback `
+    -MinSize 1000
+
+# ──────────────────────────────────────────────────────────────────────
+#  Summary
+# ──────────────────────────────────────────────────────────────────────
+
+Write-Host ""
+Write-Host "Done. Files in ${VendorDir}:"
+Get-ChildItem $VendorDir | Format-Table Name, Length -AutoSize</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — llama_cpp_runner.py
+       ============================================================= -->
+  <section class="file-section" id="f-llama-runner" data-name="llama_cpp_runner.py llama-cpp server port bypass source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>llama_cpp_runner.py <span class="file-badge">python</span></h2>
+        <span class="file-path">scripts/llama_cpp_runner.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Direct runner for llama-cpp-python's OpenAI-compatible server.
+https://3olution.com
+
+Why this exists
+---------------
+
+Some builds of `llama_cpp.server` silently drop the `--port` command
+line flag and fall back to uvicorn's default of 8000, which collides
+with the backend's own port. Setting the LLAMA_CPP_PORT environment
+variable does not help in those builds either.
+
+This script bypasses the module's argument parser entirely. It reads
+configuration from environment variables, constructs the settings
+objects directly, and calls `uvicorn.run()` with an explicit port.
+
+Model ID resolution
+-------------------
+
+The server exposes the value of `ModelSettings.model` as the model ID
+in `/v1/models`, and requires the same string back in the `model` field
+of chat and embeddings requests. This runner resolves the model path to
+an absolute path before constructing ModelSettings. backend/llm.py
+resolves the same path before sending requests, so the two agree.
+
+Chat format handling
+--------------------
+
+If LLAMA_CPP_CHAT_FORMAT is set to a non-empty value, it is passed to
+ModelSettings and OVERRIDES the model's embedded chat template. This
+is usually the wrong thing to do — nearly every modern GGUF ships its
+own template in `tokenizer.chat_template`, and forcing a different one
+causes the model to produce garbage or an immediate EOS token.
+
+If LLAMA_CPP_CHAT_FORMAT is empty (or unset), this runner does NOT
+pass `chat_format` to ModelSettings. The model's embedded template is
+used automatically, which is correct for Llama-3.2, Qwen, Mistral,
+Gemma, and every other modern model.
+
+Set LLAMA_CPP_CHAT_FORMAT explicitly only when the GGUF has no
+embedded template, or when you deliberately want to override it.
+
+Environment variables read
+--------------------------
+
+    LLAMA_CPP_MODEL           Absolute or relative path to .gguf (required)
+    LLAMA_CPP_HOST            Bind address (default 127.0.0.1)
+    LLAMA_CPP_PORT            Bind port    (default 8081)
+    LLAMA_CPP_N_CTX           Context window (default 4096)
+    LLAMA_CPP_N_GPU_LAYERS    GPU layers   (default 0)
+    LLAMA_CPP_CHAT_FORMAT     Chat format  (default: empty = use model's own)
+    LLAMA_CPP_API_KEY         Optional API key
+    LLAMA_CPP_EMBEDDING       "true" to enable /v1/embeddings
+"""
+
+from __future__ import annotations
+
+import inspect
+import os
+import sys
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Environment helpers
+# ══════════════════════════════════════════════════════════════════════
+
+def _int_env(name: str, default: int) -&gt; int:
+    raw = os.environ.get(name)
+    if raw is None or raw == "":
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+def _bool_env(name: str, default: bool = False) -&gt; bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+def _str_env(name: str, default: str = "") -&gt; str:
+    """Return the env var value with surrounding whitespace stripped."""
+    return (os.environ.get(name) or default).strip()
+
+
+def _log(msg: str) -&gt; None:
+    print(f"[llama_cpp_runner] {msg}", file=sys.stderr, flush=True)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Settings construction
+# ══════════════════════════════════════════════════════════════════════
+
+def _build_model_settings(ModelSettings, kwargs: dict):
+    """Construct ModelSettings, tolerating field-set variations."""
+    try:
+        return ModelSettings(**kwargs)
+    except TypeError:
+        minimal = {"model": kwargs["model"]}
+        ms = ModelSettings(**minimal)
+        for key, value in kwargs.items():
+            if key == "model":
+                continue
+            try:
+                setattr(ms, key, value)
+            except Exception:
+                pass
+        return ms
+
+
+def _build_server_settings(ServerSettings, host: str, port: int):
+    """Construct ServerSettings with the requested host and port."""
+    try:
+        return ServerSettings(host=host, port=port)
+    except Exception:
+        pass
+
+    try:
+        ss = ServerSettings()
+        try:
+            ss.host = host  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        try:
+            ss.port = port  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return ss
+    except Exception:
+        pass
+
+    try:
+        return ServerSettings()
+    except Exception:
+        return None
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  create_app invocation
+# ══════════════════════════════════════════════════════════════════════
+
+def _call_create_app(create_app, model_settings, server_settings):
+    """Call create_app with the argument shape its signature expects."""
+    try:
+        sig = inspect.signature(create_app)
+        _log(f"create_app signature: {sig}")
+    except Exception:
+        pass
+
+    patterns = [
+        (
+            "list-kwarg",
+            lambda: create_app(
+                model_settings=[model_settings],
+                server_settings=server_settings,
+            ),
+        ),
+        (
+            "dict-kwarg",
+            lambda: create_app(
+                model_settings={model_settings.model: model_settings},
+                server_settings=server_settings,
+            ),
+        ),
+        (
+            "list-positional",
+            lambda: create_app([model_settings], server_settings),
+        ),
+        (
+            "single-kwarg",
+            lambda: create_app(
+                model_settings=model_settings,
+                server_settings=server_settings,
+            ),
+        ),
+        (
+            "single-positional",
+            lambda: create_app(model_settings, server_settings),
+        ),
+        (
+            "list-only",
+            lambda: create_app([model_settings]),
+        ),
+    ]
+
+    last_exc: Exception | None = None
+    for name, fn in patterns:
+        try:
+            app = fn()
+            _log(f"create_app succeeded via '{name}'")
+            return app
+        except TypeError as exc:
+            last_exc = exc
+            _log(f"create_app pattern '{name}' raised TypeError: {exc}")
+            continue
+        except Exception as exc:
+            last_exc = exc
+            _log(f"create_app pattern '{name}' raised {type(exc).__name__}: {exc}")
+            continue
+
+    assert last_exc is not None
+    raise last_exc
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Main
+# ══════════════════════════════════════════════════════════════════════
+
+def main() -&gt; int:
+    # ── Import SDK pieces ────────────────────────────────────────────
+    try:
+        from llama_cpp.server.app import create_app
+        from llama_cpp.server.settings import ModelSettings, ServerSettings
+    except ImportError as exc:
+        _log(f"llama-cpp-python is not installed or is broken: {exc}")
+        return 1
+
+    # ── Resolve model path ───────────────────────────────────────────
+    model_path_raw = _str_env("LLAMA_CPP_MODEL")
+    if not model_path_raw:
+        _log("LLAMA_CPP_MODEL is required")
+        return 2
+
+    model_path = os.path.abspath(model_path_raw)
+    _log(f"resolved model path: {model_path}")
+
+    if not os.path.isfile(model_path):
+        _log(f"model file does not exist: {model_path}")
+        return 2
+
+    # ── Read remaining configuration ─────────────────────────────────
+    host = _str_env("LLAMA_CPP_HOST", "127.0.0.1")
+    port = _int_env("LLAMA_CPP_PORT", 8081)
+    n_ctx = _int_env("LLAMA_CPP_N_CTX", 4096)
+    n_gpu_layers = _int_env("LLAMA_CPP_N_GPU_LAYERS", 0)
+    api_key = _str_env("LLAMA_CPP_API_KEY") or None
+    embedding = _bool_env("LLAMA_CPP_EMBEDDING", False)
+
+    # Chat format is optional. Empty means "use the model's own
+    # embedded template". Only pass it through when explicitly set.
+    chat_format = _str_env("LLAMA_CPP_CHAT_FORMAT")
+
+    _log(f"host={host} port={port}")
+    _log(f"n_ctx={n_ctx} n_gpu_layers={n_gpu_layers}")
+    if chat_format:
+        _log(f"chat_format={chat_format} (explicit override)")
+    else:
+        _log("chat_format=(unset — using model's embedded template)")
+    _log(f"embedding={embedding}")
+
+    # ── ModelSettings ────────────────────────────────────────────────
+    model_kwargs: dict = {
+        "model": model_path,
+        "n_ctx": n_ctx,
+        "n_gpu_layers": n_gpu_layers,
+    }
+    if chat_format:
+        model_kwargs["chat_format"] = chat_format
+    if api_key:
+        model_kwargs["api_key"] = api_key
+    if embedding:
+        model_kwargs["embedding"] = True
+
+    try:
+        model_settings = _build_model_settings(ModelSettings, model_kwargs)
+    except Exception as exc:
+        _log(f"ModelSettings construction failed: {exc}")
+        return 3
+
+    # ── ServerSettings ───────────────────────────────────────────────
+    server_settings = _build_server_settings(ServerSettings, host, port)
+    if server_settings is None:
+        _log("ServerSettings could not be constructed; continuing without it")
+
+    # ── Build the app ────────────────────────────────────────────────
+    try:
+        if server_settings is not None:
+            app = _call_create_app(create_app, model_settings, server_settings)
+        else:
+            app = _call_create_app(create_app, model_settings, None)
+    except Exception as exc:
+        _log(f"create_app failed for all patterns: {exc}")
+        return 5
+
+    # ── Run uvicorn with our explicit host and port ──────────────────
+    import uvicorn
+
+    _log(f"starting uvicorn on {host}:{port}")
+
+    uvicorn.run(
+        app,
+        host=host,
+        port=port,
+        log_level="info",
+        access_log=False,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())</code></pre></div>
+  </section>
+
+</main>
+
+<button class="to-top visible" id="toTop" title="Back to top">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/bash.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/powershell.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/markdown.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Highlight all code blocks ----------
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      try { hljs.highlightElement(el); } catch (e) {}
+    });
+  }
+
+  // ---------- Line count for each file ----------
+  document.querySelectorAll('.file-section').forEach(function (sec) {
+    var code = sec.querySelector('pre code');
+    var badge = sec.querySelector('[data-lines]');
+    if (!badge) return;
+    if (code) {
+      var text = code.textContent || '';
+      var lines = text.split('\n').length;
+      badge.textContent = lines + ' lines';
+    } else {
+      badge.textContent = 'doc';
+    }
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.file-section');
+      if (!sec) return;
+      var code = sec.querySelector('pre code');
+      var md = sec.querySelector('.md-content');
+      var text = code ? code.textContent : (md ? md.innerText : '');
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = '✗ Failed';
+        setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600);
+      });
+    });
+  });
+
+  // ---------- Active nav tracking ----------
+  var navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+  var sections = Array.from(document.querySelectorAll('.file-section'));
+  var crumbs = document.getElementById('crumbs');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s.offsetTop <= scrollY) current = s;
+      else break;
+    }
+    navLinks.forEach(function (a) { a.classList.remove('active'); });
+    if (current) {
+      var link = document.querySelector('.nav-list a[href="#' + current.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        var path = current.querySelector('.file-path');
+        if (path && crumbs) {
+          crumbs.textContent = path.textContent;
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ---------- Search filter ----------
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+  var navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var q = searchInput.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      document.querySelectorAll('.nav-list li').forEach(function (li) {
+        var text = li.textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        li.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+      });
+
+      navGroups.forEach(function (g) {
+        var list = g.nextElementSibling;
+        if (!list || !list.classList.contains('nav-list')) return;
+        var hasVisible = list.querySelector('li:not(.hidden)');
+        g.style.display = hasVisible ? '' : 'none';
+      });
+
+      sections.forEach(function (sec) {
+        var name = (sec.getAttribute('data-name') || '') + ' ' +
+                   (sec.querySelector('.file-path')?.textContent || '') + ' ' +
+                   (sec.querySelector('h2')?.textContent || '');
+        name = name.toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        sec.classList.toggle('hidden', !match);
+      });
+
+      if (noResults) noResults.classList.toggle('visible', visibleCount === 0);
+    });
+  }
+
+  // ---------- Back to top ----------
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('visible', window.scrollY > 500);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---------- Mobile sidebar toggle ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (window.innerWidth <= 700) sidebar.classList.remove('open');
+      });
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

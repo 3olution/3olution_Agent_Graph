@@ -1,0 +1,2752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — Bootstrap Runtime Setup</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 300px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 4px 9px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+  border-radius: 5px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.back-link:hover {
+  background: rgba(88, 166, 255, 0.15);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list li { margin: 0; }
+
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-list a:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+
+/* ---------- Main ---------- */
+main {
+  margin-left: var(--sidebar-w);
+  padding: 0 0 80px;
+  min-height: 100vh;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.topbar .stats {
+  font-size: 12px;
+  color: var(--text-mute);
+  display: flex;
+  gap: 16px;
+}
+
+.topbar .stats span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14.5px;
+  max-width: 720px;
+}
+
+.hero .links {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.hero .links a:hover {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+
+/* ---------- File section ---------- */
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.file-section.hidden { display: none; }
+
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.file-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+
+.copy-btn.copied {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(63, 185, 80, 0.08);
+}
+
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.hljs { background: transparent !important; padding: 0 !important; }
+
+/* Markdown / documentation content */
+.md-content {
+  padding: 24px 28px;
+  max-height: 800px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.md-content th {
+  background: var(--bg-elev);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.md-content td { color: var(--text-dim); }
+
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+
+/* Scroll to top */
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 260px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+
+.nav-list li.hidden { display: none; }
+
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo-mark">3</span> Bootstrap</h1>
+    <div class="sub">Portable Runtime Setup</div>
+    <a href="index.html" class="back-link">← Back to Knowledge Base</a>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Overview</div>
+  <ul class="nav-list" data-group="overview">
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>What is bootstrap?</a></li>
+    <li><a href="#doc-pipeline"><span class="nav-icon md"></span>Install pipeline</a></li>
+    <li><a href="#doc-cli"><span class="nav-icon md"></span>CLI reference</a></li>
+    <li><a href="#doc-php-windows"><span class="nav-icon md"></span>PHP on Windows</a></li>
+    <li><a href="#doc-runtime-layout"><span class="nav-icon md"></span>Runtime layout</a></li>
+    <li><a href="#doc-troubleshooting"><span class="nav-icon md"></span>Troubleshooting</a></li>
+  </ul>
+
+  <div class="nav-group">Source</div>
+  <ul class="nav-list" data-group="source">
+    <li><a href="#f-setup"><span class="nav-icon py"></span>setup.py</a></li>
+  </ul>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">bootstrap / overview</span>
+    </div>
+    <div class="stats">
+      <span>📄 <strong id="statFiles">1</strong> file</span>
+      <span>🐍 <strong>Python 3.12.11</strong></span>
+      <span>🐘 <strong>PHP 8.x</strong></span>
+      <span>🗄️ <strong>SQLite 3.46</strong></span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Bootstrap Runtime</h1>
+    <p>
+      Self-contained portable runtime for the 3olution Agent Graph backend.
+      Downloads and installs portable Python, PHP (CGI + CLI), and the
+      SQLite CLI into <code>runtime/</code> so the project runs without a
+      system-wide Python, PHP, or SQLite installation. Handles Windows
+      quirks (missing php.ini, VS16 vs VS17 builds) automatically.
+    </p>
+    <div class="links">
+      <a href="https://3olution.com" target="_blank" rel="noopener">🌐 3olution.com</a>
+      <a href="index.html">📚 Knowledge Base</a>
+      <a href="#f-setup">📄 View setup.py</a>
+      <a href="#doc-pipeline">🔧 Install pipeline</a>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       DOCUMENTATION — Overview
+       ============================================================= -->
+  <section class="file-section" id="doc-overview" data-name="overview documentation bootstrap portable runtime">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>What is bootstrap? <span class="file-badge">docs</span></h2>
+        <span class="file-path">bootstrap/README.md — Overview</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Portable Runtime Bootstrap</h1>
+
+      <p>
+        The <code>bootstrap/</code> folder contains a single script,
+        <code>setup.py</code>, whose job is to make the 3olution Agent Graph
+        backend runnable on a machine that has <em>nothing</em> installed
+        except a working Python interpreter (3.8+). After the script
+        finishes, the project has:
+      </p>
+
+      <ul>
+        <li>A private <strong>Python 3.12</strong> interpreter under <code>runtime/python/</code>,</li>
+        <li>A private <strong>PHP</strong> runtime (CGI + CLI) under <code>runtime/php/</code>,</li>
+        <li>A private <strong>SQLite</strong> CLI under <code>runtime/sqlite/</code>,</li>
+        <li>All Python dependencies installed into that private Python,</li>
+        <li>The LiteGraph vendor files fetched into <code>web/vendor/</code>,</li>
+        <li>A manifest file at <code>runtime/runtime.env</code> describing what was installed.</li>
+      </ul>
+
+      <div class="callout success">
+        <strong>Why a portable runtime?</strong> It removes the entire class
+        of "it works on my machine" problems. Every install — Windows, macOS,
+        Linux — has the same Python version, the same PHP build, and the
+        same SQLite CLI. Nothing leaks in from the host system.
+      </div>
+
+      <h2>What bootstrap does <em>not</em> do</h2>
+      <ul>
+        <li>It does not install the MCP server. That is a separate
+          <code>mcp_server</code> package, run from the same portable Python.</li>
+        <li>It does not download GGUF models. Those go into <code>models/</code>
+          and are managed by the settings page.</li>
+        <li>It does not install <code>llama-cpp-python</code>. That is done
+          at runtime through the settings page, because the correct wheel
+          depends on the host's CUDA version.</li>
+        <li>It does not touch the host's system Python, PATH, or registry.</li>
+      </ul>
+
+      <h2>When to run it</h2>
+      <table>
+        <thead><tr><th>Scenario</th><th>Command</th></tr></thead>
+        <tbody>
+          <tr><td>First-ever setup</td><td><code>python bootstrap/setup.py</code></td></tr>
+          <tr><td>Reinstall everything</td><td><code>python bootstrap/setup.py --force</code></td></tr>
+          <tr><td>Skip PHP (no notes app)</td><td><code>python bootstrap/setup.py --skip-php</code></td></tr>
+          <tr><td>Check what's installed</td><td><code>python bootstrap/setup.py --check</code></td></tr>
+          <tr><td>Only re-download vendor files</td><td><code>python -m scripts.download_vendor</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Version pins</h2>
+      <p>The script pins specific versions so builds are reproducible:</p>
+      <table>
+        <thead><tr><th>Component</th><th>Version</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>Python</td><td>3.12.11</td><td>astral-sh/python-build-standalone (tag <code>20250712</code>)</td></tr>
+          <tr><td>PHP (Unix)</td><td>8.4.x → 8.2.x fallback</td><td>dl.static-php.dev (static-php-cli bulk build)</td></tr>
+          <tr><td>PHP (Windows)</td><td>8.4.15 → 8.2.29 fallback</td><td>windows.php.net (official ZIP)</td></tr>
+          <tr><td>SQLite CLI</td><td>3.46.0</td><td>sqlite.org</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <strong>Fallback chains.</strong> Both PHP installers try several
+        versions in order. If <code>8.4.20</code> is unavailable (a server
+        outage, a version removed), the script silently moves on to
+        <code>8.4.19</code>, then <code>8.4.18</code>, and so on. The
+        Windows installer additionally tries <code>vs17</code> before
+        <code>vs16</code>, and the <code>releases</code> folder before
+        <code>releases/archives</code>.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Install pipeline
+       ============================================================= -->
+  <section class="file-section" id="doc-pipeline" data-name="install pipeline documentation steps order">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Install pipeline <span class="file-badge">docs</span></h2>
+        <span class="file-path">bootstrap/README.md — Install pipeline</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Install pipeline</h1>
+
+      <p>
+        <code>main()</code> runs six stages in a fixed order. Each stage
+        logs its own section header, and the whole run ends with a
+        summary table. A failure in one stage does not abort the others
+        unless a later stage depends on it — for example, pip cannot
+        install into a Python that was never unpacked.
+      </p>
+
+      <h2>Stage 1 — Python</h2>
+      <pre>install_python(plat, force)</pre>
+      <ol>
+        <li>If <code>runtime/python/python.exe</code> (or <code>bin/python3</code>)
+          already exists and <code>--force</code> is not set, skip.</li>
+        <li>Download <code>cpython-3.12.11+20250712-&lt;triple&gt;-install_only_stripped.tar.gz</code>
+          from the astral-sh/python-build-standalone GitHub releases.</li>
+        <li>Extract the archive into a temp directory, then move the
+          single top-level folder into <code>runtime/python/</code>.</li>
+        <li>Verify by running <code>python --version</code>. On failure,
+          remove the folder and return <code>False</code>.</li>
+      </ol>
+
+      <p>The platform triple is chosen by <code>detect_platform()</code>:</p>
+      <table>
+        <thead><tr><th>OS</th><th>Arch</th><th>Triple</th></tr></thead>
+        <tbody>
+          <tr><td>Windows</td><td>x86_64</td><td><code>x86_64-pc-windows-msvc</code></td></tr>
+          <tr><td>Windows</td><td>arm64</td><td><code>aarch64-pc-windows-msvc</code></td></tr>
+          <tr><td>Linux</td><td>x86_64</td><td><code>x86_64-unknown-linux-gnu</code></td></tr>
+          <tr><td>Linux</td><td>aarch64</td><td><code>aarch64-unknown-linux-gnu</code></td></tr>
+          <tr><td>macOS</td><td>x86_64</td><td><code>x86_64-apple-darwin</code></td></tr>
+          <tr><td>macOS</td><td>arm64</td><td><code>aarch64-apple-darwin</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Stage 2 — PHP</h2>
+      <p>
+        The installer branches on <code>plat["is_windows"]</code>:
+      </p>
+
+      <h3>Unix path (Linux / macOS)</h3>
+      <pre>_install_php_unix(plat, force)</pre>
+      <p>
+        Uses the static-php-cli bulk builds from
+        <code>dl.static-php.dev</code>. Each candidate version produces a
+        single tarball like:
+      </p>
+      <pre>php-8.4.20-cli-linux-x86_64.tar.gz</pre>
+      <p>
+        Inside is a statically-linked <code>php</code> binary plus a
+        <code>php-cgi</code> symlink (or a sibling binary, depending on
+        the build). Both are moved into <code>runtime/php/</code> and
+        marked executable.
+      </p>
+
+      <h3>Windows path</h3>
+      <pre>_install_php_windows(plat, force)</pre>
+      <p>
+        Downloads the <em>official</em> Windows PHP ZIP from
+        <code>windows.php.net</code>. This is the only distribution that
+        ships <code>php-cgi.exe</code> alongside <code>php.exe</code>.
+        See the <a href="#doc-php-windows">dedicated PHP on Windows</a>
+        section for the full detail.
+      </p>
+
+      <h2>Stage 3 — SQLite CLI</h2>
+      <pre>install_sqlite(plat, force)</pre>
+      <p>
+        Downloads <code>sqlite-tools-&lt;platform&gt;-3460000.zip</code> from
+        sqlite.org. The archive contains <code>sqlite3.exe</code>,
+        <code>sqldiff.exe</code>, and <code>sqlite3_analyzer.exe</code>.
+        All three land in <code>runtime/sqlite/</code>.
+      </p>
+
+      <p>Platform mapping:</p>
+      <table>
+        <thead><tr><th>OS</th><th>sqlite_platform</th></tr></thead>
+        <tbody>
+          <tr><td>Windows x64</td><td><code>win-x64</code></td></tr>
+          <tr><td>Windows arm64</td><td><code>win-arm64</code></td></tr>
+          <tr><td>Linux x64</td><td><code>linux-x64</code></td></tr>
+          <tr><td>macOS x64</td><td><code>osx-x64</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Stage 4 — Python dependencies</h2>
+      <pre>install_python_deps(plat)</pre>
+      <ol>
+        <li>Ensures <code>pip</code> is available (<code>ensurepip --upgrade</code> if not).</li>
+        <li>Upgrades pip itself (non-fatal if it fails).</li>
+        <li>Runs <code>pip install -r requirements.txt</code> using the
+          private Python.</li>
+      </ol>
+
+      <p>
+        Because the private Python has no system site-packages, every
+        dependency must be installed here — including <code>fastapi</code>,
+        <code>uvicorn</code>, <code>openai</code>, <code>mcp</code>,
+        <code>httpx</code>, and <code>loguru</code>.
+      </p>
+
+      <h2>Stage 5 — LiteGraph vendor files</h2>
+      <pre>download_vendor(plat)</pre>
+      <p>
+        Runs <code>scripts/download_vendor.py</code>, which fetches
+        <code>litegraph.min.js</code> and <code>litegraph.css</code> into
+        <code>web/vendor/</code>. These are the only external assets the
+        frontend needs; everything else ships from CDN at runtime (with
+        local fallback).
+      </p>
+
+      <div class="callout">
+        <strong>Vendor files are optional.</strong> If the download fails,
+        the graph editor loads LiteGraph from jsDelivr instead. The
+        backend always starts.
+      </div>
+
+      <h2>Stage 6 — Manifest</h2>
+      <pre>write_runtime_env(plat)</pre>
+      <p>
+        Writes <code>runtime/runtime.env</code>, a shell-sourceable file
+        that records exactly which binaries were installed and where.
+        Tools like <code>start.sh</code> and <code>start.bat</code> source
+        this file to locate the private Python and PHP.
+      </p>
+
+      <pre>RUNTIME_PLATFORM=windows
+RUNTIME_ARCH=x86_64
+RUNTIME_PYTHON_VERSION=3.12.11
+RUNTIME_PHP_VERSION=8.4.15
+RUNTIME_SQLITE_VERSION=3460000
+
+RUNTIME_PYTHON=C:\...\runtime\python\python.exe
+RUNTIME_PHP_CLI=C:\...\runtime\php\php.exe
+RUNTIME_PHP_CGI=C:\...\runtime\php\php-cgi.exe
+RUNTIME_SQLITE=C:\...\runtime\sqlite\sqlite3.exe</pre>
+
+      <h2>Exit codes</h2>
+      <table>
+        <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>Bootstrap complete, all requested stages succeeded</td></tr>
+          <tr><td>1</td><td>At least one stage failed (see the summary table)</td></tr>
+          <tr><td>2</td><td>Python interpreter version too old (3.8+ required)</td></tr>
+          <tr><td>130</td><td>Interrupted by Ctrl+C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — CLI reference
+       ============================================================= -->
+  <section class="file-section" id="doc-cli" data-name="cli reference flags arguments setup.py force skip check verbose">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>CLI reference <span class="file-badge">docs</span></h2>
+        <span class="file-path">bootstrap/README.md — Command-line flags</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Command-line reference</h1>
+
+      <pre>python bootstrap/setup.py [options]</pre>
+
+      <h2>Flags</h2>
+      <table>
+        <thead><tr><th>Flag</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>--force</code></td>
+            <td>Re-download and reinstall every component, even if a
+              working copy already exists. Cached archives are also
+              re-fetched. Use after a corrupt install.</td>
+          </tr>
+          <tr>
+            <td><code>--skip-python</code></td>
+            <td>Do not install portable Python. Useful when only PHP or
+              SQLite needs updating.</td>
+          </tr>
+          <tr>
+            <td><code>--skip-php</code></td>
+            <td>Do not install PHP. The <code>/php/</code> notes app will
+              return a 500 error with a helpful message.</td>
+          </tr>
+          <tr>
+            <td><code>--skip-sqlite</code></td>
+            <td>Do not install the SQLite CLI. The backend does not need
+              it (Python has its own <code>sqlite3</code> module) — this
+              is only for manual database inspection.</td>
+          </tr>
+          <tr>
+            <td><code>--skip-deps</code></td>
+            <td>Do not run <code>pip install -r requirements.txt</code>.
+              Use when you have already installed deps manually.</td>
+          </tr>
+          <tr>
+            <td><code>--skip-vendor</code></td>
+            <td>Do not download LiteGraph. The frontend will load from
+              jsDelivr instead.</td>
+          </tr>
+          <tr>
+            <td><code>--check</code></td>
+            <td>Do not install anything. Just report the current state
+              of <code>runtime/</code> and exit. Exit code 0 means
+              everything needed is present.</td>
+          </tr>
+          <tr>
+            <td><code>--verbose</code></td>
+            <td>Print a full Python traceback if an unexpected error
+              occurs. Without this, only a one-line error message is
+              shown.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Common recipes</h2>
+
+      <h3>Fix a missing php.ini</h3>
+      <pre>python bootstrap/setup.py --force --skip-python --skip-sqlite --skip-deps --skip-vendor</pre>
+      <p>
+        Re-runs the PHP installer only. On Windows this re-extracts the
+        official ZIP and rewrites <code>runtime/php/php.ini</code>. Fast
+        (about 30 seconds) because nothing else is touched.
+      </p>
+
+      <h3>Rebuild the Python venv from scratch</h3>
+      <pre>python bootstrap/setup.py --force --skip-php --skip-sqlite --skip-vendor</pre>
+      <p>
+        Re-downloads Python and reinstalls every pip dependency. Use when
+        a package is corrupted or the interpreter itself misbehaves.
+      </p>
+
+      <h3>CI / unattended install</h3>
+      <pre>python bootstrap/setup.py --skip-vendor</pre>
+      <p>
+        On a CI runner with no outbound access to jsDelivr, skip the
+        vendor download. The backend serves the graph editor's fallback
+        CDN link instead.
+      </p>
+
+      <h3>Diagnostics</h3>
+      <pre>python bootstrap/setup.py --check</pre>
+      <p>
+        Prints a report of every expected binary with its path, size, and
+        whether it verifies. Useful for a bug report — paste the output.
+      </p>
+
+      <h2>Environment variables</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>NO_COLOR=1</code></td>
+            <td>Disable ANSI colour in the console output. The script
+              honours the <a href="https://no-color.org" target="_blank" rel="noopener">no-color.org</a>
+              convention. Useful when piping output to a file.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Example: full first-run output</h2>
+      <pre>[info] Detected platform: windows-x86_64
+[info] Project root: C:\projects\agent-graph
+[info] Runtime dir:  C:\projects\agent-graph\runtime
+
+==================================================================
+  Python 3.12.11
+==================================================================
+[info] Downloading portable Python
+    https://github.com/astral-sh/python-build-standalone/...
+    [########################] 100.0%   27.3 MB / 27.3 MB   12.4 MB/s
+[info] Extracting Python
+[ok]   Python installed at C:\...\runtime\python\python.exe  (Python 3.12.11)
+
+==================================================================
+  PHP runtime (official Windows build)
+==================================================================
+[info] Trying PHP 8.4.15 (vs17, releases)
+    [########################] 100.0%   31.1 MB / 31.1 MB   8.7 MB/s
+[info] Extracting PHP 8.4.15
+[ok]   PHP 8.4.15 installed
+[ok]     CLI: C:\...\runtime\php\php.exe
+[ok]     CGI: C:\...\runtime\php\php-cgi.exe
+[ok]     PHP 8.4.15 (cgi-fcgi) (built: ...)
+
+==================================================================
+  SQLite CLI 3460000
+==================================================================
+[ok]   SQLite CLI installed at C:\...\runtime\sqlite\sqlite3.exe
+
+==================================================================
+  Python dependencies
+==================================================================
+[info] Upgrading pip
+[info] Installing requirements.txt
+[ok]   Python dependencies installed
+
+==================================================================
+  LiteGraph vendor files
+==================================================================
+[ok]   LiteGraph vendor files ready
+
+==================================================================
+  Runtime manifest
+==================================================================
+[ok]   Wrote C:\...\runtime\runtime.env
+
+==================================================================
+  Summary
+==================================================================
+[ok]   Python
+[ok]   PHP
+[ok]   SQLite
+[ok]   Dependencies
+[ok]   LiteGraph
+
+[ok]   Bootstrap complete.
+
+  Next steps:
+      start.bat
+</pre>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — PHP on Windows
+       ============================================================= -->
+  <section class="file-section" id="doc-php-windows" data-name="php windows php-cgi php.ini extensions documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>PHP on Windows <span class="file-badge">docs</span></h2>
+        <span class="file-path">bootstrap/README.md — PHP on Windows in depth</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>PHP on Windows — the full story</h1>
+
+      <p>
+        This is the messiest part of the bootstrap, so it gets its own
+        section. If you ever need to debug a <code>/php/</code> route
+        that returns blank output or a 500, start here.
+      </p>
+
+      <h2>The problem</h2>
+      <p>
+        Unix static-php-cli builds are clean: one tarball, one static
+        binary, zero dependencies. There is no equivalent for Windows.
+        The static-php-cli project publishes a Windows ZIP, but it only
+        contains the <strong>CLI SAPI</strong> — <code>php.exe</code>.
+        The backend needs <strong>CGI SAPI</strong> —
+        <code>php-cgi.exe</code> — because that is the only mode that
+        speaks the CGI protocol the PHP notes app depends on.
+      </p>
+
+      <div class="callout danger">
+        <strong>Without php-cgi.exe, the /php/ app cannot run.</strong>
+        The backend's <code>php_server.py</code> will still start, but
+        every request to <code>/php/*</code> returns a 500 with
+        <code>"The resolved PHP binary is a CLI build, not a CGI build"</code>.
+      </div>
+
+      <h2>The solution</h2>
+      <p>
+        Use the <em>official</em> Windows PHP build from
+        <code>windows.php.net</code>. That ZIP is larger (30+ MB vs the
+        ~6 MB static-php-cli Windows build) and contains many DLLs, but
+        it ships <em>both</em> SAPIs and every extension DLL the notes
+        app needs.
+      </p>
+
+      <p>What the ZIP contains:</p>
+      <pre>php-8.4.15-Win32-vs17-x64/
+    php.exe              ← CLI SAPI
+    php-cgi.exe          ← CGI SAPI  (this is why we use this ZIP)
+    php8ts.dll           ← the PHP engine
+    php8ts.pdb
+    ext/                 ← extension DLLs
+        php_pdo_sqlite.dll
+        php_sqlite3.dll
+        php_mbstring.dll
+        php_openssl.dll
+        php_curl.dll
+        ... (60+ more)
+    libcrypto-3-x64.dll
+    libssl-3-x64.dll
+    ... every runtime DLL PHP needs
+    php.ini-development  ← sample, but NOT loaded by default
+    php.ini-production   ← sample, but NOT loaded by default
+</pre>
+
+      <div class="callout warn">
+        <strong>Notice what's missing: a real <code>php.ini</code>.</strong>
+        The ZIP ships two <em>samples</em> but no actual config file. PHP
+        will not load either one automatically.
+      </div>
+
+      <h2>The php.ini trap</h2>
+      <p>
+        Without a <code>php.ini</code>, PHP loads with <em>every
+        extension disabled</em>. The notes app calls
+        <code>new PDO('sqlite:...')</code>, which raises
+        <code>could not find driver</code> — a confusing error because
+        the SQLite library is right there in the ZIP.
+      </p>
+
+      <p>
+        The bootstrap writes a minimal <code>php.ini</code> into
+        <code>runtime/php/</code> after extraction:
+      </p>
+
+      <pre>extension_dir = "ext"
+
+extension=pdo_sqlite
+extension=sqlite3
+extension=mbstring
+extension=openssl
+
+display_errors = On
+error_reporting = E_ALL
+
+date.timezone = UTC</pre>
+
+      <p>
+        Each extension is required by something in the notes app:
+      </p>
+
+      <table>
+        <thead><tr><th>Extension</th><th>Required by</th></tr></thead>
+        <tbody>
+          <tr><td><code>pdo_sqlite</code></td><td>The PDO connection in <code>db.php</code></td></tr>
+          <tr><td><code>sqlite3</code></td><td>Companion to pdo_sqlite; some helper functions use it directly</td></tr>
+          <tr><td><code>mbstring</code></td><td><code>mb_strlen()</code> and <code>mb_substr()</code> in <code>index.php</code></td></tr>
+          <tr><td><code>openssl</code></td><td>Password hashing helpers and any future HTTPS calls</td></tr>
+        </tbody>
+      </table>
+
+      <h2>The vs16 / vs17 question</h2>
+      <p>
+        Microsoft's C++ runtime has two major versions in circulation:
+      </p>
+      <ul>
+        <li><strong>VS16</strong> — Visual Studio 2019 toolchain. Runs on Windows 8.1+.</li>
+        <li><strong>VS17</strong> — Visual Studio 2022 toolchain. Requires Windows 10+.</li>
+      </ul>
+      <p>
+        PHP 8.4 and later are VS17-only. PHP 8.3 and earlier are available
+        in both. The bootstrap picks the best match based on the version
+        string:
+      </p>
+      <pre>def _windows_vs_variants(version):
+    major, minor = parse(version)
+    if major &gt; 8 or (major == 8 and minor &gt;= 4):
+        return ["vs17", "vs16"]
+    return ["vs16", "vs17"]</pre>
+      <p>
+        Each variant is tried in order. If <code>vs17</code> is missing
+        (say, because the runner is on Windows 8.1), the installer
+        silently falls through to <code>vs16</code>.
+      </p>
+
+      <h2>The releases vs releases/archives question</h2>
+      <p>
+        <code>windows.php.net</code> keeps the current point release in
+        <code>downloads/releases/</code> and older ones in
+        <code>downloads/releases/archives/</code>. When a new PHP 8.4.x
+        drops, the previous version is moved to archives — and any pinned
+        URL breaks.
+      </p>
+      <p>
+        The bootstrap tries <code>releases/</code> first (fast, always
+        current) then <code>releases/archives/</code> (fallback for the
+        pinned versions).
+      </p>
+
+      <h2>Full fallback matrix</h2>
+      <p>
+        For a Windows install, the script tries up to
+        <strong>8 versions × 2 VS variants × 2 folders = 32 combinations</strong>
+        before giving up. In practice the very first combination
+        (<code>8.4.15/vs17/releases</code>) succeeds.
+      </p>
+
+      <pre>PHP_WINDOWS_VERSION_CANDIDATES = [
+    "8.4.15", "8.4.14",
+    "8.3.33", "8.3.32", "8.3.31", "8.3.30",
+    "8.2.30", "8.2.29",
+]</pre>
+
+      <h2>Verifying the install</h2>
+      <p>
+        After extraction, the script runs
+        <code>php-cgi.exe -v</code> and checks for a zero exit code. If
+        the binary is missing a DLL, Windows usually pops a dialog and
+        the process exits non-zero. That is caught here and reported.
+      </p>
+
+      <p>To check by hand:</p>
+      <pre>&gt; runtime\php\php-cgi.exe -v
+PHP 8.4.15 (cgi-fcgi) (built: Jan 14 2026 10:32:41)
+Copyright (c) The PHP Group
+Zend Engine v4.4.15, Copyright (c) Zend Technologies
+
+&gt; runtime\php\php.exe -m
+[PHP Modules]
+...
+mbstring
+openssl
+pdo_sqlite
+sqlite3
+...
+</pre>
+
+      <p>
+        If <code>pdo_sqlite</code> is missing from <code>-m</code>,
+        the php.ini was not loaded. Check that
+        <code>runtime/php/php.ini</code> exists and contains the four
+        <code>extension=</code> lines.
+      </p>
+
+      <div class="callout success">
+        <strong>Quick fix for a broken php.ini:</strong>
+        <pre style="margin-top:8px;background:transparent;border:none;padding:0;">python bootstrap/setup.py --force --skip-python --skip-sqlite --skip-deps --skip-vendor</pre>
+        Re-extracts the PHP ZIP and writes a fresh php.ini. Takes 30
+        seconds and does not touch anything else.
+      </div>
+
+      <h2>Why not ship a prebuilt PHP?</h2>
+      <p>
+        We could put a PHP ZIP in the repo, but:
+      </p>
+      <ul>
+        <li>GitHub has a 100 MB per-file limit. The PHP ZIP is 30 MB, ×2
+          for both VS variants = 60 MB. Doable, but the repo bloats fast.</li>
+        <li>Antivirus software flags extracted PHP binaries from unknown
+          sources. Downloading from <code>windows.php.net</code> keeps
+          the provenance clear.</li>
+        <li>Microsoft's Visual C++ runtime is a prerequisite. The
+          installer can detect a missing runtime and suggest the fix,
+          but a bundled binary would just crash.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Runtime layout
+       ============================================================= -->
+  <section class="file-section" id="doc-runtime-layout" data-name="runtime layout directory structure binaries manifest">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Runtime layout <span class="file-badge">docs</span></h2>
+        <span class="file-path">bootstrap/README.md — Directory structure</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Runtime directory layout</h1>
+
+      <p>
+        Everything the bootstrap installs lives under
+        <code>&lt;project&gt;/runtime/</code>. The directory is
+        self-contained and safe to delete — running
+        <code>setup.py</code> again recreates it.
+      </p>
+
+      <pre>runtime/
+├── _downloads/              ← cached archives, safe to delete
+│   ├── python-3.12.11-x86_64-pc-windows-msvc.tar.gz
+│   ├── php-8.4.15-Win32-vs17-x64.zip
+│   └── sqlite-tools-win-x64-3460000.zip
+│
+├── python/                  ← portable CPython 3.12.11
+│   ├── python.exe
+│   ├── Lib/
+│   ├── DLLs/
+│   └── ...
+│
+├── php/                     ← portable PHP (CLI + CGI)
+│   ├── php.exe              ← CLI SAPI
+│   ├── php-cgi.exe          ← CGI SAPI  ★ the important one
+│   ├── php.ini              ← written by bootstrap
+│   ├── php8ts.dll
+│   ├── ext/
+│   │   ├── php_pdo_sqlite.dll
+│   │   ├── php_sqlite3.dll
+│   │   ├── php_mbstring.dll
+│   │   └── php_openssl.dll
+│   └── ...
+│
+├── sqlite/                  ← SQLite CLI tools
+│   ├── sqlite3.exe
+│   ├── sqldiff.exe
+│   └── sqlite3_analyzer.exe
+│
+└── runtime.env              ← manifest, generated after success
+</pre>
+
+      <h2>What is safe to delete</h2>
+      <table>
+        <thead><tr><th>Path</th><th>Safe?</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td><code>runtime/_downloads/</code></td><td>✅ Yes</td><td>Next run re-downloads. Frees ~90 MB.</td></tr>
+          <tr><td><code>runtime/python/</code></td><td>✅ Yes</td><td>Backend cannot start. Re-run bootstrap.</td></tr>
+          <tr><td><code>runtime/php/</code></td><td>✅ Yes</td><td><code>/php/</code> returns 500. Other routes unaffected.</td></tr>
+          <tr><td><code>runtime/sqlite/</code></td><td>✅ Yes</td><td>None. SQLite CLI is for manual inspection only.</td></tr>
+          <tr><td><code>runtime/runtime.env</code></td><td>✅ Yes</td><td>Regenerated on next bootstrap.</td></tr>
+          <tr><td><code>runtime/</code> (whole)</td><td>✅ Yes</td><td>Full reset. Re-run <code>setup.py</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>What is <em>not</em> in runtime/</h2>
+      <p>
+        These live at the project root, next to <code>runtime/</code>:
+      </p>
+
+      <table>
+        <thead><tr><th>Path</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>models/</code></td><td>GGUF model files</td></tr>
+          <tr><td><code>logs/</code></td><td>Rotating backend logs</td></tr>
+          <tr><td><code>php_app/</code></td><td>The PHP notes app source</td></tr>
+          <tr><td><code>sessions.db</code></td><td>SQLite database (chat + graph runs)</td></tr>
+          <tr><td><code>web/</code></td><td>Frontend HTML/CSS/JS</td></tr>
+          <tr><td><code>.env</code></td><td>Backend configuration</td></tr>
+        </tbody>
+      </table>
+
+      <h2>The manifest file</h2>
+      <p>
+        <code>runtime/runtime.env</code> is a shell-sourceable file with
+        one <code>KEY=VALUE</code> per line. It exists so that
+        <code>start.sh</code> and <code>start.bat</code> do not have to
+        hard-code paths:
+      </p>
+
+      <pre># On Unix
+source runtime/runtime.env
+"$RUNTIME_PYTHON" -m uvicorn backend.main:app
+
+# On Windows
+for /f "usebackq tokens=1,* delims==" %%a in ("runtime\runtime.env") do (
+    if not "%%a"=="" if not "%%a:~0,1%"=="#" set "%%a=%%b"
+)
+"%RUNTIME_PYTHON%" -m uvicorn backend.main:app</pre>
+
+      <p>
+        The manifest is written <em>last</em>, after every other stage
+        has completed. If bootstrap fails halfway through, the manifest
+        is absent — which the launcher scripts detect and report as
+        "run bootstrap first".
+      </p>
+
+      <h2>Cross-platform layout differences</h2>
+
+      <h3>Windows</h3>
+      <pre>runtime/python/python.exe
+runtime/php/php.exe
+runtime/php/php-cgi.exe
+runtime/sqlite/sqlite3.exe</pre>
+
+      <h3>Linux / macOS</h3>
+      <pre>runtime/python/bin/python3
+runtime/php/php
+runtime/php/php-cgi
+runtime/sqlite/sqlite3</pre>
+
+      <p>
+        The helper functions <code>python_binary()</code>,
+        <code>php_cli_binary()</code>, <code>php_cgi_binary()</code>, and
+        <code>sqlite_binary()</code> encapsulate this difference so no
+        other code needs to care.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Troubleshooting
+       ============================================================= -->
+  <section class="file-section" id="doc-troubleshooting" data-name="troubleshooting errors download failed antivirus firewall">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Troubleshooting <span class="file-badge">docs</span></h2>
+        <span class="file-path">bootstrap/README.md — Common problems</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Troubleshooting</h1>
+
+      <h2>Download fails with HTTP 403 or 404</h2>
+      <p>
+        The pinned version was probably retired. Check the version
+        candidate lists at the top of <code>setup.py</code> and add a
+        newer version. For PHP Windows, the URL structure is:
+      </p>
+      <pre>https://windows.php.net/downloads/releases/php-8.4.15-Win32-vs17-x64.zip</pre>
+      <p>
+        Browse <a href="https://windows.php.net/download/" target="_blank" rel="noopener">windows.php.net/download/</a>
+        to confirm which versions are currently listed.
+      </p>
+
+      <h2>"Archive is too small after download"</h2>
+      <p>
+        Almost always a captive portal or corporate proxy returning an
+        HTML error page instead of the actual file. Verify with:
+      </p>
+      <pre>&gt; curl -I https://windows.php.net/downloads/releases/php-8.4.15-Win32-vs17-x64.zip
+HTTP/1.1 200 OK
+Content-Length: 32618504
+Content-Type: application/zip</pre>
+      <p>
+        If <code>Content-Type</code> is <code>text/html</code>, you are
+        behind a login wall. Configure your proxy or use a different
+        network.
+      </p>
+
+      <h2>Antivirus quarantines php-cgi.exe</h2>
+      <p>
+        Some consumer AV products flag freshly-extracted PHP binaries
+        from <code>windows.php.net</code>. This is a false positive — the
+        official ZIP is signed and the binaries carry the PHP project's
+        signature.
+      </p>
+      <p>Options:</p>
+      <ul>
+        <li>Add <code>&lt;project&gt;\runtime\php\</code> to the AV exclusion list.</li>
+        <li>Use Windows Defender, which does not false-positive on these.</li>
+        <li>Install PHP system-wide (via XAMPP or Chocolatey) and set
+          <code>AGENT_PHP_BINARY</code> in <code>.env</code> to point at it.</li>
+      </ul>
+
+      <h2>"Could not find driver" from the notes app</h2>
+      <p>
+        The php.ini is missing or the extensions are not enabled. Check:
+      </p>
+      <pre>&gt; runtime\php\php.exe -m
+[PHP Modules]
+...
+pdo_sqlite
+sqlite3
+...
+</pre>
+      <p>
+        If those two lines are absent, the php.ini is not being loaded.
+        Confirm it exists:
+      </p>
+      <pre>&gt; dir runtime\php\php.ini</pre>
+      <p>
+        If it is missing, run the PHP-only reinstall:
+      </p>
+      <pre>python bootstrap/setup.py --force --skip-python --skip-sqlite --skip-deps --skip-vendor</pre>
+
+      <h2>"Unsupported CPU: &lt;arch&gt;"</h2>
+      <p>
+        The bootstrap only knows x86_64 and aarch64/arm64. If you are on
+        32-bit x86 or an exotic architecture, download the runtimes
+        manually and set <code>AGENT_PHP_BINARY</code> plus a suitable
+        system Python.
+      </p>
+
+      <h2>pip install fails on a specific package</h2>
+      <p>
+        Some packages need a C compiler. On Windows, install the
+        <a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/" target="_blank" rel="noopener">Microsoft C++ Build Tools</a>
+        and re-run. On Linux, install <code>build-essential</code> and
+        <code>python3-dev</code>.
+      </p>
+      <p>
+        A faster alternative: install wheels from a pre-built index. Add
+        <code>--only-binary :all:</code> to the pip line temporarily to
+        see which packages lack wheels.
+      </p>
+
+      <h2>"Runtime is incomplete" from --check</h2>
+      <p>
+        <code>--check</code> returns exit code 1 when any <em>required</em>
+        component is missing. See the exact line marked
+        <code>[error]</code> in the output:
+      </p>
+      <table>
+        <thead><tr><th>Message</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Python: missing</td><td>Run full bootstrap without <code>--skip-python</code>.</td></tr>
+          <tr><td>Python: &lt;detail&gt;</td><td>The binary exists but does not run. Delete <code>runtime/python/</code> and re-run.</td></tr>
+          <tr><td>PHP CGI: missing</td><td>Run bootstrap without <code>--skip-php</code>.</td></tr>
+          <tr><td>php.ini: missing</td><td>Run the PHP-only reinstall (above).</td></tr>
+          <tr><td>SQLite CLI: missing</td><td>Optional. Run without <code>--skip-sqlite</code> if you want it.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Bootstrap crashes with a Python traceback</h2>
+      <p>
+        Re-run with <code>--verbose</code> to see the full stack:
+      </p>
+      <pre>python bootstrap/setup.py --verbose</pre>
+      <p>
+        Common causes:
+      </p>
+      <ul>
+        <li>Running under a Python older than 3.8 (exit code 2, clear message).</li>
+        <li>A read-only <code>runtime/</code> directory (check permissions).</li>
+        <li>Disk full during extraction.</li>
+        <li>Antivirus blocking a <code>.exe</code> from being written.</li>
+      </ul>
+
+      <h2>Cache corruption</h2>
+      <p>
+        If a download completed but the extracted binary is broken, the
+        cached archive is the suspect. Delete it and force a fresh
+        download:
+      </p>
+      <pre>&gt; rmdir /s /q runtime\_downloads
+&gt; python bootstrap/setup.py --force</pre>
+      <p>
+        On Unix:
+      </p>
+      <pre>$ rm -rf runtime/_downloads
+$ python bootstrap/setup.py --force</pre>
+
+      <h2>Still stuck?</h2>
+      <p>
+        Capture the full output of <code>--check</code> and
+        <code>setup.py --verbose</code>, and include:
+      </p>
+      <ul>
+        <li>Your OS and version (<code>winver</code>, <code>uname -a</code>)</li>
+        <li>The Python version running the bootstrap (<code>python --version</code>)</li>
+        <li>Any antivirus or corporate proxy in the path</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — setup.py
+       ============================================================= -->
+  <section class="file-section" id="f-setup" data-name="setup.py bootstrap python php sqlite portable runtime">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>setup.py <span class="file-badge">python</span></h2>
+        <span class="file-path">bootstrap/setup.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">#!/usr/bin/env python3
+"""
+3olution Agent Graph — portable runtime bootstrap.
+https://3olution.com
+
+Downloads and installs portable, self-contained binaries for Python,
+PHP, and SQLite into the `runtime/` directory.
+
+================================================================
+  PHP ON WINDOWS
+================================================================
+
+  Windows needs a CGI-capable PHP binary (`php-cgi.exe`) for the
+  /php/ notes app. static-php-cli's Windows ZIP only ships the CLI
+  SAPI, so this script downloads the official PHP for Windows ZIP
+  from windows.php.net instead. That ZIP contains:
+
+      php.exe          CLI SAPI
+      php-cgi.exe      CGI SAPI (required by the backend)
+      php8ts.dll       the PHP engine
+      ext/             extension DLLs (pdo_sqlite, mbstring, …)
+      ... plus every runtime DLL
+
+  The official ZIP does NOT ship a php.ini. Without one, PHP loads
+  with every extension disabled. After extraction this script writes
+  a minimal php.ini into runtime/php/ that enables pdo_sqlite,
+  sqlite3, mbstring, and openssl — the extensions the notes app
+  requires.
+
+================================================================
+  USAGE
+================================================================
+
+    python bootstrap/setup.py
+    python bootstrap/setup.py --force
+    python bootstrap/setup.py --skip-php
+    python bootstrap/setup.py --check
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
+import time
+import urllib.error
+import urllib.request
+import zipfile
+from pathlib import Path
+from typing import Any, Optional
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Version pins
+# ══════════════════════════════════════════════════════════════════════
+
+PYTHON_VERSION = "3.12.11"
+PYTHON_BUILD_TAG = "20250712"
+
+PHP_UNIX_VERSION_CANDIDATES = [
+    "8.4.20", "8.4.19", "8.4.18", "8.4.17",
+    "8.4.16", "8.4.15",
+    "8.3.30", "8.3.29", "8.3.28", "8.3.27",
+    "8.2.30", "8.2.29",
+]
+
+PHP_WINDOWS_VERSION_CANDIDATES = [
+    "8.4.15", "8.4.14",
+    "8.3.33", "8.3.32", "8.3.31", "8.3.30",
+    "8.2.30", "8.2.29",
+]
+
+PHP_WINDOWS_URL_FOLDERS = [
+    "releases",
+    "releases/archives",
+]
+
+SQLITE_VERSION = "3460000"
+SQLITE_YEAR = "2024"
+
+MIN_SIZE_PYTHON_ARCHIVE      = 10_000_000
+MIN_SIZE_PHP_UNIX_ARCHIVE    =  3_000_000
+MIN_SIZE_PHP_WINDOWS_ARCHIVE = 20_000_000
+MIN_SIZE_SQLITE_ARCHIVE      =    500_000
+MIN_SIZE_SQLITE_BINARY       =    100_000
+
+DOWNLOAD_TIMEOUT = 300.0
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Filesystem paths
+# ══════════════════════════════════════════════════════════════════════
+
+ROOT          = Path(__file__).resolve().parent.parent
+RUNTIME       = ROOT / "runtime"
+DOWNLOADS     = RUNTIME / "_downloads"
+REQUIREMENTS  = ROOT / "requirements.txt"
+VENDOR_SCRIPT = ROOT / "scripts" / "download_vendor.py"
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Console helpers
+# ══════════════════════════════════════════════════════════════════════
+
+def _try_enable_windows_ansi() -> bool:
+    if sys.platform != "win32":
+        return True
+    try:
+        import ctypes
+        k32 = ctypes.windll.kernel32
+        h = k32.GetStdHandle(-11)
+        if h in (0, -1):
+            return False
+        mode = ctypes.c_ulong()
+        if not k32.GetConsoleMode(h, ctypes.byref(mode)):
+            return False
+        if not k32.SetConsoleMode(h, mode.value | 0x0004):
+            return False
+        return True
+    except Exception:
+        return False
+
+
+_USE_COLOR = (
+    os.environ.get("NO_COLOR") != "1"
+    and sys.stdout.isatty()
+    and _try_enable_windows_ansi()
+)
+
+
+class Log:
+    @staticmethod
+    def _c(code: str, text: str) -> str:
+        return f"\033[{code}m{text}\033[0m" if _USE_COLOR else text
+
+    @staticmethod
+    def info(m: str)  -> None: print(Log._c("36", "[info] ") + m)
+    @staticmethod
+    def ok(m: str)    -> None: print(Log._c("32", "[ok]   ") + m)
+    @staticmethod
+    def warn(m: str)  -> None: print(Log._c("33", "[warn] ") + m)
+    @staticmethod
+    def error(m: str) -> None: print(Log._c("31", "[error] ") + m, file=sys.stderr)
+
+    @staticmethod
+    def title(m: str) -> None:
+        bar = "=" * 66
+        print()
+        print(Log._c("36", bar))
+        print(Log._c("36", "  " + m))
+        print(Log._c("36", bar))
+
+    @staticmethod
+    def banner() -> None:
+        print()
+        print(Log._c("36", "=" * 66))
+        print(Log._c("36", "  3olution Agent Graph - Portable Runtime Bootstrap"))
+        print(Log._c("36", "  https://3olution.com"))
+        print(Log._c("36", "=" * 66))
+        print()
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Platform detection
+# ══════════════════════════════════════════════════════════════════════
+
+def detect_platform() -> dict[str, Any]:
+    system_raw = platform.system().lower()
+    machine_raw = platform.machine().lower()
+
+    if machine_raw in ("x86_64", "amd64"):
+        arch = "x86_64"
+    elif machine_raw in ("arm64", "aarch64"):
+        arch = "aarch64"
+    else:
+        raise SystemExit(f"Unsupported CPU: {machine_raw}")
+
+    if system_raw == "windows":
+        return {
+            "system": "windows", "arch": arch,
+            "python_triple": f"{arch}-pc-windows-msvc",
+            "php_os": "windows",
+            "php_arch": "x64" if arch == "x86_64" else "arm64",
+            "sqlite_platform": f"win-{'x64' if arch == 'x86_64' else 'arm64'}",
+            "exe_suffix": ".exe", "is_windows": True,
+        }
+    if system_raw == "linux":
+        return {
+            "system": "linux", "arch": arch,
+            "python_triple": f"{arch}-unknown-linux-gnu",
+            "php_os": "linux", "php_arch": arch,
+            "sqlite_platform": "linux-x64",
+            "exe_suffix": "", "is_windows": False,
+        }
+    if system_raw == "darwin":
+        return {
+            "system": "macos", "arch": arch,
+            "python_triple": f"{arch}-apple-darwin",
+            "php_os": "macos", "php_arch": arch,
+            "sqlite_platform": "osx-x64",
+            "exe_suffix": "", "is_windows": False,
+        }
+    raise SystemExit(f"Unsupported OS: {system_raw}")
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Download helpers
+# ══════════════════════════════════════════════════════════════════════
+
+def _human_bytes(n: int) -> str:
+    n_f = float(n)
+    for unit in ("B", "KB", "MB", "GB"):
+        if abs(n_f) < 1024:
+            return f"{n_f:.1f} {unit}"
+        n_f /= 1024
+    return f"{n_f:.1f} TB"
+
+
+def _render_progress(d, total, start, final=False):
+    elapsed = max(time.monotonic() - start, 0.001)
+    speed = d / elapsed
+    size = _human_bytes(d)
+    speed_s = _human_bytes(int(speed)) + "/s"
+    if total > 0:
+        pct = d / total * 100
+        filled = int(24 * pct / 100)
+        bar = "#" * filled + "-" * (24 - filled)
+        line = f"    [{bar}] {pct:5.1f}%   {size} / {_human_bytes(total)}   {speed_s}"
+    else:
+        line = f"    {size}   {speed_s}"
+    end = "\n" if final else "\r"
+    print(line.ljust(78), end=end, flush=True)
+
+
+def _download_one(url: str, dest: Path) -> None:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_suffix(dest.suffix + ".part")
+    req = urllib.request.Request(
+        url, headers={"User-Agent": "3olution-setup/1.0 (+https://3olution.com)"},
+    )
+    with urllib.request.urlopen(req, timeout=DOWNLOAD_TIMEOUT) as response:
+        total = int(response.headers.get("Content-Length", "0"))
+        downloaded = 0
+        start = time.monotonic()
+        last_render = start
+        with open(tmp, "wb") as f:
+            while True:
+                chunk = response.read(64 * 1024)
+                if not chunk:
+                    break
+                f.write(chunk)
+                downloaded += len(chunk)
+                now = time.monotonic()
+                if now - last_render > 0.1:
+                    _render_progress(downloaded, total, start)
+                    last_render = now
+        _render_progress(downloaded, total, start, final=True)
+    tmp.replace(dest)
+
+
+def download(url, dest, *, force=False, expected_min_size=0, label="file") -> Path:
+    if dest.exists() and not force:
+        size = dest.stat().st_size
+        if size >= expected_min_size:
+            Log.ok(f"{label} already cached ({_human_bytes(size)})")
+            return dest
+        Log.warn(f"{label} cached but small - re-downloading")
+    Log.info(f"Downloading {label}")
+    print(f"    {url}")
+    try:
+        _download_one(url, dest)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"HTTP {e.code} while downloading {label}") from e
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"Network error while downloading {label}: {e}") from e
+    except TimeoutError as e:
+        raise RuntimeError(f"Timeout downloading {label}") from e
+    if dest.stat().st_size < expected_min_size:
+        try: dest.unlink()
+        except OSError: pass
+        raise RuntimeError(f"{label} is too small after download")
+    return dest
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Archive helpers
+# ══════════════════════════════════════════════════════════════════════
+
+def _is_within(base: Path, target: Path) -> bool:
+    try:
+        target.resolve().relative_to(base.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def _safe_extract_tar(tf, target):
+    target = target.resolve()
+    for m in tf.getmembers():
+        if not _is_within(target, (target / m.name)):
+            raise RuntimeError(f"Unsafe path: {m.name}")
+    if sys.version_info >= (3, 12):
+        tf.extractall(target, filter="data")
+    else:
+        tf.extractall(target)
+
+
+def _safe_extract_zip(zf, target):
+    target = target.resolve()
+    for m in zf.namelist():
+        if not _is_within(target, (target / m)):
+            raise RuntimeError(f"Unsafe path: {m}")
+    zf.extractall(target)
+
+
+def _extract_to_temp(archive: Path, fmt: str) -> Path:
+    tmp = Path(tempfile.mkdtemp(prefix="3olution-setup-"))
+    try:
+        if fmt in ("tar.gz", "tar.xz"):
+            mode = "r:gz" if fmt == "tar.gz" else "r:xz"
+            with tarfile.open(archive, mode) as tf:
+                _safe_extract_tar(tf, tmp)
+        elif fmt == "zip":
+            with zipfile.ZipFile(archive, "r") as zf:
+                _safe_extract_zip(zf, tmp)
+        else:
+            raise ValueError(f"Unknown format: {fmt}")
+    except Exception:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise
+    return tmp
+
+
+def _find_extract_root(tmp: Path) -> Path:
+    entries = list(tmp.iterdir())
+    if len(entries) == 1 and entries[0].is_dir():
+        return entries[0]
+    return tmp
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Binary paths
+# ══════════════════════════════════════════════════════════════════════
+
+def python_binary(plat):
+    return RUNTIME / "python" / ("python.exe" if plat["is_windows"] else "bin/python3")
+
+
+def php_cli_binary(plat):
+    return RUNTIME / "php" / ("php.exe" if plat["is_windows"] else "php")
+
+
+def php_cgi_binary(plat):
+    return RUNTIME / "php" / ("php-cgi.exe" if plat["is_windows"] else "php-cgi")
+
+
+def sqlite_binary(plat):
+    return RUNTIME / "sqlite" / ("sqlite3.exe" if plat["is_windows"] else "sqlite3")
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Verifiers
+# ══════════════════════════════════════════════════════════════════════
+
+def _verify_python(exe: Path):
+    try:
+        r = subprocess.run([str(exe), "--version"], capture_output=True,
+                           text=True, timeout=15)
+        if r.returncode == 0:
+            return True, (r.stdout or r.stderr).strip()
+        return False, f"exit code {r.returncode}"
+    except Exception as e:
+        return False, str(e)
+
+
+def _verify_php_cgi(exe: Path):
+    try:
+        r = subprocess.run([str(exe), "-v"], capture_output=True,
+                           text=True, timeout=15)
+        if r.returncode == 0:
+            output = (r.stdout or r.stderr).strip()
+            first_line = output.splitlines()[0] if output else ""
+            return True, first_line
+        return False, f"exit code {r.returncode}"
+    except Exception as e:
+        return False, str(e)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  php.ini writer
+# ══════════════════════════════════════════════════════════════════════
+
+PHP_INI_CONTENT = """; =====================================================================
+;  3olution Agent Graph - portable PHP configuration
+;  https://3olution.com
+;
+;  This file is loaded by php-cgi.exe. Without it, PHP loads with no
+;  extensions enabled, and the notes app cannot connect to SQLite.
+; =====================================================================
+
+; -- Extension directory ----------------------------------------------
+; The official Windows PHP build keeps extension DLLs in a subfolder
+; named "ext" next to php.exe. Relative paths resolve against the
+; directory that contains the php-cgi.exe binary.
+
+extension_dir = "ext"
+
+; -- Extensions required by the notes app -----------------------------
+
+extension=pdo_sqlite
+extension=sqlite3
+extension=mbstring
+extension=openssl
+
+; -- Extensions for optional MySQL / PostgreSQL backends --------------
+; Uncomment these if you switch AGENT_PHP_DB_DRIVER in .env.
+
+; extension=pdo_mysql
+; extension=mysqli
+; extension=pdo_pgsql
+; extension=pgsql
+
+; -- Error reporting --------------------------------------------------
+
+display_errors = On
+display_startup_errors = On
+error_reporting = E_ALL
+
+; -- Date / timezone --------------------------------------------------
+
+date.timezone = UTC
+"""
+
+
+def _write_php_ini(target_dir: Path) -> bool:
+    """Write a minimal php.ini into `target_dir`. Never raises."""
+    ini = target_dir / "php.ini"
+    try:
+        ini.write_text(PHP_INI_CONTENT, encoding="utf-8")
+        Log.ok(f"Wrote {ini}")
+        return True
+    except Exception as e:
+        Log.warn(f"Could not write php.ini: {e}")
+        return False
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Python installation
+# ══════════════════════════════════════════════════════════════════════
+
+def install_python(plat, force):
+    Log.title(f"Python {PYTHON_VERSION}")
+    target_exe = python_binary(plat)
+    if target_exe.exists() and not force:
+        Log.ok(f"Already installed: {target_exe}")
+        return True
+
+    url = (
+        "https://github.com/astral-sh/python-build-standalone/releases/download/"
+        f"{PYTHON_BUILD_TAG}/"
+        f"cpython-{PYTHON_VERSION}%2B{PYTHON_BUILD_TAG}-"
+        f"{plat['python_triple']}-install_only_stripped.tar.gz"
+    )
+    archive = DOWNLOADS / f"python-{PYTHON_VERSION}-{plat['python_triple']}.tar.gz"
+
+    try:
+        download(url, archive, force=force,
+                 expected_min_size=MIN_SIZE_PYTHON_ARCHIVE,
+                 label="portable Python")
+    except RuntimeError as e:
+        Log.error(str(e)); return False
+
+    Log.info("Extracting Python")
+    try:
+        tmp = _extract_to_temp(archive, "tar.gz")
+    except Exception as e:
+        Log.error(f"Extraction failed: {e}"); return False
+
+    target = RUNTIME / "python"
+    try:
+        root = _find_extract_root(tmp)
+        if target.exists():
+            shutil.rmtree(target, ignore_errors=True)
+        shutil.move(str(root), str(target))
+    except Exception as e:
+        Log.error(f"Could not place Python: {e}")
+        shutil.rmtree(tmp, ignore_errors=True); return False
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    if not target_exe.exists():
+        Log.error(f"Python executable not found: {target_exe}"); return False
+
+    ok, detail = _verify_python(target_exe)
+    if not ok:
+        Log.error(f"Python verification failed: {detail}"); return False
+
+    Log.ok(f"Python installed at {target_exe}  ({detail})")
+    return True
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  PHP installation
+# ══════════════════════════════════════════════════════════════════════
+
+_installed_php_version: Optional[str] = None
+
+
+def _install_php_unix(plat, force):
+    Log.title("PHP runtime (static-php-cli)")
+    cgi_exe = php_cgi_binary(plat)
+    cli_exe = php_cli_binary(plat)
+    if cgi_exe.exists() and not force:
+        Log.ok(f"Already installed: {cgi_exe}")
+        return True
+
+    last_error = None
+    for version in PHP_UNIX_VERSION_CANDIDATES:
+        archive_name = f"php-{version}-cli-{plat['php_os']}-{plat['php_arch']}.tar.gz"
+        url = (f"https://dl.static-php.dev/static-php-cli/bulk/"
+               f"{plat['php_os']}-{plat['php_arch']}/{archive_name}")
+        archive = DOWNLOADS / archive_name
+
+        Log.info(f"Trying PHP {version}")
+        try:
+            download(url, archive, force=force,
+                     expected_min_size=MIN_SIZE_PHP_UNIX_ARCHIVE,
+                     label=f"portable PHP {version}")
+        except RuntimeError as e:
+            last_error = str(e); continue
+
+        Log.info(f"Extracting PHP {version}")
+        try:
+            tmp = _extract_to_temp(archive, "tar.gz")
+        except Exception as e:
+            last_error = f"extraction failed: {e}"; continue
+
+        target = RUNTIME / "php"
+        try:
+            entries = list(tmp.iterdir())
+            target.mkdir(parents=True, exist_ok=True)
+            if len(entries) == 1 and entries[0].is_file():
+                shutil.move(str(entries[0]), str(target / entries[0].name))
+            else:
+                root = _find_extract_root(tmp)
+                for item in root.iterdir():
+                    dest = target / item.name
+                    if dest.exists():
+                        if dest.is_dir():
+                            shutil.rmtree(dest)
+                        else:
+                            dest.unlink()
+                    shutil.move(str(item), str(dest))
+        except Exception as e:
+            Log.error(f"Could not place PHP: {e}")
+            shutil.rmtree(tmp, ignore_errors=True); continue
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+        if not cgi_exe.exists():
+            last_error = f"php-cgi not found at {cgi_exe}"; continue
+
+        try:
+            cgi_exe.chmod(cgi_exe.stat().st_mode | 0o755)
+            cli_exe.chmod(cli_exe.stat().st_mode | 0o755)
+        except OSError:
+            pass
+
+        ok, detail = _verify_php_cgi(cgi_exe)
+        if not ok:
+            last_error = f"verification failed: {detail}"; continue
+
+        global _installed_php_version
+        _installed_php_version = version
+        Log.ok(f"PHP {version} installed at {cgi_exe}")
+        return True
+
+    Log.error(f"All PHP versions failed. Last error: {last_error}")
+    return False
+
+
+def _windows_vs_variants(version):
+    try:
+        parts = version.split(".")
+        major, minor = int(parts[0]), int(parts[1])
+        if major > 8 or (major == 8 and minor >= 4):
+            return ["vs17", "vs16"]
+    except Exception:
+        pass
+    return ["vs16", "vs17"]
+
+
+def _install_php_windows(plat, force):
+    Log.title("PHP runtime (official Windows build)")
+    cgi_exe = php_cgi_binary(plat)
+    cli_exe = php_cli_binary(plat)
+
+    if cgi_exe.exists() and cli_exe.exists() and not force:
+        Log.ok(f"Already installed: {cgi_exe}")
+        # Make sure php.ini is present too.
+        if not (RUNTIME / "php" / "php.ini").exists():
+            Log.info("php.ini is missing - writing a fresh one")
+            _write_php_ini(RUNTIME / "php")
+        return True
+
+    last_error = None
+    for version in PHP_WINDOWS_VERSION_CANDIDATES:
+        for vs in _windows_vs_variants(version):
+            for folder in PHP_WINDOWS_URL_FOLDERS:
+                archive_name = f"php-{version}-Win32-{vs}-x64.zip"
+                url = (f"https://windows.php.net/downloads/{folder}/{archive_name}")
+                archive = DOWNLOADS / archive_name
+
+                Log.info(f"Trying PHP {version} ({vs}, {folder})")
+                try:
+                    download(url, archive, force=force,
+                             expected_min_size=MIN_SIZE_PHP_WINDOWS_ARCHIVE,
+                             label=f"PHP {version}")
+                except RuntimeError as e:
+                    last_error = str(e); continue
+
+                Log.info(f"Extracting PHP {version}")
+                target = RUNTIME / "php"
+                target.mkdir(parents=True, exist_ok=True)
+                try:
+                    with zipfile.ZipFile(archive, "r") as zf:
+                        _safe_extract_zip(zf, target)
+                except Exception as e:
+                    last_error = f"extraction failed: {e}"; continue
+
+                if not cli_exe.exists():
+                    last_error = f"php.exe not found"; continue
+                if not cgi_exe.exists():
+                    last_error = f"php-cgi.exe not found"; continue
+
+                ok, detail = _verify_php_cgi(cgi_exe)
+                if not ok:
+                    last_error = f"php-cgi.exe verification failed: {detail}"
+                    continue
+
+                # Write php.ini so extensions load.
+                Log.info("Writing php.ini")
+                _write_php_ini(target)
+
+                global _installed_php_version
+                _installed_php_version = version
+                Log.ok(f"PHP {version} installed")
+                Log.ok(f"  CLI: {cli_exe}")
+                Log.ok(f"  CGI: {cgi_exe}")
+                Log.ok(f"  {detail}")
+                return True
+
+    Log.error(f"All PHP versions failed. Last error: {last_error}")
+    return False
+
+
+def install_php(plat, force):
+    if plat["is_windows"]:
+        return _install_php_windows(plat, force)
+    return _install_php_unix(plat, force)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  SQLite installation
+# ══════════════════════════════════════════════════════════════════════
+
+def install_sqlite(plat, force):
+    Log.title(f"SQLite CLI {SQLITE_VERSION}")
+    target_exe = sqlite_binary(plat)
+    if target_exe.exists() and not force:
+        Log.ok(f"Already installed: {target_exe}")
+        return True
+
+    url = (f"https://www.sqlite.org/{SQLITE_YEAR}/"
+           f"sqlite-tools-{plat['sqlite_platform']}-{SQLITE_VERSION}.zip")
+    archive = (DOWNLOADS
+               / f"sqlite-tools-{plat['sqlite_platform']}-{SQLITE_VERSION}.zip")
+
+    try:
+        download(url, archive, force=force,
+                 expected_min_size=MIN_SIZE_SQLITE_ARCHIVE,
+                 label="SQLite CLI")
+    except RuntimeError as e:
+        Log.error(str(e)); return False
+
+    Log.info("Extracting SQLite CLI")
+    try:
+        tmp = _extract_to_temp(archive, "zip")
+    except Exception as e:
+        Log.error(f"Extraction failed: {e}"); return False
+
+    target = RUNTIME / "sqlite"
+    try:
+        root = _find_extract_root(tmp)
+        if target.exists():
+            shutil.rmtree(target, ignore_errors=True)
+        shutil.move(str(root), str(target))
+    except Exception as e:
+        Log.error(f"Could not place SQLite: {e}")
+        shutil.rmtree(tmp, ignore_errors=True); return False
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    if not target_exe.exists():
+        Log.error(f"SQLite binary not found: {target_exe}"); return False
+
+    if not plat["is_windows"]:
+        try:
+            target_exe.chmod(target_exe.stat().st_mode | 0o755)
+        except OSError:
+            pass
+
+    if target_exe.stat().st_size < MIN_SIZE_SQLITE_BINARY:
+        Log.error("SQLite binary suspiciously small"); return False
+
+    Log.ok(f"SQLite CLI installed at {target_exe}")
+    return True
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Post-install
+# ══════════════════════════════════════════════════════════════════════
+
+def install_python_deps(plat):
+    Log.title("Python dependencies")
+    exe = python_binary(plat)
+    if not exe.exists():
+        Log.error(f"Portable Python not found: {exe}"); return False
+    if not REQUIREMENTS.exists():
+        Log.error(f"requirements.txt not found: {REQUIREMENTS}"); return False
+
+    try:
+        subprocess.check_call([str(exe), "-m", "pip", "--version"],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        Log.info("pip not found - running ensurepip")
+        try:
+            subprocess.check_call([str(exe), "-m", "ensurepip", "--upgrade"],
+                                  stdout=subprocess.DEVNULL)
+        except subprocess.CalledProcessError as e:
+            Log.error(f"ensurepip failed: {e}"); return False
+
+    Log.info("Upgrading pip")
+    try:
+        subprocess.check_call([str(exe), "-m", "pip", "install", "--upgrade", "pip"],
+                              stdout=subprocess.DEVNULL)
+    except subprocess.CalledProcessError as e:
+        Log.warn(f"pip upgrade failed (continuing): {e}")
+
+    Log.info(f"Installing {REQUIREMENTS.name}")
+    try:
+        subprocess.check_call([str(exe), "-m", "pip", "install",
+                               "-r", str(REQUIREMENTS)])
+    except subprocess.CalledProcessError as e:
+        Log.error(f"pip install failed: {e}"); return False
+
+    Log.ok("Python dependencies installed")
+    return True
+
+
+def download_vendor(plat):
+    Log.title("LiteGraph vendor files")
+    if not VENDOR_SCRIPT.exists():
+        Log.warn(f"Vendor script not found: {VENDOR_SCRIPT}")
+        return True
+    exe = python_binary(plat)
+    if not exe.exists():
+        exe = Path(sys.executable)
+    try:
+        subprocess.check_call([str(exe), str(VENDOR_SCRIPT)])
+    except subprocess.CalledProcessError as e:
+        Log.warn(f"Vendor download failed: {e}"); return False
+    Log.ok("LiteGraph vendor files ready")
+    return True
+
+
+def write_runtime_env(plat):
+    Log.title("Runtime manifest")
+    py = python_binary(plat)
+    php_cli = php_cli_binary(plat)
+    php_cgi = php_cgi_binary(plat)
+    sqlite = sqlite_binary(plat)
+    php_version = _installed_php_version or "unknown"
+    lines = [
+        "# ==================================================================",
+        "# 3olution Agent Graph - Portable Runtime Manifest",
+        "# https://3olution.com",
+        "#",
+        "# Generated by bootstrap/setup.py. Do not edit by hand.",
+        "# ==================================================================",
+        "",
+        f"RUNTIME_PLATFORM={plat['system']}",
+        f"RUNTIME_ARCH={plat['arch']}",
+        f"RUNTIME_PYTHON_VERSION={PYTHON_VERSION}",
+        f"RUNTIME_PHP_VERSION={php_version}",
+        f"RUNTIME_SQLITE_VERSION={SQLITE_VERSION}",
+        "",
+        f"RUNTIME_PYTHON={py}" if py.exists() else "RUNTIME_PYTHON=",
+        f"RUNTIME_PHP_CLI={php_cli}" if php_cli.exists() else "RUNTIME_PHP_CLI=",
+        f"RUNTIME_PHP_CGI={php_cgi}" if php_cgi.exists() else "RUNTIME_PHP_CGI=",
+        f"RUNTIME_SQLITE={sqlite}" if sqlite.exists() else "RUNTIME_SQLITE=",
+        "",
+    ]
+    runtime_env = RUNTIME / "runtime.env"
+    runtime_env.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    Log.ok(f"Wrote {runtime_env}")
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  --check
+# ══════════════════════════════════════════════════════════════════════
+
+def cmd_check(plat):
+    Log.title("Runtime status")
+    all_ok = True
+
+    py = python_binary(plat)
+    if not py.exists():
+        Log.error(f"Python: missing ({py})"); all_ok = False
+    else:
+        ok, detail = _verify_python(py)
+        (Log.ok if ok else Log.error)(f"Python: {py}" + (f"  ({detail})" if ok else f" - {detail}"))
+        if not ok: all_ok = False
+
+    php_cli = php_cli_binary(plat)
+    if php_cli.exists():
+        Log.ok(f"PHP CLI: {php_cli}")
+    else:
+        Log.warn(f"PHP CLI: missing ({php_cli})")
+
+    php_cgi = php_cgi_binary(plat)
+    if not php_cgi.exists():
+        Log.error(f"PHP CGI: missing ({php_cgi})"); all_ok = False
+    else:
+        ok, detail = _verify_php_cgi(php_cgi)
+        if ok:
+            Log.ok(f"PHP CGI: {php_cgi}")
+            Log.ok(f"  {detail}")
+        else:
+            Log.error(f"PHP CGI: {php_cgi} - {detail}"); all_ok = False
+
+    # Check php.ini presence.
+    ini = RUNTIME / "php" / "php.ini"
+    if ini.exists():
+        Log.ok(f"php.ini: {ini}")
+    else:
+        Log.warn(f"php.ini: missing ({ini})")
+        Log.warn("  Extensions may not load. Run:")
+        Log.warn("      python bootstrap/setup.py --force --skip-python --skip-sqlite --skip-deps --skip-vendor")
+
+    sqlite = sqlite_binary(plat)
+    if sqlite.exists():
+        Log.ok(f"SQLite CLI: {sqlite}")
+    else:
+        Log.warn(f"SQLite CLI: missing ({sqlite})")
+
+    runtime_env = RUNTIME / "runtime.env"
+    if runtime_env.exists():
+        Log.ok(f"Manifest: {runtime_env}")
+
+    print()
+    if all_ok:
+        Log.ok("Runtime is fully installed.")
+        return 0
+    Log.warn("Runtime is incomplete. Run: python bootstrap/setup.py")
+    return 1
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  CLI
+# ══════════════════════════════════════════════════════════════════════
+
+def parse_args():
+    p = argparse.ArgumentParser(prog="bootstrap/setup.py")
+    p.add_argument("--force", action="store_true")
+    p.add_argument("--skip-python", action="store_true")
+    p.add_argument("--skip-php", action="store_true")
+    p.add_argument("--skip-sqlite", action="store_true")
+    p.add_argument("--skip-deps", action="store_true")
+    p.add_argument("--skip-vendor", action="store_true")
+    p.add_argument("--check", action="store_true")
+    p.add_argument("--verbose", action="store_true")
+    return p.parse_args()
+
+
+def main():
+    if sys.version_info < (3, 8):
+        sys.stderr.write("Requires Python 3.8+\n"); return 2
+
+    args = parse_args()
+    plat = detect_platform()
+
+    Log.banner()
+    Log.info(f"Detected platform: {plat['system']}-{plat['arch']}")
+    Log.info(f"Project root: {ROOT}")
+    Log.info(f"Runtime dir:  {RUNTIME}")
+
+    RUNTIME.mkdir(exist_ok=True)
+    DOWNLOADS.mkdir(exist_ok=True)
+
+    if args.check:
+        return cmd_check(plat)
+
+    results = {}
+
+    results["Python"] = (
+        install_python(plat, force=args.force)
+        if not args.skip_python else None
+    )
+    if args.skip_python: Log.warn("Python installation skipped")
+
+    results["PHP"] = (
+        install_php(plat, force=args.force)
+        if not args.skip_php else None
+    )
+    if args.skip_php: Log.warn("PHP installation skipped")
+
+    results["SQLite"] = (
+        install_sqlite(plat, force=args.force)
+        if not args.skip_sqlite else None
+    )
+    if args.skip_sqlite: Log.warn("SQLite installation skipped")
+
+    python_ok = results.get("Python") is True or (
+        results.get("Python") is None and python_binary(plat).exists()
+    )
+
+    if python_ok:
+        if not args.skip_deps:
+            results["Dependencies"] = install_python_deps(plat)
+        if not args.skip_vendor:
+            results["LiteGraph"] = download_vendor(plat)
+        write_runtime_env(plat)
+    else:
+        Log.error("Skipping dependencies and vendor - Python is not installed.")
+
+    Log.title("Summary")
+    exit_code = 0
+    for name, ok in results.items():
+        if ok is True:    Log.ok(f"{name}")
+        elif ok is False: Log.error(f"{name}"); exit_code = 1
+        else:             Log.warn(f"{name} (skipped)")
+
+    print()
+    if exit_code == 0:
+        Log.ok("Bootstrap complete.")
+        print()
+        print("  Next steps:")
+        print("      start.bat" if plat["is_windows"] else "      ./start.sh")
+        print()
+    else:
+        Log.error("Bootstrap finished with errors.")
+        print()
+        print("  To retry: python bootstrap/setup.py --force")
+        print()
+
+    return exit_code
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        print(); Log.warn("Interrupted."); sys.exit(130)
+    except SystemExit:
+        raise
+    except Exception as e:
+        Log.error(f"Unexpected error: {e}")
+        if "--verbose" in sys.argv:
+            import traceback; traceback.print_exc()
+        sys.exit(1)</code></pre></div>
+  </section>
+
+</main>
+
+<button class="to-top visible" id="toTop" title="Back to top">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/python.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Highlight all code blocks ----------
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      try { hljs.highlightElement(el); } catch (e) {}
+    });
+  }
+
+  // ---------- Line count for each file ----------
+  document.querySelectorAll('.file-section').forEach(function (sec) {
+    var code = sec.querySelector('pre code');
+    var badge = sec.querySelector('[data-lines]');
+    if (!badge) return;
+    if (code) {
+      var text = code.textContent || '';
+      var lines = text.split('\n').length;
+      badge.textContent = lines + ' lines';
+    } else {
+      badge.textContent = 'doc';
+    }
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.file-section');
+      if (!sec) return;
+      var code = sec.querySelector('pre code');
+      var md = sec.querySelector('.md-content');
+      var text = code ? code.textContent : (md ? md.innerText : '');
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = '✗ Failed';
+        setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600);
+      });
+    });
+  });
+
+  // ---------- Active nav tracking ----------
+  var navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+  var sections = Array.from(document.querySelectorAll('.file-section'));
+  var crumbs = document.getElementById('crumbs');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s.offsetTop <= scrollY) current = s;
+      else break;
+    }
+    navLinks.forEach(function (a) { a.classList.remove('active'); });
+    if (current) {
+      var link = document.querySelector('.nav-list a[href="#' + current.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        var path = current.querySelector('.file-path');
+        if (path && crumbs) {
+          crumbs.textContent = path.textContent;
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ---------- Search filter ----------
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+  var navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var q = searchInput.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      document.querySelectorAll('.nav-list li').forEach(function (li) {
+        var text = li.textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        li.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+      });
+
+      navGroups.forEach(function (g) {
+        var list = g.nextElementSibling;
+        if (!list || !list.classList.contains('nav-list')) return;
+        var hasVisible = list.querySelector('li:not(.hidden)');
+        g.style.display = hasVisible ? '' : 'none';
+      });
+
+      sections.forEach(function (sec) {
+        var name = (sec.getAttribute('data-name') || '') + ' ' +
+                   (sec.querySelector('.file-path')?.textContent || '') + ' ' +
+                   (sec.querySelector('h2')?.textContent || '');
+        name = name.toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        sec.classList.toggle('hidden', !match);
+      });
+
+      if (noResults) noResults.classList.toggle('visible', visibleCount === 0);
+    });
+  }
+
+  // ---------- Back to top ----------
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('visible', window.scrollY > 500);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---------- Mobile sidebar toggle ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (window.innerWidth <= 700) sidebar.classList.remove('open');
+      });
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

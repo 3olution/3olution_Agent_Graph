@@ -1,0 +1,3667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — PHP Notes App</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 320px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+.nav-list { list-style: none; margin: 0; padding: 0; }
+.nav-list li { margin: 0; }
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-list a:hover { background: var(--bg-elev); color: var(--text); }
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+.nav-icon.txt { background: #6e7681; }
+.nav-icon.dir { background: #d29922; }
+.nav-icon.php { background: #8993be; }
+.nav-icon.css { background: #563d7c; }
+main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.topbar .stats { font-size: 12px; color: var(--text-mute); display: flex; gap: 16px; }
+.topbar .stats span { display: flex; align-items: center; gap: 5px; }
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+.hero p { margin: 0; color: var(--text-dim); font-size: 14.5px; max-width: 780px; }
+.hero .links { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.hero .links a:hover { border-color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.file-section.hidden { display: none; }
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.file-title { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+.file-badge.doc {
+  background: rgba(124, 58, 237, 0.14);
+  color: #a371f7;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.file-badge.md {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.28);
+}
+.file-badge.txt {
+  background: rgba(139, 148, 158, 0.14);
+  color: var(--text-dim);
+  border-color: rgba(139, 148, 158, 0.28);
+}
+.file-badge.dir {
+  background: rgba(210, 153, 34, 0.14);
+  color: var(--yellow);
+  border-color: rgba(210, 153, 34, 0.3);
+}
+.file-badge.php {
+  background: rgba(137, 147, 190, 0.14);
+  color: #8993be;
+  border-color: rgba(137, 147, 190, 0.3);
+}
+.file-badge.css {
+  background: rgba(86, 61, 124, 0.2);
+  color: #b393d3;
+  border-color: rgba(86, 61, 124, 0.4);
+}
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, 0.08); }
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.hljs { background: transparent !important; padding: 0 !important; }
+.md-content {
+  padding: 24px 28px;
+  max-height: 900px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.md-content th { background: var(--bg-elev); color: var(--text); font-weight: 600; }
+.md-content td { color: var(--text-dim); }
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+.md-content kbd {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11.5px;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+}
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 900px) {
+  :root { --sidebar-w: 270px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+.nav-list li.hidden { display: none; }
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><a href="index.html" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;"><span class="logo-mark">3</span> PHP Notes App</a></h1>
+    <div class="sub"><a href="index.html" style="color:inherit;text-decoration:none;">← Back to Knowledge Base</a> · php_app/ — Source &amp; Documentation</div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search docs &amp; files…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Documentation</div>
+  <ul class="nav-list" data-group="docs">
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>Overview</a></li>
+    <li><a href="#doc-architecture"><span class="nav-icon md"></span>Architecture</a></li>
+    <li><a href="#doc-drivers"><span class="nav-icon md"></span>Cross-driver support</a></li>
+    <li><a href="#doc-static-route"><span class="nav-icon md"></span>The /php-static route</a></li>
+    <li><a href="#doc-delete"><span class="nav-icon md"></span>POST-not-GET delete</a></li>
+    <li><a href="#doc-permissions"><span class="nav-icon md"></span>Permissions &amp; WAL</a></li>
+    <li><a href="#doc-preflight"><span class="nav-icon md"></span>Driver preflight</a></li>
+    <li><a href="#doc-configs"><span class="nav-icon md"></span>Configurations</a></li>
+    <li><a href="#doc-testing"><span class="nav-icon md"></span>Testing &amp; cleanup</a></li>
+    <li><a href="#doc-troubleshooting"><span class="nav-icon md"></span>Troubleshooting</a></li>
+  </ul>
+
+  <div class="nav-group">Subfolders</div>
+  <ul class="nav-list" data-group="dirs">
+    <li><a href="#doc-data"><span class="nav-icon dir"></span>data/</a></li>
+    <li><a href="#doc-static"><span class="nav-icon dir"></span>static/</a></li>
+  </ul>
+
+  <div class="nav-group">Source Files</div>
+  <ul class="nav-list" data-group="source">
+    <li><a href="#f-index"><span class="nav-icon php"></span>index.php</a></li>
+    <li><a href="#f-db"><span class="nav-icon php"></span>db.php</a></li>
+    <li><a href="#f-demo"><span class="nav-icon php"></span>demo.php</a></li>
+    <li><a href="#f-style-stub"><span class="nav-icon css"></span>style.css</a></li>
+    <li><a href="#f-static-style"><span class="nav-icon css"></span>static/style.css</a></li>
+    <li><a href="#f-gitkeep"><span class="nav-icon txt"></span>data/.gitkeep</a></li>
+  </ul>
+
+  <div class="no-results" id="noResults">No matching files.</div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">php_app / overview</span>
+    </div>
+    <div class="stats">
+      <span>📄 <strong id="statFiles">6</strong> files</span>
+      <span>📁 <strong>2</strong> subfolders</span>
+      <span>🐘 <strong>PHP 8.x</strong></span>
+      <span>🗄️ <strong>3</strong> drivers</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>PHP Notes App</h1>
+    <p>
+      A small, self-contained PHP notes application served by the Python
+      backend through PHP's CGI SAPI. It is driver-agnostic — the same
+      code runs against SQLite (default), MySQL, or PostgreSQL, chosen
+      entirely by <code>AGENT_PHP_DB_DRIVER</code>. Every SQL statement
+      is a prepared statement; every DDL statement is emitted by
+      <code>ensure_schema()</code> in the correct dialect. This folder
+      holds the app's PHP source, its SQLite database directory, and its
+      static assets.
+    </p>
+    <div class="links">
+      <a href="index.html">← Back to Knowledge Base</a>
+      <a href="https://3olution.com" target="_blank" rel="noopener">🌐 3olution.com</a>
+      <a href="#doc-architecture">🏗 Architecture</a>
+      <a href="#doc-configs">🔧 Configurations</a>
+      <a href="#f-index">📄 index.php</a>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       DOC — Overview
+       ============================================================= -->
+  <section class="file-section" id="doc-overview" data-name="overview php_app notes app documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Overview <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/ — what this folder is</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Overview</h1>
+
+      <p>
+        The <code>php_app/</code> folder is a complete PHP application
+        that the Python backend serves at <code>/php/</code>. It is not
+        a framework — it is four PHP files, one stylesheet, and a data
+        directory. Together they implement a working notes app: list,
+        add, and delete notes, backed by a relational database.
+      </p>
+
+      <p>
+        The app exists partly because PHP is good at this kind of small
+        server-rendered CRUD application, and partly to demonstrate that
+        the backend can host non-Python code through the same HTTP
+        surface. The agent and the graph engine do not know or care that
+        <code>/php/</code> is PHP — the route just returns HTML.
+      </p>
+
+      <h2>Package layout</h2>
+      <pre>php_app/
+├── index.php          main page — list, add, delete
+├── db.php             connection factory + ensure_schema() + helpers
+├── demo.php           JSON endpoint — reports driver + version
+├── style.css          deprecated stub (see /php-static route)
+│
+├── data/              SQLite database directory
+│   ├── .gitkeep       placeholder so git tracks the empty folder
+│   └── app.db         created on first request (gitignored)
+│
+└── static/            assets served at /php-static/*
+    └── style.css      the real stylesheet</pre>
+
+      <h2>What it does</h2>
+      <table>
+        <thead><tr><th>Route</th><th>Renders</th></tr></thead>
+        <tbody>
+          <tr><td><code>GET /php/</code></td><td>The notes page — list of notes plus an add form</td></tr>
+          <tr><td><code>POST /php/ action=add</code></td><td>Inserts a note, redirects back to the list</td></tr>
+          <tr><td><code>POST /php/ action=delete</code></td><td>Deletes a note, redirects back to the list</td></tr>
+          <tr><td><code>GET /php/demo.php</code></td><td>JSON: driver, version, note count, table list</td></tr>
+          <tr><td><code>GET /php-static/style.css</code></td><td>The stylesheet</td></tr>
+        </tbody>
+      </table>
+
+      <h2>What it does <em>not</em> do</h2>
+      <ul>
+        <li>No authentication — anyone who can reach the backend can read and write notes.</li>
+        <li>No pagination — every note is loaded on every page view.</li>
+        <li>No rich text — titles and bodies are plain strings.</li>
+        <li>No file uploads — attachments are out of scope.</li>
+        <li>No REST API — it is a server-rendered app, not a JSON backend (except <code>demo.php</code>).</li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Do not expose the backend to untrusted clients.</strong>
+        The notes app runs with the backend process's privileges and
+        there is no authentication in front of it. On a single-user
+        machine that is fine. On a shared host, front it with a reverse
+        proxy that enforces authentication.
+      </div>
+
+      <h2>Who owns the folder</h2>
+      <p>
+        Two modules own this folder, each responsible for a different
+        part:
+      </p>
+      <ul>
+        <li>
+          <code>backend/php_server.py</code> — finds the PHP CGI binary,
+          builds the CGI environment, spawns the subprocess, parses the
+          output.
+        </li>
+        <li>
+          <code>backend/routes/php_routes.py</code> — the FastAPI routes
+          that receive HTTP requests, resolve paths safely, and forward
+          to <code>php_server.py</code>.
+        </li>
+      </ul>
+      <p>
+        The <code>data/</code> folder is created automatically by
+        <code>backend/main.py</code>'s <code>_ensure_php_dirs()</code>
+        during the FastAPI lifespan, so it is always present even on a
+        fresh clone.
+      </p>
+
+      <h2>Version history worth knowing</h2>
+      <p>
+        Two earlier bugs are worth remembering because they shape the
+        current code:
+      </p>
+      <ol>
+        <li>
+          <strong>The <code>/php-static/</code> route did not exist.</strong>
+          <code>index.php</code> linked a stylesheet at
+          <code>/php-static/style.css</code>, but no route served that
+          path. Every page loaded unstyled. The fix moved the CSS to
+          <code>php_app/static/</code> and added the route.
+        </li>
+        <li>
+          <strong>The delete link was a GET.</strong>
+          <code>&lt;a href="/php/?delete=42"&gt;</code> could be
+          triggered by a link prefetcher or a bookmark. The fix is a
+          POST form, with the old GET path kept for compatibility.
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Architecture
+       ============================================================= -->
+  <section class="file-section" id="doc-architecture" data-name="architecture cgi flow diagram documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Architecture <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/ — request flow</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Architecture</h1>
+
+      <p>
+        The notes app is served by the Python backend acting as a CGI
+        host. There is no Apache, nginx, or PHP-FPM in the picture — the
+        backend builds the CGI environment itself, spawns
+        <code>php-cgi</code> as a subprocess, and reads the response off
+        the subprocess's stdout.
+      </p>
+
+      <h2>The full request flow</h2>
+      <pre>Browser
+   │
+   │  GET /php/
+   ▼
+FastAPI backend  (backend/routes/php_routes.py)
+   │
+   │  1. resolve path safely under php_app/
+   │  2. build CGI environment (REQUEST_METHOD, QUERY_STRING, …)
+   │  3. spawn php-cgi with the script as SCRIPT_FILENAME
+   │  4. pass the request body on stdin
+   │  5. capture stdout + stderr
+   ▼
+php-cgi subprocess
+   │
+   │  reads SCRIPT_FILENAME, executes the PHP file
+   │  includes db.php via require_once
+   │  db.php opens a PDO connection to:
+   │      - SQLite at php_app/data/app.db  (default)
+   │      - MySQL / PostgreSQL if configured
+   ▼
+app_db() → PDO connection
+   │
+   │  ensure_schema() emits driver-specific CREATE TABLE
+   │  the page reads/inserts/deletes rows
+   ▼
+HTML response back up the chain</pre>
+
+      <h2>Why CGI?</h2>
+      <ul>
+        <li>
+          <strong>No extra service.</strong> Running PHP-FPM or an
+          Apache module would mean a second daemon to manage, a second
+          port to bind, and a second configuration file to keep in
+          sync. CGI is a subprocess call.
+        </li>
+        <li>
+          <strong>Process isolation.</strong> Each request is a fresh
+          PHP process. A misbehaving script cannot leak state into the
+          next request.
+        </li>
+        <li>
+          <strong>Cross-platform.</strong> <code>php-cgi</code> is
+          available on Windows, Linux, and macOS. There is no
+          equivalent portable FPM build.
+        </li>
+      </ul>
+
+      <div class="callout">
+        <strong>The cost of process isolation.</strong>
+        A fresh PHP process is spawned on every request. For a notes
+        app this is negligible — the process starts in ~30 ms and the
+        request completes in under 100 ms. For a high-traffic service
+        the per-request process cost would matter, but that is not the
+        use case here.
+      </div>
+
+      <h2>The CGI environment</h2>
+      <p>
+        The backend builds a full CGI/1.1 environment for the
+        subprocess. PHP reads the request from environment variables,
+        not from a socket:
+      </p>
+
+      <table>
+        <thead><tr><th>Variable</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td><code>REQUEST_METHOD</code></td><td>GET, POST, etc.</td></tr>
+          <tr><td><code>SCRIPT_FILENAME</code></td><td>Absolute path to the .php file</td></tr>
+          <tr><td><code>SCRIPT_NAME</code></td><td>The URL path PHP sees</td></tr>
+          <tr><td><code>QUERY_STRING</code></td><td>Everything after the <code>?</code></td></tr>
+          <tr><td><code>CONTENT_TYPE</code></td><td>From the incoming request headers</td></tr>
+          <tr><td><code>CONTENT_LENGTH</code></td><td>Length of the request body</td></tr>
+          <tr><td><code>SERVER_NAME</code></td><td>The configured backend host</td></tr>
+          <tr><td><code>SERVER_PORT</code></td><td>The configured backend port</td></tr>
+          <tr><td><code>REDIRECT_STATUS</code></td><td><code>1</code> — required by PHP for CGI mode</td></tr>
+          <tr><td><code>HTTP_X_FORWARDED_PREFIX</code></td><td><code>/php</code> — so links resolve correctly</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        In addition, every <code>AGENT_PHP_*</code> setting from
+        <code>.env</code> is passed through as an environment variable,
+        which is how <code>db.php</code> knows which driver and
+        credentials to use.
+      </p>
+
+      <h2>Response parsing</h2>
+      <p>
+        <code>php-cgi</code> writes the response to stdout in standard
+        CGI form — headers first, then a blank line, then the body:
+      </p>
+
+      <pre>Content-Type: text/html; charset=utf-8
+Status: 200 OK
+
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;...</pre>
+
+      <p>
+        The backend splits at the first <code>\n\n</code>, parses each
+        header line, extracts an optional <code>Status:</code> header,
+        and returns a FastAPI <code>Response</code> with the resulting
+        status code, headers, and body.
+      </p>
+
+      <h2>Path safety</h2>
+      <p>
+        Every user-supplied path is resolved under the PHP app
+        directory. A path like <code>../../etc/passwd</code> is rejected
+        before the file is even opened:
+      </p>
+
+      <pre>def _resolve_safe(rel_path: str) -&gt; Path | None:
+    base = PHP_APP_DIR.resolve()
+    candidate = (base / rel_path).resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        logger.warning("Rejected path traversal attempt: {}", rel_path)
+        return None
+    return candidate</pre>
+
+      <p>
+        This is the standard defence against directory traversal. The
+        same check is applied to static assets under
+        <code>php_app/static/</code>.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Cross-driver support
+       ============================================================= -->
+  <section class="file-section" id="doc-drivers" data-name="cross-driver sqlite mysql postgresql ddl documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Cross-Driver Support <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/db.php — one code base, three databases</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Cross-Driver Support</h1>
+
+      <p>
+        The app runs against three databases through PDO. There is no
+        ORM, no query builder, and no abstraction layer — just a small
+        <code>ensure_schema()</code> function that picks the right DDL
+        for the connected driver, and prepared statements everywhere
+        else.
+      </p>
+
+      <h2>What actually differs</h2>
+      <p>
+        The original <code>db.php</code> claimed MySQL and PostgreSQL
+        support but the <code>index.php</code> schema used SQLite-only
+        <code>AUTOINCREMENT</code> syntax. That is now fixed:
+        <code>ensure_schema()</code> in <code>db.php</code> picks the
+        correct DDL per driver.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>SQLite</th>
+            <th>MySQL</th>
+            <th>PostgreSQL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Auto-increment PK</td>
+            <td><code>INTEGER PRIMARY KEY AUTOINCREMENT</code></td>
+            <td><code>INT AUTO_INCREMENT PRIMARY KEY</code></td>
+            <td><code>SERIAL PRIMARY KEY</code></td>
+          </tr>
+          <tr>
+            <td>Version query</td>
+            <td><code>SELECT sqlite_version()</code></td>
+            <td><code>SELECT VERSION()</code></td>
+            <td><code>SELECT version()</code></td>
+          </tr>
+          <tr>
+            <td>Table listing</td>
+            <td><code>sqlite_master</code> query</td>
+            <td><code>SHOW TABLES</code></td>
+            <td><code>pg_tables</code> query</td>
+          </tr>
+          <tr>
+            <td>WAL mode</td>
+            <td><code>PRAGMA journal_mode = WAL</code></td>
+            <td>n/a</td>
+            <td>n/a</td>
+          </tr>
+          <tr>
+            <td>Foreign keys</td>
+            <td><code>PRAGMA foreign_keys = ON</code></td>
+            <td>on by default (InnoDB)</td>
+            <td>on by default</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Prepared statements everywhere</h2>
+      <p>
+        Every SQL statement that takes user input goes through
+        <code>prepare()</code> / <code>execute()</code>, never string
+        concatenation. This is what makes the app safe against SQL
+        injection without any escaping logic of its own.
+      </p>
+
+      <pre>$stmt = $db-&gt;prepare(
+    'INSERT INTO notes (title, body, created) VALUES (?, ?, ?)'
+);
+$stmt-&gt;execute([$title, $body, date('c')]);</pre>
+
+      <p>
+        The three drivers quote and bind the parameters differently
+        under the hood, but the API is the same. No per-driver code is
+        needed for ordinary inserts, updates, or selects.
+      </p>
+
+      <h2>Timestamps as strings</h2>
+      <p>
+        Timestamps are stored as ISO 8601 strings
+        (<code>2025-01-15T12:34:56+00:00</code>), not as native
+        <code>DATETIME</code> types. This is deliberate:
+      </p>
+      <ul>
+        <li>ISO 8601 sorts correctly as a string in every driver.</li>
+        <li>No timezone conversion is performed on read.</li>
+        <li>The format is portable and human-readable.</li>
+      </ul>
+      <p>
+        The trade-off is a small storage overhead and the loss of
+        native date-arithmetic functions, neither of which matters for
+        a notes app.
+      </p>
+
+      <h2>Driver-specific details</h2>
+
+      <h3>SQLite</h3>
+      <p>
+        The database file is created on first use. The connection
+        enables foreign-key enforcement (off by default in SQLite) and
+        WAL journaling. The <code>created</code> column is declared as
+        <code>TEXT</code> because SQLite stores ISO strings natively.
+      </p>
+
+      <h3>MySQL</h3>
+      <p>
+        The connection uses <code>charset=utf8mb4</code> and sets
+        <code>PDO::ATTR_EMULATE_PREPARES = false</code> so that real
+        server-side prepared statements are used. The table is created
+        with <code>ENGINE=InnoDB</code> and
+        <code>COLLATE=utf8mb4_unicode_ci</code> so that Unicode
+        comparison behaves consistently.
+      </p>
+
+      <h3>PostgreSQL</h3>
+      <p>
+        The <code>created</code> column is <code>VARCHAR(40)</code> —
+        large enough for any ISO 8601 string, small enough to index
+        efficiently. A separate <code>CREATE INDEX IF NOT EXISTS</code>
+        statement is issued because PostgreSQL does not support inline
+        index declarations in <code>CREATE TABLE</code>.
+      </p>
+
+      <div class="callout success">
+        <strong>One code base, three drivers.</strong>
+        Switching databases is a <code>.env</code> change, not a code
+        change. The <code>ensure_schema()</code> function and PDO do
+        the rest.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — The /php-static route
+       ============================================================= -->
+  <section class="file-section" id="doc-static-route" data-name="php-static route css stylesheet fix documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>The /php-static Route <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/ — why the CSS moved</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>The /php-static Route</h1>
+
+      <p>
+        This was one of the issues identified in the earlier review:
+        <code>index.php</code> referenced
+        <code>/php-static/style.css</code> but no such route existed in
+        <code>php_routes.py</code>, so the CSS was a 404 on every
+        platform and the notes app rendered completely unstyled.
+      </p>
+
+      <h2>The fix, in two parts</h2>
+
+      <h3>1. The route exists now</h3>
+      <p>
+        <code>backend/routes/php_routes.py</code> registers a route:
+      </p>
+
+      <pre>@router.get("/php-static/{asset:path}", include_in_schema=False)
+async def php_static(asset: str):
+    path = _resolve_static_safe(asset)
+    if path is None:
+        raise HTTPException(status_code=404, detail=f"Not found: {asset}")
+    return FileResponse(path)</pre>
+
+      <p>
+        The <code>:path</code> converter accepts nested paths, and
+        <code>_resolve_static_safe()</code> applies the same
+        path-traversal protection as the PHP execution route.
+      </p>
+
+      <h3>2. The CSS file lives where the route serves from</h3>
+      <p>
+        The stylesheet now lives at
+        <code>php_app/static/style.css</code> — the directory the route
+        serves from. <code>index.php</code>'s <code>&lt;link&gt;</code>
+        tag resolves to this file.
+      </p>
+
+      <h2>The directory is created automatically</h2>
+      <p>
+        <code>backend/main.py</code>'s <code>_ensure_php_dirs()</code>
+        creates <code>php_app/static/</code> (and
+        <code>php_app/data/</code>) on startup, so the folder is always
+        present even on a fresh clone:
+      </p>
+
+      <pre>def _ensure_php_dirs() -&gt; None:
+    if not settings.php_enabled:
+        return
+    for sub in ("data", "static"):
+        d = PHP_APP_DIR / sub
+        try:
+            d.mkdir(parents=True, exist_ok=True)
+        except Exception as exc:
+            logger.warning("Could not create {}: {}", d, exc)</pre>
+
+      <h2>The old file is kept as a stub</h2>
+      <p>
+        The old <code>php_app/style.css</code> is kept as a stub with a
+        comment pointing at the new location. This is defensive: any
+        cached browser reference to <code>/php/style.css</code> gets a
+        harmless stub instead of a 404. The stub also contains the
+        minimal styling needed to render its own message, so a user who
+        lands on it sees a readable explanation rather than unstyled
+        HTML.
+      </p>
+
+      <div class="callout">
+        <strong>Why keep the stub?</strong>
+        A 404 on a stylesheet is silent — the browser falls back to
+        default styling and the page looks broken. A stub with a comment
+        is loud: a developer who opens DevTools sees the redirect
+        message and knows exactly where the file went.
+      </div>
+
+      <h2>How the URL is constructed</h2>
+      <p>
+        <code>index.php</code> uses a helper to build the stylesheet URL:
+      </p>
+
+      <pre>&lt;link rel="stylesheet"
+      href="&lt;?= h($base) ?&gt;/php-static/style.css"&gt;</pre>
+
+      <p>
+        The <code>$base</code> variable comes from
+        <code>app_base()</code>, which reads
+        <code>HTTP_X_FORWARDED_PREFIX</code> from the CGI environment.
+        This makes the app work whether it is mounted at <code>/php/</code>
+        or at the root of a subpath — a detail that matters when the
+        backend is proxied.
+      </p>
+
+      <h2>Verifying the route</h2>
+      <pre>$ curl -I http://127.0.0.1:8000/php-static/style.css
+HTTP/1.1 200 OK
+content-type: text/css; charset=utf-8
+content-length: 3421</pre>
+
+      <p>
+        A 404 here means the file is missing from
+        <code>php_app/static/</code>. A 500 means the static directory
+        does not exist — check the backend startup log for the
+        <code>_ensure_php_dirs</code> warning.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — POST-not-GET delete
+       ============================================================= -->
+  <section class="file-section" id="doc-delete" data-name="post delete form security documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>POST-not-GET Delete <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/index.php — why delete is a POST</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>POST-not-GET Delete</h1>
+
+      <p>
+        The delete action is a POST form, not a GET link. This is a
+        deliberate design decision that closes a class of bugs that are
+        easy to introduce and hard to notice.
+      </p>
+
+      <h2>The current form</h2>
+      <pre>&lt;form method="post" action="/php/"&gt;
+    &lt;input type="hidden" name="action" value="delete" /&gt;
+    &lt;input type="hidden" name="id" value="42" /&gt;
+    &lt;button type="submit" ...&gt;×&lt;/button&gt;
+&lt;/form&gt;</pre>
+
+      <h2>The old form (and why it was wrong)</h2>
+      <pre>&lt;a href="/php/?delete=42"&gt;×&lt;/a&gt;</pre>
+
+      <p>A GET-based delete can be triggered by:</p>
+      <ul>
+        <li>
+          <strong>A browser prefetcher.</strong> Some browsers
+          speculatively fetch links on hover. If the link is
+          <code>/php/?delete=42</code>, the note is deleted before the
+          user has clicked anything.
+        </li>
+        <li>
+          <strong>A link scanner.</strong> Corporate email gateways,
+          antivirus tools, and social-media previews all follow links
+          to check for malware. A GET delete fires on every scan.
+        </li>
+        <li>
+          <strong>A bookmark.</strong> Bookmarking the delete URL and
+          revisiting it later deletes the note again.
+        </li>
+        <li>
+          <strong>An embedded image.</strong> A malicious page can
+          embed <code>&lt;img src="http://your-server/php/?delete=42"&gt;</code>
+          and trigger the delete when the page loads.
+        </li>
+      </ul>
+
+      <p>
+        A POST is not automatically triggered by any of those. The
+        browser only sends a POST when a form is explicitly submitted.
+      </p>
+
+      <h2>Backward compatibility</h2>
+      <p>
+        The current implementation still accepts
+        <code>GET ?delete=ID</code> for backward compatibility, but the
+        primary path is a POST. The old path exists so that any cached
+        page or bookmark that still uses the old URL does not break —
+        the user sees the delete happen, and the next page load uses the
+        POST form.
+      </p>
+
+      <div class="callout warn">
+        <strong>The GET path is deprecated.</strong>
+        It is kept only to avoid breaking old bookmarks. New code
+        should always use the POST form. Future versions may remove the
+        GET path entirely.
+      </div>
+
+      <h2>Confirmation prompt</h2>
+      <p>
+        The delete button also has an <code>onclick</code> confirmation:
+      </p>
+
+      <pre>&lt;button type="submit"
+        onclick="return confirm('Delete this note?')"&gt;×&lt;/button&gt;</pre>
+
+      <p>
+        This is a UX guard rail, not a security control — a user who
+        really wants to delete a note can accept the prompt. Its job is
+        to prevent the accidental click from being destructive.
+      </p>
+
+      <h2>CSRF considerations</h2>
+      <p>
+        There is no CSRF token in the current implementation. The
+        notes app is designed for single-user localhost use, where CSRF
+        is not a meaningful threat — an attacker on another website
+        cannot reach <code>127.0.0.1:8000</code> because that address is
+        not routable from the public internet.
+      </p>
+      <p>
+        If the backend is ever exposed on a public address, a CSRF
+        token should be added. The POST form is a step in that
+        direction — it means adding a token is a one-line change rather
+        than a rewrite of the delete path.
+      </p>
+
+      <h2>Redirect after POST</h2>
+      <p>
+        After a successful add or delete, the app issues a
+        <code>302</code> redirect to <code>/php/</code>. This is the
+        standard "redirect after POST" pattern, and it prevents the
+        common bug where reloading the result page re-submits the form.
+      </p>
+
+      <pre>header("Location: {$base}/php/");
+exit;</pre>
+
+      <p>
+        Without the redirect, pressing F5 after adding a note would add
+        a second copy. With the redirect, F5 simply reloads the notes
+        list.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Permissions & WAL
+       ============================================================= -->
+  <section class="file-section" id="doc-permissions" data-name="permissions mkdir wal mode sqlite documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Permissions &amp; WAL <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/db.php — filesystem and journaling</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Permissions &amp; WAL</h1>
+
+      <p>
+        Two small changes in <code>db.php</code> have outsized
+        consequences: the <code>mkdir</code> mode and the SQLite journal
+        mode.
+      </p>
+
+      <h2>Data directory permissions</h2>
+      <p>
+        The <code>db.php</code> <code>mkdir</code> call now uses
+        <code>0755</code>, not the original <code>0777</code>:
+      </p>
+
+      <pre>mkdir($dir, 0755, true);</pre>
+
+      <p>What the bits mean:</p>
+
+      <table>
+        <thead><tr><th>Octal</th><th>Owner</th><th>Group</th><th>Other</th></tr></thead>
+        <tbody>
+          <tr><td><code>0755</code></td><td>rwx</td><td>r-x</td><td>r-x</td></tr>
+          <tr><td><code>0777</code></td><td>rwx</td><td>rwx</td><td>rwx</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <code>0777</code> would add write permission for group and
+        other, letting any user on a shared host drop a malicious file
+        into the data directory. The change is a no-op on Windows
+        (permissions are ignored there) and a security improvement on
+        Unix.
+      </p>
+
+      <div class="callout danger">
+        <strong>Never use 0777 on a directory the PHP process can
+        write to.</strong>
+        A world-writable data directory is a code-execution vector: an
+        attacker who can write a file there can sometimes get the
+        web server to execute it. 0755 is the correct default.
+      </div>
+
+      <h2>The database file permissions</h2>
+      <p>
+        The SQLite database file itself is created by PDO when the first
+        connection is established. Its permissions depend on the
+        process umask:
+      </p>
+
+      <table>
+        <thead><tr><th>Umask</th><th>Effective file mode</th></tr></thead>
+        <tbody>
+          <tr><td><code>022</code> (typical)</td><td><code>0644</code> — owner rw, others r</td></tr>
+          <tr><td><code>002</code> (group-writable)</td><td><code>0664</code> — owner rw, group rw</td></tr>
+          <tr><td><code>077</code> (private)</td><td><code>0600</code> — owner rw only</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        For the default single-user scenario, <code>0644</code> is fine.
+        On a multi-user host where other users should not read the
+        notes, set the umask or use a restricted user for the PHP-CGI
+        subprocess.
+      </p>
+
+      <h2>SQLite WAL mode</h2>
+      <p>
+        The SQLite connection now enables Write-Ahead Logging:
+      </p>
+
+      <pre>$pdo-&gt;exec('PRAGMA journal_mode = WAL');</pre>
+
+      <p>WAL mode changes SQLite's journaling behaviour in two ways:</p>
+      <ul>
+        <li>
+          <strong>Concurrent readers.</strong> Readers do not block
+          writers and writers do not block readers. The default
+          rollback journal mode serialises all access.
+        </li>
+        <li>
+          <strong>Cheaper commits.</strong> A commit appends to the
+          WAL file rather than writing and syncing the entire database
+          page set. This is significantly faster for write-heavy
+          workloads.
+        </li>
+      </ul>
+
+      <h2>The WAL sidecar files</h2>
+      <p>
+        WAL mode creates two additional files alongside the database:
+      </p>
+
+      <table>
+        <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>app.db-wal</code></td><td>The write-ahead log — pending changes not yet checkpointed into the main file</td></tr>
+          <tr><td><code>app.db-shm</code></td><td>The shared-memory index — coordinates readers and the writer</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        The sidecar files are cleaned up automatically when the last
+        connection closes. They are listed in <code>.gitignore</code>
+        alongside <code>*.db</code>.
+      </p>
+
+      <div class="callout">
+        <strong>WAL is a persistent database property.</strong>
+        It is set once and survives subsequent connections. You do not
+        need to re-issue the pragma on every connect — but doing so is
+        harmless.
+      </div>
+
+      <h2>Foreign key enforcement</h2>
+      <p>
+        SQLite has foreign keys disabled by default, which surprises
+        most developers. The connection enables them explicitly:
+      </p>
+
+      <pre>$pdo-&gt;exec('PRAGMA foreign_keys = ON');</pre>
+
+      <p>
+        The notes app does not currently use foreign keys — there is
+        only one table — but the pragma is in place so that any future
+        schema change that adds a foreign key gets the expected
+        behaviour automatically.
+      </p>
+
+      <h2>Backup with WAL</h2>
+      <p>
+        A naive <code>cp app.db backup.db</code> is unsafe under WAL
+        mode because it misses un-checkpointed writes in the WAL file.
+        Use the SQLite CLI's <code>.backup</code> command instead:
+      </p>
+
+      <pre>$ runtime/sqlite/sqlite3 php_app/data/app.db ".backup backup.db"</pre>
+
+      <p>
+        The <code>.backup</code> command takes a proper snapshot that
+        includes any pending WAL content.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Driver preflight
+       ============================================================= -->
+  <section class="file-section" id="doc-preflight" data-name="driver preflight check available drivers documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Driver Preflight <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/db.php — actionable errors</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Driver Preflight</h1>
+
+      <p>
+        <code>db.php</code> checks
+        <code>PDO::getAvailableDrivers()</code> before attempting a
+        connection. This produces a clear, actionable error message
+        instead of the generic "could not find driver" that PHP
+        normally emits.
+      </p>
+
+      <h2>The check</h2>
+      <pre>$installed = PDO::getAvailableDrivers();
+if (!in_array($driver, $installed, true)) {
+    throw new RuntimeException(
+        "PDO driver '$driver' is not installed. "
+        . "Available drivers: " . (empty($installed) ? '(none)' : implode(', ', $installed))
+        . ". " . $hint
+    );
+}</pre>
+
+      <h2>What the user sees</h2>
+      <p>
+        On a Debian machine with PHP installed but
+        <code>php-sqlite3</code> missing, the error message is:
+      </p>
+
+      <pre>PDO driver 'sqlite' is not installed. Available drivers: mysql, pgsql.
+On Debian/Ubuntu: sudo apt install php-sqlite3
+On Fedora: sudo dnf install php-pdo
+On macOS: brew reinstall php</pre>
+
+      <p>
+        Compare that with the default PHP error, which is just
+        <code>could not find driver</code> with no further detail.
+      </p>
+
+      <h2>Platform-specific hints</h2>
+      <table>
+        <thead><tr><th>Driver</th><th>Hint shown</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>sqlite</code></td>
+            <td>Debian/Ubuntu: <code>apt install php-sqlite3</code> · Fedora: <code>dnf install php-pdo</code> · macOS: <code>brew reinstall php</code></td>
+          </tr>
+          <tr>
+            <td><code>mysql</code></td>
+            <td>Debian/Ubuntu: <code>apt install php-mysql</code> · Fedora: <code>dnf install php-mysqlnd</code></td>
+          </tr>
+          <tr>
+            <td><code>pgsql</code></td>
+            <td>Debian/Ubuntu: <code>apt install php-pgsql</code> · Fedora: <code>dnf install php-pgsql</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>The /api/php/drivers endpoint</h2>
+      <p>
+        The same information is exposed programmatically through
+        <code>backend/routes/php_routes.py</code>:
+      </p>
+
+      <pre>@router.get("/api/php/drivers")
+async def php_pdo_drivers():
+    php = find_php_cgi()
+    if php is None:
+        return {"available": False, "drivers": []}
+    result = subprocess.run(
+        [php, "-r", "echo implode(',', PDO::getAvailableDrivers());"],
+        capture_output=True, text=True, timeout=5,
+    )
+    drivers = [d.strip() for d in result.stdout.strip().split(",") if d.strip()]
+    return {"available": True, "drivers": sorted(drivers)}</pre>
+
+      <p>
+        A settings-page UI can call this endpoint to render a "PDO
+        drivers available" panel without shelling out to PHP itself.
+      </p>
+
+      <h2>Calling it from the command line</h2>
+      <pre>$ curl http://127.0.0.1:8000/api/php/drivers
+{"available":true,"drivers":["mysql","pgsql","sqlite"]}</pre>
+
+      <p>
+        If the list is empty, PHP was installed without any PDO
+        drivers. This is common on minimal container images — the
+        base <code>php-cli</code> package does not pull in any driver
+        packages by default.
+      </p>
+
+      <div class="callout success">
+        <strong>Fail early, fail clearly.</strong>
+        A preflight check that produces a specific, actionable error is
+        worth ten generic "something went wrong" messages. The check
+        costs one function call per request and saves hours of
+        debugging.
+      </div>
+
+      <h2>What if the driver is missing but the user does not need it?</h2>
+      <p>
+        The preflight only fires on the configured driver. If
+        <code>AGENT_PHP_DB_DRIVER=sqlite</code> and the
+        <code>pdo_sqlite</code> extension is missing, the app fails —
+        but switching to <code>mysql</code> in <code>.env</code> would
+        work if <code>pdo_mysql</code> is present. The preflight is
+        per-driver, not per-application.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Configurations
+       ============================================================= -->
+  <section class="file-section" id="doc-configs" data-name="common configurations sqlite mysql postgresql env documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Common Configurations <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/ — three deployment recipes</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Common Configurations</h1>
+
+      <p>
+        Three worked examples covering the realistic deployment
+        scenarios. Every one is a <code>.env</code> change — no PHP
+        code modification is required.
+      </p>
+
+      <h2>1. Single-user SQLite (default)</h2>
+      <pre>AGENT_PHP_ENABLED=true
+AGENT_PHP_DB_DRIVER=sqlite
+AGENT_PHP_SQLITE_PATH=data/app.db</pre>
+
+      <p>
+        The database file is created at
+        <code>php_app/data/app.db</code> on first request. Nothing else
+        to configure. This is the recommended setup for a single-user
+        machine.
+      </p>
+
+      <table>
+        <thead><tr><th>Pros</th><th>Cons</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Zero configuration · no server to run · single file to back up</td>
+            <td>Single-writer only · no network access</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>2. Local MySQL</h2>
+      <pre>AGENT_PHP_ENABLED=true
+AGENT_PHP_DB_DRIVER=mysql
+AGENT_PHP_DB_HOST=127.0.0.1
+AGENT_PHP_DB_PORT=3306
+AGENT_PHP_DB_NAME=notes
+AGENT_PHP_DB_USER=notes_user
+AGENT_PHP_DB_PASSWORD=secret</pre>
+
+      <p>
+        The database and user must exist before the first request:
+      </p>
+
+      <pre>CREATE DATABASE notes CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'notes_user'@'localhost' IDENTIFIED BY 'secret';
+GRANT ALL PRIVILEGES ON notes.* TO 'notes_user'@'localhost';
+FLUSH PRIVILEGES;</pre>
+
+      <p>
+        The <code>notes</code> table is created automatically on the
+        first request. You do not need to run any DDL yourself.
+      </p>
+
+      <table>
+        <thead><tr><th>Pros</th><th>Cons</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Multi-writer · network-accessible · familiar tooling</td>
+            <td>Requires a running MySQL server · separate backup process</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>3. PostgreSQL on another host</h2>
+      <pre>AGENT_PHP_ENABLED=true
+AGENT_PHP_DB_DRIVER=pgsql
+AGENT_PHP_DB_HOST=db.example.com
+AGENT_PHP_DB_PORT=5432
+AGENT_PHP_DB_NAME=notes
+AGENT_PHP_DB_USER=notes_user
+AGENT_PHP_DB_PASSWORD=secret</pre>
+
+      <p>Requires:</p>
+      <ul>
+        <li>The <code>pdo_pgsql</code> extension installed for PHP.</li>
+        <li>Network access from the backend host to the database server.</li>
+        <li>The database and user created server-side.</li>
+        <li>
+          PostgreSQL's <code>pg_hba.conf</code> configured to allow the
+          backend host to connect (or a firewall rule if the server is
+          remote).
+        </li>
+      </ul>
+
+      <table>
+        <thead><tr><th>Pros</th><th>Cons</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Best transaction semantics · excellent concurrency · rich SQL</td>
+            <td>Most configuration of the three · network latency on every request</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Disabling the app entirely</h2>
+      <pre>AGENT_PHP_ENABLED=false</pre>
+
+      <p>
+        When disabled, the <code>/php/*</code> routes are not
+        registered. Requests to those paths return 404. The rest of the
+        backend — chat, graph, models — is unaffected.
+      </p>
+
+      <h2>Switching between drivers</h2>
+      <p>
+        Changing <code>AGENT_PHP_DB_DRIVER</code> does not migrate any
+        data. The <code>notes</code> table is created fresh in the new
+        database on the first request. To carry data across, export
+        from the old database and import into the new one manually.
+      </p>
+
+      <div class="callout warn">
+        <strong>No automatic migration.</strong>
+        The app's schema is intentionally minimal — one table, four
+        columns, no foreign keys. For a real application with a
+        non-trivial schema, use a proper migration tool. For this app,
+        the manual <code>INSERT INTO new_db.notes SELECT * FROM old_db.notes</code>
+        is sufficient.
+      </div>
+
+      <h2>Environment variable reference</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Default</th><th>Used when</th></tr></thead>
+        <tbody>
+          <tr><td><code>AGENT_PHP_ENABLED</code></td><td><code>true</code></td><td>Always — set <code>false</code> to disable the app</td></tr>
+          <tr><td><code>AGENT_PHP_DB_DRIVER</code></td><td><code>sqlite</code></td><td>Always</td></tr>
+          <tr><td><code>AGENT_PHP_SQLITE_PATH</code></td><td><code>data/app.db</code></td><td>sqlite only</td></tr>
+          <tr><td><code>AGENT_PHP_DB_HOST</code></td><td><code>127.0.0.1</code></td><td>mysql, pgsql</td></tr>
+          <tr><td><code>AGENT_PHP_DB_PORT</code></td><td><code>3306</code></td><td>mysql, pgsql (5432 for PG)</td></tr>
+          <tr><td><code>AGENT_PHP_DB_NAME</code></td><td><code>app</code></td><td>mysql, pgsql</td></tr>
+          <tr><td><code>AGENT_PHP_DB_USER</code></td><td><code>app</code></td><td>mysql, pgsql</td></tr>
+          <tr><td><code>AGENT_PHP_DB_PASSWORD</code></td><td><code>""</code></td><td>mysql, pgsql</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Testing & cleanup
+       ============================================================= -->
+  <section class="file-section" id="doc-testing" data-name="testing cleanup reset curl documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Testing &amp; Cleanup <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/ — verifying and resetting</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Testing &amp; Cleanup</h1>
+
+      <p>
+        With the backend running, the notes app can be exercised
+        end-to-end from a shell. Seven steps, all <code>curl</code>.
+      </p>
+
+      <h2>The test sequence</h2>
+
+      <h3>1. Check PHP is available</h3>
+      <pre>$ curl http://127.0.0.1:8000/api/php/status
+{
+  "available": true,
+  "binary": "/path/to/runtime/php/php-cgi.exe",
+  "is_cgi": true,
+  "version": "PHP 8.4.15 (cgi-fcgi) ..."
+}</pre>
+
+      <p>
+        If <code>available</code> is <code>false</code>, the backend
+        could not find a PHP binary. See the runtime documentation for
+        the bootstrap fix.
+      </p>
+
+      <h3>2. Check the driver is available</h3>
+      <pre>$ curl http://127.0.0.1:8000/api/php/drivers
+{"available":true,"drivers":["sqlite"]}</pre>
+
+      <p>
+        The list must contain the driver configured in
+        <code>AGENT_PHP_DB_DRIVER</code>. If it does not, install the
+        matching PDO extension for PHP.
+      </p>
+
+      <h3>3. Load the notes page</h3>
+      <pre>$ curl http://127.0.0.1:8000/php/ | head -30
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    ...</pre>
+
+      <p>
+        The page should render with a styled header, an add-note form,
+        and an empty notes list. If it renders unstyled, the
+        <code>/php-static/style.css</code> route is broken — see
+        <a href="#doc-static-route">The /php-static route</a>.
+      </p>
+
+      <h3>4. Add a note</h3>
+      <pre>$ curl -X POST http://127.0.0.1:8000/php/ \
+    -d 'action=add' \
+    -d 'title=Test note' \
+    -d 'body=Created via curl'</pre>
+
+      <p>
+        A successful add returns a 302 redirect to
+        <code>/php/</code>. <code>curl</code> does not follow the
+        redirect by default — the important thing is that the response
+        is a 302, not a 500.
+      </p>
+
+      <h3>5. Verify the note was saved</h3>
+      <pre>$ curl http://127.0.0.1:8000/php/ | grep "Test note"
+    &lt;strong&gt;Test note&lt;/strong&gt;</pre>
+
+      <p>
+        The note appears in the rendered HTML.
+      </p>
+
+      <h3>6. Check the JSON demo endpoint</h3>
+      <pre>$ curl http://127.0.0.1:8000/php/demo.php
+{
+    "ok": true,
+    "driver": "sqlite",
+    "version": "3.46.0",
+    "note_count": 1,
+    "tables": ["notes"],
+    "php": "8.4.15",
+    "server": "3olution-Python-PHP",
+    "time": "2025-01-15T12:34:56+00:00"
+}</pre>
+
+      <p>
+        The <code>version</code> field confirms the driver is
+        functioning. The <code>tables</code> list confirms the schema
+        was created.
+      </p>
+
+      <h3>7. Inspect the SQLite database directly</h3>
+      <pre>$ runtime/sqlite/sqlite3 php_app/data/app.db "SELECT * FROM notes;"
+1|Test note|Created via curl|2025-01-15T12:34:56+00:00</pre>
+
+      <p>
+        The portable SQLite CLI is the fastest way to verify what is
+        actually on disk.
+      </p>
+
+      <h2>Cleanup and reset</h2>
+      <p>
+        To reset the notes app to a blank state:
+      </p>
+
+      <p><strong>SQLite:</strong></p>
+      <pre>$ rm php_app/data/app.db \
+     php_app/data/app.db-wal \
+     php_app/data/app.db-shm</pre>
+
+      <p>
+        The next request to <code>/php/</code> recreates the database
+        and the <code>notes</code> table automatically.
+      </p>
+
+      <p><strong>MySQL / PostgreSQL:</strong></p>
+      <pre>DROP TABLE notes;</pre>
+
+      <p>
+        Or drop and recreate the whole database. The table is recreated
+        on the next request either way.
+      </p>
+
+      <h2>Full reset with curl</h2>
+      <pre># List every note (just the IDs)
+curl http://127.0.0.1:8000/php/ | grep -oP 'name="id" value="\K\d+'
+
+# Delete each one
+for id in $(curl -s http://127.0.0.1:8000/php/ | grep -oP 'name="id" value="\K\d+'); do
+    curl -X POST http://127.0.0.1:8000/php/ \
+        -d "action=delete" \
+        -d "id=$id"
+done</pre>
+
+      <h2>Verifying the WAL files</h2>
+      <p>
+        After the first write, two sidecar files should exist:
+      </p>
+      <pre>$ ls -la php_app/data/
+-rw-r--r--  app.db
+-rw-r--r--  app.db-shm
+-rw-r--r--  app.db-wal</pre>
+
+      <p>
+        On a clean read-only connection, SQLite may check-point and
+        remove the sidecar files. Their presence is normal, and their
+        absence is also normal — it depends on the last operation the
+        database performed.
+      </p>
+
+      <div class="callout">
+        <strong>Test from a clean state.</strong>
+        If something is behaving strangely, delete the entire
+        <code>php_app/data/</code> folder (not just the .db file) and
+        let the app recreate it. This rules out a corrupted WAL
+        sidecar as the cause.
+      </div>
+
+      <h2>Checking the backend log</h2>
+      <p>
+        The backend logs every PHP request at DEBUG level:
+      </p>
+      <pre>$ curl "http://127.0.0.1:8000/api/logs/recent?lines=100&source=backend"</pre>
+
+      <p>
+        Or directly from disk:
+      </p>
+      <pre>$ tail -f logs/backend-*.log | grep -i php</pre>
+
+      <p>
+        The log includes the PHP stderr output if the subprocess wrote
+        anything. This is where you see PHP warnings, deprecation
+        notices, and the stack trace of any uncaught exception.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Troubleshooting
+       ============================================================= -->
+  <section class="file-section" id="doc-troubleshooting" data-name="troubleshooting php notes app errors documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Troubleshooting <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">php_app/ — common problems</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Troubleshooting</h1>
+
+      <h2>Blank page or 500 error</h2>
+      <p>Check the backend log first:</p>
+      <pre>$ tail -50 logs/backend-*.log</pre>
+      <p>
+        A PHP syntax error or uncaught exception writes a stack trace
+        to stderr, which the backend logs. The most common causes are
+        a missing <code>php.ini</code> (so no extensions are loaded) or
+        a missing PDO driver.
+      </p>
+
+      <h2>"could not find driver"</h2>
+      <p>
+        The PHP binary is running but the driver configured in
+        <code>AGENT_PHP_DB_DRIVER</code> is not installed. Confirm with:
+      </p>
+      <pre>$ runtime/php/php.exe -m | grep -i pdo</pre>
+      <p>
+        If the matching <code>pdo_*</code> extension is missing, add
+        it to <code>runtime/php/php.ini</code> (or install the
+        corresponding system package). The bootstrap's
+        <code>php.ini</code> enables <code>pdo_sqlite</code> by
+        default; the others must be uncommented.
+      </p>
+
+      <h2>Unstyled page (no CSS)</h2>
+      <p>
+        The <code>/php-static/style.css</code> route is not serving the
+        file. Three things to check:
+      </p>
+      <ol>
+        <li>
+          Does <code>php_app/static/style.css</code> exist? If not, the
+          CSS was lost during a copy.
+        </li>
+        <li>
+          Does <code>curl -I http://127.0.0.1:8000/php-static/style.css</code>
+          return 200? If it returns 404, the route is missing or the
+          file is not where the route expects it.
+        </li>
+        <li>
+          Does the backend startup log contain a warning about
+          <code>php_app/static/</code>? If the directory could not be
+          created, the route has nothing to serve.
+        </li>
+      </ol>
+
+      <h2>"PDO driver 'sqlite' is not installed"</h2>
+      <p>
+        The preflight in <code>db.php</code> fired. The message includes
+        the platform-specific install command. On the portable runtime,
+        the fix is usually:
+      </p>
+      <pre>$ python bootstrap/setup.py --force --skip-python --skip-sqlite --skip-deps --skip-vendor</pre>
+      <p>
+        This re-extracts the PHP ZIP and rewrites <code>php.ini</code>
+        with the correct <code>extension=</code> lines.
+      </p>
+
+      <h2>Note does not appear after adding</h2>
+      <p>
+        Three possible causes:
+      </p>
+      <ul>
+        <li>
+          <strong>The insert failed silently.</strong> Check that the
+          POST returned 302 (not 500). A 500 means the insert threw.
+        </li>
+        <li>
+          <strong>The redirect went to the wrong place.</strong>
+          Check the <code>Location</code> header on the 302 response.
+          If <code>app_base()</code> returned an empty string, the
+          redirect goes to <code>/php/</code> — which is correct for a
+          backend with no prefix.
+        </li>
+        <li>
+          <strong>The page is cached.</strong> Reload with
+          <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> to bypass the
+          browser cache.
+        </li>
+      </ul>
+
+      <h2>Delete returns 404 or does nothing</h2>
+      <p>
+        Verify the form is submitting a POST with
+        <code>action=delete</code>. If the form is submitting a GET
+        (some browsers fall back to GET if the method attribute is
+        misspelled), the <code>action</code> is lost and nothing
+        happens.
+      </p>
+      <p>
+        The server also accepts <code>GET ?delete=ID</code> for
+        backward compatibility, so a manual
+        <code>curl 'http://127.0.0.1:8000/php/?delete=1'</code> should
+        work as a test.
+      </p>
+
+      <h2>Database file is world-readable</h2>
+      <p>
+        The SQLite file is created with the process umask. If the
+        umask is <code>022</code>, the file ends up with mode
+        <code>0644</code> — readable by any user on the system. To
+        restrict it:
+      </p>
+      <pre>$ umask 077
+$ # then restart the backend</pre>
+      <p>
+        Or run the backend as a dedicated user with no other members in
+        its group.
+      </p>
+
+      <h2>"file is not a database"</h2>
+      <p>
+        The file at <code>php_app/data/app.db</code> is not a valid
+        SQLite database. This usually means an earlier operation wrote
+        something else to that path — for example, a text error message
+        was written because the directory did not exist and a different
+        process created it as a regular file.
+      </p>
+      <p>
+        Delete the file and let the app recreate it:
+      </p>
+      <pre>$ rm php_app/data/app.db*
+$ curl http://127.0.0.1:8000/php/</pre>
+
+      <h2>"database is locked"</h2>
+      <p>
+        SQLite's default rollback journal serialises all access. WAL
+        mode — which <code>db.php</code> enables — allows concurrent
+        readers, so this error is rare. It can still happen if a
+        long-running write transaction is in progress when a second
+        writer tries to commit.
+      </p>
+      <p>
+        The notes app's writes are short (single INSERT or DELETE), so
+        the lock window is tiny. A "database is locked" error under
+        this app almost always means a stale process is holding the
+        lock — for example, a
+        <code>runtime/sqlite/sqlite3</code> shell left open in another
+        terminal.
+      </p>
+
+      <h2>Redirect loops</h2>
+      <p>
+        If <code>app_base()</code> returns a non-empty prefix but the
+        backend is actually mounted at the root, the redirect target
+        becomes <code>/php/php/</code> and a loop can develop. Verify
+        what the backend sends:
+      </p>
+      <pre>$ curl -i -X POST http://127.0.0.1:8000/php/ \
+    -d 'action=add' -d 'title=x' -d 'body=y' | grep -i location
+Location: /php/</pre>
+      <p>
+        The <code>Location</code> header should not contain a doubled
+        prefix. If it does, check that no upstream proxy is injecting
+        <code>X-Forwarded-Prefix</code> unexpectedly.
+      </p>
+
+      <h2>Non-ASCII characters in notes are garbled</h2>
+      <p>
+        The app declares UTF-8 in both the HTML
+        (<code>&lt;meta charset="UTF-8"&gt;</code>) and the CGI
+        response header. If characters are garbled, check that the
+        database connection uses a UTF-8-compatible charset — MySQL
+        needs <code>utf8mb4</code>, which <code>db.php</code> sets
+        explicitly.
+      </p>
+      <p>
+        On SQLite, encoding is always UTF-8 and no configuration is
+        needed.
+      </p>
+
+      <h2>Still stuck?</h2>
+      <p>Capture the following and it will be obvious what is wrong:</p>
+      <ul>
+        <li><code>curl http://127.0.0.1:8000/api/php/status</code></li>
+        <li><code>curl http://127.0.0.1:8000/api/php/drivers</code></li>
+        <li>The last 200 lines of <code>logs/backend-*.log</code></li>
+        <li>Whether <code>php_app/data/app.db</code> exists and its size</li>
+        <li>The value of <code>AGENT_PHP_DB_DRIVER</code> in <code>.env</code></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — data/
+       ============================================================= -->
+  <section class="file-section" id="doc-data" data-name="data folder sqlite database gitkeep documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>data/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">php_app/data — SQLite database directory</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">database</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>data/</h1>
+
+      <p>
+        The directory where the SQLite database file lives. It is
+        created automatically by <code>backend/main.py</code>'s
+        <code>_ensure_php_dirs()</code> during the FastAPI lifespan, so
+        it exists even on a fresh clone.
+      </p>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead><tr><th>File</th><th>Created by</th><th>Gitignored?</th></tr></thead>
+        <tbody>
+          <tr><td><code>.gitkeep</code></td><td>Repo maintainers</td><td>No — the only tracked file</td></tr>
+          <tr><td><code>app.db</code></td><td>PDO on first request</td><td>Yes</td></tr>
+          <tr><td><code>app.db-wal</code></td><td>SQLite in WAL mode</td><td>Yes</td></tr>
+          <tr><td><code>app.db-shm</code></td><td>SQLite in WAL mode</td><td>Yes</td></tr>
+        </tbody>
+      </table>
+
+      <h2>The .gitkeep convention</h2>
+      <p>
+        Empty directories do not survive in git — git tracks files, not
+        directories. The <code>.gitkeep</code> file exists only so that
+        <code>data/</code> appears in a fresh clone.
+      </p>
+      <p>
+        <code>.gitignore</code> uses the inverse pattern to keep only
+        the placeholder:
+      </p>
+      <pre>php_app/data/
+!php_app/data/.gitkeep</pre>
+
+      <p>
+        The pattern reads "ignore everything in <code>data/</code>,
+        then un-ignore <code>.gitkeep</code>". The result: the folder
+        is tracked, the database files are not.
+      </p>
+
+      <h2>Inspecting the database</h2>
+      <p>
+        The portable SQLite CLI is the fastest way to look at what is
+        actually on disk:
+      </p>
+      <pre>$ runtime/sqlite/sqlite3 php_app/data/app.db
+
+sqlite&gt; .tables
+notes
+
+sqlite&gt; .schema notes
+CREATE TABLE notes (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    title   TEXT NOT NULL,
+    body    TEXT NOT NULL,
+    created TEXT NOT NULL
+)
+
+sqlite&gt; SELECT id, title, created FROM notes ORDER BY id DESC LIMIT 5;
+
+sqlite&gt; .quit</pre>
+
+      <h2>Resetting</h2>
+      <p>
+        To wipe the notes app back to a blank state, delete the
+        database and its WAL sidecars:
+      </p>
+      <pre>$ rm php_app/data/app.db \
+     php_app/data/app.db-wal \
+     php_app/data/app.db-shm</pre>
+
+      <p>
+        The next request to <code>/php/</code> recreates the database
+        and the <code>notes</code> table automatically.
+      </p>
+
+      <div class="callout danger">
+        <strong>Deleting the database is not reversible.</strong>
+        There is no undo. Back up <code>app.db</code> first if the
+        notes matter.
+      </div>
+
+      <h2>Backup</h2>
+      <p>
+        A simple <code>cp</code> is not safe under WAL mode — it can
+        miss un-checkpointed writes. Use the SQLite CLI's
+        <code>.backup</code> command instead:
+      </p>
+      <pre>$ runtime/sqlite/sqlite3 php_app/data/app.db \
+    ".backup php_app/data/backup-$(date +%F).db"</pre>
+
+      <p>
+        The resulting file is a complete, self-contained snapshot that
+        does not depend on the WAL sidecars.
+      </p>
+
+      <h2>Permissions</h2>
+      <p>
+        The directory is created with mode <code>0755</code> — owner
+        can write, everyone else can read and traverse. The database
+        file itself is created with the process umask, typically
+        <code>0644</code>.
+      </p>
+
+      <p>To restrict access on a multi-user host:</p>
+      <pre>$ chmod 700 php_app/data
+$ chmod 600 php_app/data/app.db*</pre>
+
+      <p>
+        This makes the database readable only by its owner. The PHP-CGI
+        subprocess runs as the backend user, so it continues to work.
+      </p>
+
+      <h2>Other drivers</h2>
+      <p>
+        When <code>AGENT_PHP_DB_DRIVER</code> is <code>mysql</code> or
+        <code>pgsql</code>, this directory is unused. The
+        <code>.gitkeep</code> file still lives here (it is part of the
+        repo), but no <code>app.db</code> is created.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — static/
+       ============================================================= -->
+  <section class="file-section" id="doc-static" data-name="static folder css assets php-static documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>static/ <span class="file-badge dir">folder</span></h2>
+        <span class="file-path">php_app/static — served at /php-static/*</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">assets</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>static/</h1>
+
+      <p>
+        Files in this directory are served by the backend at
+        <code>/php-static/*</code>. The folder currently holds one file
+        — the notes app's stylesheet — but the route supports any
+        subpath, so JavaScript files, images, or fonts can be added
+        without any backend change.
+      </p>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead><tr><th>File</th><th>Served at</th></tr></thead>
+        <tbody>
+          <tr><td><code>style.css</code></td><td><code>/php-static/style.css</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>How files are served</h2>
+      <p>
+        <code>backend/routes/php_routes.py</code> registers the route:
+      </p>
+
+      <pre>@router.get("/php-static/{asset:path}", include_in_schema=False)
+async def php_static(asset: str):
+    path = _resolve_static_safe(asset)
+    if path is None:
+        raise HTTPException(status_code=404, detail=f"Not found: {asset}")
+    return FileResponse(path)</pre>
+
+      <p>
+        The <code>:path</code> converter accepts nested paths
+        (<code>js/app.js</code>, <code>img/logo.svg</code>), and
+        <code>_resolve_static_safe()</code> applies the same
+        path-traversal protection as the PHP execution route.
+      </p>
+
+      <h2>Why not just serve from <code>web/</code>?</h2>
+      <p>
+        The backend already serves a static directory at <code>/</code>
+        (<code>web/</code>). Two reasons the PHP app has its own static
+        root:
+      </p>
+      <ol>
+        <li>
+          <strong>Separation of concerns.</strong>
+          <code>web/</code> is the frontend for the chat and graph
+          editor. <code>php_app/static/</code> is the frontend for the
+          PHP notes app. Mixing them would make both harder to reason
+          about.
+        </li>
+        <li>
+          <strong>Different lifecycle.</strong>
+          The PHP app can be disabled
+          (<code>AGENT_PHP_ENABLED=false</code>) without removing the
+          main frontend. Keeping the assets in separate folders makes
+          that clean.
+        </li>
+      </ol>
+
+      <h2>Adding a new static asset</h2>
+      <p>
+        Drop the file into <code>php_app/static/</code> and reference
+        it from PHP with the <code>$base</code> prefix:
+      </p>
+
+      <pre>&lt;link rel="stylesheet"
+      href="&lt;?= h($base) ?&gt;/php-static/style.css"&gt;
+
+&lt;script src="&lt;?= h($base) ?&gt;/php-static/js/app.js"&gt;&lt;/script&gt;</pre>
+
+      <p>
+        No backend change is needed. The route serves any file under
+        the directory.
+      </p>
+
+      <h2>MIME types</h2>
+      <p>
+        The route uses FastAPI's <code>FileResponse</code>, which
+        guesses the MIME type from the file extension:
+      </p>
+
+      <table>
+        <thead><tr><th>Extension</th><th>Content-Type</th></tr></thead>
+        <tbody>
+          <tr><td><code>.css</code></td><td><code>text/css</code></td></tr>
+          <tr><td><code>.js</code></td><td><code>application/javascript</code></td></tr>
+          <tr><td><code>.svg</code></td><td><code>image/svg+xml</code></td></tr>
+          <tr><td><code>.png</code></td><td><code>image/png</code></td></tr>
+          <tr><td><code>.woff2</code></td><td><code>font/woff2</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>The deprecated root-level style.css</h2>
+      <p>
+        The old <code>php_app/style.css</code> (one level up) is kept
+        as a stub for backward compatibility. It is not served by any
+        route — a request to <code>/php/style.css</code> is handled by
+        the PHP execution route, which falls back to
+        <code>index.php</code>. The stub exists only so that a developer
+        who opens the file directly sees a comment explaining where the
+        styles moved.
+      </p>
+
+      <div class="callout">
+        <strong>The stub is a comment, not a redirect.</strong>
+        It does not actually perform an HTTP redirect — it is just a
+        file with a leading comment. Its job is documentation, not
+        runtime behaviour.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — index.php
+       ============================================================= -->
+  <section class="file-section" id="f-index" data-name="index.php notes app php source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>index.php <span class="file-badge php">php</span></h2>
+        <span class="file-path">php_app/index.php</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-php">&lt;?php
+/**
+ * 3olution Notes — a small PHP notes app backed by SQLite (or MySQL
+ * or PostgreSQL, if configured).
+ * https://3olution.com
+ *
+ * Served at /php/ by the Python backend. The index page supports
+ * three actions:
+ *
+ *   GET  /php/              List all notes, show the add-note form
+ *   POST /php/  action=add  Insert a note, redirect back to the list
+ *   POST /php/  action=del  Delete a note, redirect back to the list
+ *
+ * The DELETE action is a POST (not a GET) so that a bookmark, a
+ * browser prefetcher, or a link-shortener cannot accidentally remove
+ * a note. A GET with ?delete=ID is still accepted for backward
+ * compatibility but triggers a confirmation prompt.
+ *
+ * ═══════════════════════════════════════════════════════════════════
+ *   CROSS-DRIVER COMPATIBILITY
+ * ═══════════════════════════════════════════════════════════════════
+ *
+ * All SQL goes through prepared statements. All DDL is emitted by
+ * db.php's ensure_schema(), which picks the correct dialect for the
+ * connected driver.
+ */
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/db.php';
+
+// ── Connect and ensure the schema exists ─────────────────────────────
+try {
+    $db = app_db();
+    ensure_schema($db);
+} catch (Throwable $e) {
+    // Connection or DDL failure. Render a helpful error page and stop.
+    http_response_code(500);
+    ?&gt;
+    &lt;!DOCTYPE html&gt;
+    &lt;html lang="en"&gt;
+    &lt;head&gt;
+        &lt;meta charset="UTF-8"&gt;
+        &lt;title&gt;3olution Notes — Database error&lt;/title&gt;
+        &lt;link rel="stylesheet" href="&lt;?= h(app_base()) ?&gt;/php-static/style.css"&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;header&gt;
+            &lt;div class="brand"&gt;
+                &lt;span class="logo"&gt;3&lt;/span&gt;
+                &lt;h1&gt;3olution Notes&lt;/h1&gt;
+            &lt;/div&gt;
+        &lt;/header&gt;
+        &lt;main&gt;
+            &lt;section class="card"&gt;
+                &lt;h2&gt;Database error&lt;/h2&gt;
+                &lt;p class="error"&gt;&lt;?= h($e-&gt;getMessage()) ?&gt;&lt;/p&gt;
+                &lt;p class="hint"&gt;
+                    Check the configuration in &lt;code&gt;.env&lt;/code&gt;.
+                    The most common cause is a missing PDO driver:
+                    install &lt;code&gt;php-sqlite3&lt;/code&gt; (or
+                    &lt;code&gt;php-mysql&lt;/code&gt; / &lt;code&gt;php-pgsql&lt;/code&gt;)
+                    and restart the backend.
+                &lt;/p&gt;
+            &lt;/section&gt;
+        &lt;/main&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+    &lt;?php
+    exit;
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  Handle POST actions
+// ══════════════════════════════════════════════════════════════════════
+
+$message = '';
+$message_kind = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = (string)($_POST['action'] ?? '');
+
+    // ── Add ──────────────────────────────────────────────────────────
+    if ($action === 'add') {
+        $title = trim((string)($_POST['title'] ?? ''));
+        $body  = trim((string)($_POST['body']  ?? ''));
+
+        if ($title === '' || $body === '') {
+            $message = 'Both title and body are required.';
+            $message_kind = 'error';
+        } elseif (mb_strlen($title) &gt; 200) {
+            $message = 'Title is too long (200 characters maximum).';
+            $message_kind = 'error';
+        } elseif (mb_strlen($body) &gt; 10000) {
+            $message = 'Body is too long (10000 characters maximum).';
+            $message_kind = 'error';
+        } else {
+            $stmt = $db-&gt;prepare(
+                'INSERT INTO notes (title, body, created) VALUES (?, ?, ?)'
+            );
+            $stmt-&gt;execute([$title, $body, date('c')]);
+
+            // Redirect after POST to prevent double-submission on reload.
+            $base = app_base();
+            header("Location: {$base}/php/");
+            exit;
+        }
+    }
+
+    // ── Delete ───────────────────────────────────────────────────────
+    elseif ($action === 'delete') {
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id &gt; 0) {
+            $stmt = $db-&gt;prepare('DELETE FROM notes WHERE id = ?');
+            $stmt-&gt;execute([$id]);
+        }
+        $base = app_base();
+        header("Location: {$base}/php/");
+        exit;
+    }
+}
+
+// ── Backward-compatibility: accept GET-based delete with confirmation ─
+if ($_SERVER['REQUEST_METHOD'] === 'GET' &amp;&amp; isset($_GET['delete'])) {
+    $id = (int)$_GET['delete'];
+    if ($id &gt; 0) {
+        $stmt = $db-&gt;prepare('DELETE FROM notes WHERE id = ?');
+        $stmt-&gt;execute([$id]);
+    }
+    $base = app_base();
+    header("Location: {$base}/php/");
+    exit;
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  Fetch data for the page
+// ══════════════════════════════════════════════════════════════════════
+
+$rows = $db-&gt;query(
+    'SELECT id, title, body, created FROM notes ORDER BY id DESC'
+)-&gt;fetchAll();
+
+$driver = $db-&gt;getAttribute(PDO::ATTR_DRIVER_NAME);
+$base   = app_base();
+$now    = date('Y-m-d H:i:s');
+$php    = PHP_VERSION;
+
+// Database label for the header. SQLite shows a filename; MySQL and
+// PostgreSQL show the schema/database name.
+$db_label = $driver;
+if ($driver === 'sqlite') {
+    $db_label = 'sqlite';
+} elseif ($driver === 'mysql' || $driver === 'pgsql') {
+    $db_label .= ':' . (getenv('AGENT_PHP_DB_NAME') ?: 'app');
+}
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;3olution Notes&lt;/title&gt;
+    &lt;link rel="stylesheet" href="&lt;?= h($base) ?&gt;/php-static/style.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;header&gt;
+        &lt;div class="brand"&gt;
+            &lt;span class="logo"&gt;3&lt;/span&gt;
+            &lt;h1&gt;3olution Notes&lt;/h1&gt;
+        &lt;/div&gt;
+        &lt;div class="meta"&gt;
+            &lt;span&gt;PHP &lt;?= h($php) ?&gt;&lt;/span&gt;
+            &lt;span&gt;DB &lt;?= h($db_label) ?&gt;&lt;/span&gt;
+            &lt;span&gt;&lt;?= h($now) ?&gt;&lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/header&gt;
+
+    &lt;main&gt;
+        &lt;!-- ── Add a note ──────────────────────────────────────────── --&gt;
+        &lt;section class="card"&gt;
+            &lt;h2&gt;Add a Note&lt;/h2&gt;
+
+            &lt;?php if ($message): ?&gt;
+                &lt;p class="message &lt;?= h($message_kind) ?&gt;"&gt;
+                    &lt;?= h($message) ?&gt;
+                &lt;/p&gt;
+            &lt;?php endif; ?&gt;
+
+            &lt;form method="post" action="&lt;?= h($base) ?&gt;/php/"&gt;
+                &lt;input type="hidden" name="action" value="add" /&gt;
+
+                &lt;label for="title"&gt;Title&lt;/label&gt;
+                &lt;input
+                    type="text"
+                    id="title"
+                    name="title"
+                    placeholder="What is it about?"
+                    maxlength="200"
+                    required
+                    autofocus
+                /&gt;
+
+                &lt;label for="body"&gt;Body&lt;/label&gt;
+                &lt;textarea
+                    id="body"
+                    name="body"
+                    rows="4"
+                    placeholder="Write something…"
+                    maxlength="10000"
+                    required
+                &gt;&lt;/textarea&gt;
+
+                &lt;button type="submit"&gt;Save note&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/section&gt;
+
+        &lt;!-- ── List notes ──────────────────────────────────────────── --&gt;
+        &lt;section class="card"&gt;
+            &lt;h2&gt;Notes (&lt;?= count($rows) ?&gt;)&lt;/h2&gt;
+
+            &lt;?php if (count($rows) === 0): ?&gt;
+                &lt;p class="empty"&gt;No notes yet. Add one above.&lt;/p&gt;
+            &lt;?php else: ?&gt;
+                &lt;ul class="notes"&gt;
+                    &lt;?php foreach ($rows as $row): ?&gt;
+                        &lt;li&gt;
+                            &lt;div class="note-header"&gt;
+                                &lt;strong&gt;&lt;?= h($row['title']) ?&gt;&lt;/strong&gt;
+                                &lt;span class="date"&gt;
+                                    &lt;?= h($row['created']) ?&gt;
+                                &lt;/span&gt;
+                                &lt;form
+                                    method="post"
+                                    action="&lt;?= h($base) ?&gt;/php/"
+                                    class="inline"
+                                &gt;
+                                    &lt;input type="hidden" name="action" value="delete" /&gt;
+                                    &lt;input type="hidden" name="id" value="&lt;?= (int)$row['id'] ?&gt;" /&gt;
+                                    &lt;button
+                                        type="submit"
+                                        class="delete"
+                                        title="Delete this note"
+                                        onclick="return confirm('Delete this note?')"
+                                    &gt;
+                                        ×
+                                    &lt;/button&gt;
+                                &lt;/form&gt;
+                            &lt;/div&gt;
+                            &lt;p&gt;&lt;?= nl2br(h($row['body'])) ?&gt;&lt;/p&gt;
+                        &lt;/li&gt;
+                    &lt;?php endforeach; ?&gt;
+                &lt;/ul&gt;
+            &lt;?php endif; ?&gt;
+        &lt;/section&gt;
+
+        &lt;!-- ── Endpoints reference ─────────────────────────────────── --&gt;
+        &lt;section class="card"&gt;
+            &lt;h2&gt;Endpoints&lt;/h2&gt;
+            &lt;ul class="endpoints"&gt;
+                &lt;li&gt;&lt;code&gt;GET  &lt;?= h($base) ?&gt;/php/&lt;/code&gt; — this page&lt;/li&gt;
+                &lt;li&gt;&lt;code&gt;GET  &lt;?= h($base) ?&gt;/php/demo.php&lt;/code&gt; — SQL demo (JSON)&lt;/li&gt;
+                &lt;li&gt;&lt;code&gt;GET  /api/php/status&lt;/code&gt; — PHP binary info&lt;/li&gt;
+                &lt;li&gt;&lt;code&gt;GET  /api/php/drivers&lt;/code&gt; — PDO drivers installed&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/section&gt;
+    &lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — db.php
+       ============================================================= -->
+  <section class="file-section" id="f-db" data-name="db.php pdo connection schema driver source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>db.php <span class="file-badge php">php</span></h2>
+        <span class="file-path">php_app/db.php</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-php">&lt;?php
+/**
+ * SQL helper for the 3olution PHP app.
+ * https://3olution.com
+ *
+ * Returns a PDO connection configured from environment variables
+ * that the Python backend passes through the CGI environment.
+ *
+ * ═══════════════════════════════════════════════════════════════════
+ *   SUPPORTED DRIVERS
+ * ═══════════════════════════════════════════════════════════════════
+ *
+ *   sqlite   Zero-config. The database file is created on first use.
+ *   mysql    Requires pdo_mysql extension and a running MySQL server.
+ *   pgsql    Requires pdo_pgsql extension and a running PostgreSQL.
+ *
+ * The driver is chosen by AGENT_PHP_DB_DRIVER. When it's 'sqlite', the
+ * file lives at AGENT_PHP_SQLITE_PATH relative to php_app/. When it's
+ * mysql or pgsql, the connection parameters come from AGENT_PHP_DB_*.
+ *
+ * ═══════════════════════════════════════════════════════════════════
+ *   CROSS-DRIVER SCHEMA
+ * ═══════════════════════════════════════════════════════════════════
+ *
+ * The `notes` table is defined per-driver in ensure_schema(). SQLite,
+ * MySQL, and PostgreSQL each have their own dialect for auto-increment
+ * primary keys:
+ *
+ *     SQLite:       INTEGER PRIMARY KEY AUTOINCREMENT
+ *     MySQL:        INT AUTO_INCREMENT PRIMARY KEY
+ *     PostgreSQL:   SERIAL PRIMARY KEY
+ *
+ * Trying to run one dialect's CREATE TABLE against a different driver
+ * raises a syntax error. The ensure_schema() function switches on the
+ * connected driver and emits the correct DDL.
+ *
+ * ═══════════════════════════════════════════════════════════════════
+ *   TIMESTAMPS
+ * ═══════════════════════════════════════════════════════════════════
+ *
+ * Timestamps are stored as ISO 8601 strings ('2025-01-15T12:34:56+00:00')
+ * rather than native DATETIME types. This is deliberate:
+ *
+ *   - ISO 8601 sorts correctly as a string in every driver.
+ *   - No timezone conversion is performed on read.
+ *   - The format is portable and human-readable.
+ *
+ * The trade-off is a small storage overhead and the loss of native
+ * date-arithmetic functions, neither of which matter for a notes app.
+ */
+
+declare(strict_types=1);
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  Connection
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * Return a singleton PDO connection to the configured database.
+ *
+ * The connection is created on first call and cached in a static
+ * variable for the lifetime of the request. Each PHP-CGI request is a
+ * fresh process, so "the lifetime of the request" is effectively the
+ * lifetime of this function's execution.
+ *
+ * The returned PDO has three important attributes set:
+ *
+ *   ERRMODE_EXCEPTION      Errors raise PDOException rather than
+ *                          returning false. This makes error handling
+ *                          uniform and forces callers to think about
+ *                          failure.
+ *
+ *   DEFAULT_FETCH_MODE     Every fetch returns an associative array
+ *                          (column name → value) instead of the default
+ *                          numeric-indexed array.
+ *
+ *   EMULATE_PREPARES=false MySQL only — uses real server-side prepared
+ *                          statements, which is both safer (correct
+ *                          quoting even in edge cases) and faster for
+ *                          repeated queries.
+ *
+ * @throws RuntimeException if the driver is unavailable or the
+ *         connection fails.
+ */
+function app_db(): PDO
+{
+    static $pdo = null;
+    if ($pdo !== null) {
+        return $pdo;
+    }
+
+    $driver = strtolower(trim((string)(getenv('AGENT_PHP_DB_DRIVER') ?: 'sqlite')));
+
+    // ── Preflight: check the driver is actually installed ────────────
+    //
+    // Some distributions ship PHP with no PDO drivers by default. The
+    // user installs `php-cli` but not `php-sqlite3`, then wonders why
+    // nothing works. This check produces a clear, actionable message
+    // instead of "could not find driver".
+    $installed = PDO::getAvailableDrivers();
+    if (!in_array($driver, $installed, true)) {
+        $install_hints = [
+            'sqlite' =&gt; 'On Debian/Ubuntu: sudo apt install php-sqlite3
+                         On Fedora: sudo dnf install php-pdo
+                         On macOS: brew reinstall php',
+            'mysql'  =&gt; 'On Debian/Ubuntu: sudo apt install php-mysql
+                         On Fedora: sudo dnf install php-mysqlnd',
+            'pgsql'  =&gt; 'On Debian/Ubuntu: sudo apt install php-pgsql
+                         On Fedora: sudo dnf install php-pgsql',
+        ];
+        $hint = $install_hints[$driver]
+            ?? "Install the pdo_$driver extension for PHP.";
+        throw new RuntimeException(
+            "PDO driver '$driver' is not installed. "
+            . "Available drivers: " . (empty($installed) ? '(none)' : implode(', ', $installed))
+            . ". " . $hint
+        );
+    }
+
+    // ── Dispatch to the correct DSN builder ──────────────────────────
+    switch ($driver) {
+
+        // ── MySQL ────────────────────────────────────────────────────
+        case 'mysql':
+            $host = getenv('AGENT_PHP_DB_HOST')     ?: '127.0.0.1';
+            $port = getenv('AGENT_PHP_DB_PORT')     ?: '3306';
+            $name = getenv('AGENT_PHP_DB_NAME')     ?: 'app';
+            $user = getenv('AGENT_PHP_DB_USER')     ?: 'app';
+            $pass = getenv('AGENT_PHP_DB_PASSWORD') ?: '';
+
+            $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
+            $pdo = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE            =&gt; PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE =&gt; PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   =&gt; false,
+            ]);
+            break;
+
+        // ── PostgreSQL ───────────────────────────────────────────────
+        case 'pgsql':
+        case 'postgres':
+            $host = getenv('AGENT_PHP_DB_HOST')     ?: '127.0.0.1';
+            $port = getenv('AGENT_PHP_DB_PORT')     ?: '5432';
+            $name = getenv('AGENT_PHP_DB_NAME')     ?: 'app';
+            $user = getenv('AGENT_PHP_DB_USER')     ?: 'app';
+            $pass = getenv('AGENT_PHP_DB_PASSWORD') ?: '';
+
+            $dsn = "pgsql:host={$host};port={$port};dbname={$name}";
+            $pdo = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE            =&gt; PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE =&gt; PDO::FETCH_ASSOC,
+            ]);
+            break;
+
+        // ── SQLite (default) ─────────────────────────────────────────
+        case 'sqlite':
+        default:
+            $rel = (string)(getenv('AGENT_PHP_SQLITE_PATH') ?: 'data/app.db');
+
+            // Absolute paths pass through. Relative paths resolve
+            // against php_app/.
+            $is_absolute =
+                substr($rel, 0, 1) === '/'
+                || (strlen($rel) &gt; 1
+                    &amp;&amp; ctype_alpha($rel[0])
+                    &amp;&amp; $rel[1] === ':')
+                || substr($rel, 0, 2) === '\\\\';
+
+            if ($is_absolute) {
+                $path = $rel;
+            } else {
+                $path = __DIR__ . DIRECTORY_SEPARATOR . ltrim($rel, '/\\');
+            }
+
+            $dir = dirname($path);
+            if (!is_dir($dir)) {
+                // 0755 is owner-writable, group/other-readable.
+                // Do NOT use 0777 — that is world-writable and a
+                // needless security exposure on shared hosts.
+                mkdir($dir, 0755, true);
+            }
+
+            $pdo = new PDO("sqlite:{$path}", null, null, [
+                PDO::ATTR_ERRMODE            =&gt; PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE =&gt; PDO::FETCH_ASSOC,
+            ]);
+            // Enable foreign key enforcement (off by default in SQLite).
+            $pdo-&gt;exec('PRAGMA foreign_keys = ON');
+            // Use WAL mode for better concurrent read performance.
+            // WAL persists across connections because it is a database
+            // property, not a per-connection setting.
+            $pdo-&gt;exec('PRAGMA journal_mode = WAL');
+            break;
+    }
+
+    return $pdo;
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  Schema
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * Create the `notes` table if it does not exist.
+ *
+ * Emits driver-specific DDL because the three supported databases
+ * disagree on how auto-increment primary keys are declared:
+ *
+ *     SQLite:     INTEGER PRIMARY KEY AUTOINCREMENT
+ *     MySQL:      INT AUTO_INCREMENT PRIMARY KEY
+ *     PostgreSQL: SERIAL PRIMARY KEY
+ *
+ * Safe to call on every request. CREATE TABLE IF NOT EXISTS is a no-op
+ * when the table already exists.
+ *
+ * @param PDO $db The database connection.
+ * @return void
+ * @throws PDOException on DDL failure.
+ */
+function ensure_schema(PDO $db): void
+{
+    $driver = $db-&gt;getAttribute(PDO::ATTR_DRIVER_NAME);
+
+    switch ($driver) {
+        case 'mysql':
+            $sql = "
+                CREATE TABLE IF NOT EXISTS notes (
+                    id      INT AUTO_INCREMENT PRIMARY KEY,
+                    title   VARCHAR(255) NOT NULL,
+                    body    TEXT NOT NULL,
+                    created VARCHAR(40) NOT NULL,
+                    INDEX idx_notes_created (created)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ";
+            break;
+
+        case 'pgsql':
+            $sql = "
+                CREATE TABLE IF NOT EXISTS notes (
+                    id      SERIAL PRIMARY KEY,
+                    title   VARCHAR(255) NOT NULL,
+                    body    TEXT NOT NULL,
+                    created VARCHAR(40) NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_notes_created ON notes (created)
+            ";
+            break;
+
+        case 'sqlite':
+        default:
+            $sql = "
+                CREATE TABLE IF NOT EXISTS notes (
+                    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title   TEXT NOT NULL,
+                    body    TEXT NOT NULL,
+                    created TEXT NOT NULL
+                )
+            ";
+            break;
+    }
+
+    $db-&gt;exec($sql);
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  Utility
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * HTML-escape a string for safe output.
+ *
+ * Convenience wrapper around htmlspecialchars() with the flags most
+ * commonly needed: ENT_QUOTES (encode both double and single quotes)
+ * and ENT_SUBSTITUTE (replace invalid UTF-8 sequences with U+FFFD
+ * rather than returning an empty string).
+ */
+function h(?string $s): string
+{
+    return htmlspecialchars(
+        (string)($s ?? ''),
+        ENT_QUOTES | ENT_SUBSTITUTE,
+        'UTF-8'
+    );
+}
+
+
+/**
+ * Return the URL prefix the app is mounted at.
+ *
+ * The Python backend injects X-Forwarded-Prefix: /php into the CGI
+ * environment. PHP sees it as $_SERVER['HTTP_X_FORWARDED_PREFIX'].
+ * Relative links and form actions prepend this prefix so they work
+ * whether the app is mounted at /php/ or at the root.
+ */
+function app_base(): string
+{
+    $prefix = $_SERVER['HTTP_X_FORWARDED_PREFIX'] ?? '';
+    if (!is_string($prefix)) {
+        return '';
+    }
+    // Strip a trailing slash so concatenating "/path" always works.
+    return rtrim($prefix, '/');
+}</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — demo.php
+       ============================================================= -->
+  <section class="file-section" id="f-demo" data-name="demo.php json sql demo source">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>demo.php <span class="file-badge php">php</span></h2>
+        <span class="file-path">php_app/demo.php</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-php">&lt;?php
+/**
+ * SQL demo endpoint — returns JSON describing the database connection
+ * and a small query result.
+ * https://3olution.com
+ *
+ * Endpoint:
+ *     GET /php/demo.php
+ *
+ * Response shape:
+ *     {
+ *       "ok": true,
+ *       "driver": "sqlite",
+ *       "version": "3.46.0",
+ *       "note_count": 4,
+ *       "tables": ["notes"],
+ *       "php": "8.4.15",
+ *       "server": "3olution-Python-PHP",
+ *       "time": "2025-01-15T12:34:56+00:00"
+ *     }
+ *
+ * On error, returns HTTP 500 with:
+ *     {"ok": false, "error": "..."}
+ *
+ * ═══════════════════════════════════════════════════════════════════
+ *   CROSS-DRIVER NOTES
+ * ═══════════════════════════════════════════════════════════════════
+ *
+ * The database version is fetched with a driver-specific query:
+ *
+ *     SQLite:     SELECT sqlite_version()
+ *     MySQL:      SELECT VERSION()
+ *     PostgreSQL: SELECT version()
+ *
+ * PostgreSQL has a SHOW server_version command whose result column is
+ * named differently across releases. Using SELECT version() instead
+ * returns a single, consistently-named `version` column on every
+ * PostgreSQL build, so no special-casing is needed.
+ */
+
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+
+require_once __DIR__ . '/db.php';
+
+try {
+    $db = app_db();
+    ensure_schema($db);
+
+    $driver = (string)$db-&gt;getAttribute(PDO::ATTR_DRIVER_NAME);
+
+    // ── Database version ─────────────────────────────────────────────
+    $version = 'unknown';
+    switch ($driver) {
+        case 'sqlite':
+            $row = $db-&gt;query('SELECT sqlite_version() AS v')-&gt;fetch();
+            $version = $row['v'] ?? 'unknown';
+            break;
+
+        case 'mysql':
+            $row = $db-&gt;query('SELECT VERSION() AS v')-&gt;fetch();
+            $version = $row['v'] ?? 'unknown';
+            break;
+
+        case 'pgsql':
+            $row = $db-&gt;query('SELECT version() AS v')-&gt;fetch();
+            // PostgreSQL's version() returns a long descriptive string
+            // like "PostgreSQL 15.3 on x86_64-pc-linux-gnu, ..." —
+            // extract just the version number portion.
+            $full = $row['v'] ?? 'unknown';
+            if (preg_match('/PostgreSQL\s+([0-9.]+)/', $full, $m)) {
+                $version = $m[1];
+            } else {
+                $version = $full;
+            }
+            break;
+    }
+
+    // ── Note count ───────────────────────────────────────────────────
+    $note_count = 0;
+    try {
+        $row = $db-&gt;query('SELECT COUNT(*) AS c FROM notes')-&gt;fetch();
+        $note_count = (int)($row['c'] ?? 0);
+    } catch (Throwable $e) {
+        // Table does not exist yet — treat as zero notes.
+        $note_count = 0;
+    }
+
+    // ── Table listing (driver-specific) ──────────────────────────────
+    $tables = [];
+    try {
+        if ($driver === 'sqlite') {
+            $stmt = $db-&gt;query(
+                "SELECT name FROM sqlite_master
+                 WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
+                 ORDER BY name"
+            );
+        } elseif ($driver === 'mysql') {
+            $stmt = $db-&gt;query('SHOW TABLES');
+        } elseif ($driver === 'pgsql') {
+            $stmt = $db-&gt;query(
+                "SELECT tablename FROM pg_tables
+                 WHERE schemaname = 'public'
+                 ORDER BY tablename"
+            );
+        } else {
+            $stmt = false;
+        }
+
+        if ($stmt !== false) {
+            foreach ($stmt-&gt;fetchAll(PDO::FETCH_NUM) as $r) {
+                $tables[] = (string)$r[0];
+            }
+        }
+    } catch (Throwable $e) {
+        // Table listing is cosmetic — ignore failures.
+        $tables = [];
+    }
+
+    // ── Response ─────────────────────────────────────────────────────
+    echo json_encode(
+        [
+            'ok'         =&gt; true,
+            'driver'     =&gt; $driver,
+            'version'    =&gt; $version,
+            'note_count' =&gt; $note_count,
+            'tables'     =&gt; $tables,
+            'php'        =&gt; PHP_VERSION,
+            'server'     =&gt; $_SERVER['SERVER_SOFTWARE'] ?? 'unknown',
+            'time'       =&gt; date('c'),
+        ],
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+    );
+
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode(
+        [
+            'ok'    =&gt; false,
+            'error' =&gt; $e-&gt;getMessage(),
+        ],
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+    );
+}</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — style.css (root stub)
+       ============================================================= -->
+  <section class="file-section" id="f-style-stub" data-name="style.css deprecated stub redirect">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>style.css <span class="file-badge css">css</span></h2>
+        <span class="file-path">php_app/style.css — deprecated stub</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-css">/*
+ * This file is deprecated.
+ *
+ * The stylesheet for the 3olution Notes app has moved to
+ * `static/style.css` so that it can be served correctly by the
+ * Python backend at `/php-static/style.css`.
+ *
+ * If you are looking for the current styles, see:
+ *     php_app/static/style.css
+ *
+ * This file is kept as a redirect placeholder so that any cached
+ * browser reference to `/php/style.css` still resolves. It contains
+ * only the minimal styling to render a stub message.
+ */
+
+body {
+    margin: 0;
+    padding: 40px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #0f1116;
+    color: #e6e6e6;
+    line-height: 1.6;
+}
+code {
+    background: #1a1d24;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+}
+a { color: #4a9eff; }</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — static/style.css
+       ============================================================= -->
+  <section class="file-section" id="f-static-style" data-name="static style.css dark theme notes app">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>static/style.css <span class="file-badge css">css</span></h2>
+        <span class="file-path">php_app/static/style.css</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-css">/* ══════════════════════════════════════════════════════════════════════
+   3olution Notes — dark theme
+   https://3olution.com
+   ══════════════════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; }
+
+:root {
+    --bg: #0f1116;
+    --panel: #14161b;
+    --input: #1a1d24;
+    --border: #222;
+    --text: #e6e6e6;
+    --text-dim: #888;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --green: #6cff9b;
+    --red: #ef4444;
+    --yellow: #ffcb6c;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border-radius: 8px;
+    font-weight: 700;
+    color: #fff;
+    font-size: 16px;
+}
+
+header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+
+.meta {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: ui-monospace, "Consolas", monospace;
+    flex-wrap: wrap;
+}
+
+/* ── Main content ─────────────────────────────────────────────────── */
+
+main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.card h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    margin: 0 0 14px 0;
+    font-weight: 600;
+}
+
+/* ── Form ─────────────────────────────────────────────────────────── */
+
+label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 10px 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--input);
+    color: var(--text);
+    border: 1px solid #333;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    resize: vertical;
+}
+input[type="text"]:focus,
+textarea:focus { border-color: var(--accent); }
+
+button {
+    margin-top: 14px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+button:hover { background: var(--accent-hover); }
+
+/* ── Message banners ──────────────────────────────────────────────── */
+
+.message {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin: 0 0 10px;
+}
+.message.error {
+    background: rgba(239, 68, 68, 0.08);
+    border-left: 3px solid var(--red);
+    color: #ff9494;
+}
+.message.success {
+    background: rgba(108, 255, 155, 0.08);
+    border-left: 3px solid var(--green);
+    color: var(--green);
+}
+
+.error {
+    color: #ff9494;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+    background: rgba(239, 68, 68, 0.06);
+    padding: 10px 12px;
+    border-radius: 6px;
+    border-left: 3px solid var(--red);
+}
+
+.hint {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 12px 0 0;
+    line-height: 1.55;
+}
+.hint code {
+    background: var(--input);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--accent);
+}
+
+/* ── Notes list ───────────────────────────────────────────────────── */
+
+.notes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notes li {
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    transition: border-color 0.15s;
+}
+.notes li:hover { border-color: #333; }
+
+.note-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.note-header strong {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+}
+
+.note-header .date {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: ui-monospace, monospace;
+    white-space: nowrap;
+}
+
+/* Inline form wrapping the delete button. */
+.note-header form.inline {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.note-header button.delete {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 4px;
+    margin: 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+}
+.note-header button.delete:hover {
+    color: var(--red);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.notes p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #b8c2cc;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ── Empty state ──────────────────────────────────────────────────── */
+
+.empty {
+    color: var(--text-dim);
+    font-style: italic;
+    margin: 0;
+    padding: 20px 0;
+    text-align: center;
+}
+
+/* ── Endpoints list ───────────────────────────────────────────────── */
+
+.endpoints {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.endpoints code {
+    background: var(--input);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    color: var(--accent);
+    font-size: 12px;
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: #2a2f3a;
+    border-radius: 5px;
+    border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: #3a4150; }
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+    header { padding: 12px 16px; }
+    header h1 { font-size: 15px; }
+    .meta { font-size: 11px; gap: 8px; }
+    main { padding: 16px; }
+    .card { padding: 16px; }
+    .note-header { flex-wrap: wrap; }
+    .note-header .date { width: 100%; order: 3; }
+}</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — data/.gitkeep
+       ============================================================= -->
+  <section class="file-section" id="f-gitkeep" data-name="gitkeep data folder placeholder">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>data/.gitkeep <span class="file-badge txt">text</span></h2>
+        <span class="file-path">php_app/data/.gitkeep</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-text"># This file exists only so that git tracks the empty `data/` directory.
+# The SQLite database file (app.db, plus its WAL and SHM sidecars)
+# is gitignored.
+#
+# The database is created automatically on the first request to
+# /php/. It contains a single `notes` table:
+#
+#     CREATE TABLE notes (
+#         id      INTEGER PRIMARY KEY AUTOINCREMENT,
+#         title   TEXT NOT NULL,
+#         body    TEXT NOT NULL,
+#         created TEXT NOT NULL
+#     )
+#
+# To inspect the database manually with the portable SQLite CLI:
+#
+#     runtime/sqlite/sqlite3 php_app/data/app.db ".tables"
+#     runtime/sqlite/sqlite3 php_app/data/app.db "SELECT * FROM notes;"
+#
+# To reset the app's data, delete app.db, app.db-wal, and app.db-shm.
+# The next request will recreate the database and the notes table.</code></pre></div>
+  </section>
+
+</main>
+
+<button class="to-top visible" id="toTop" title="Back to top">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/php.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/xml.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/css.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/markdown.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Highlight all code blocks ----------
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      try { hljs.highlightElement(el); } catch (e) {}
+    });
+  }
+
+  // ---------- Line count for each file ----------
+  document.querySelectorAll('.file-section').forEach(function (sec) {
+    var code = sec.querySelector('pre code');
+    var badge = sec.querySelector('[data-lines]');
+    if (!badge) return;
+    if (code) {
+      var text = code.textContent || '';
+      var lines = text.split('\n').length;
+      badge.textContent = lines + ' lines';
+    } else {
+      badge.textContent = 'doc';
+    }
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.file-section');
+      if (!sec) return;
+      var code = sec.querySelector('pre code');
+      var md = sec.querySelector('.md-content');
+      var text = code ? code.textContent : (md ? md.innerText : '');
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = '✗ Failed';
+        setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600);
+      });
+    });
+  });
+
+  // ---------- Active nav tracking ----------
+  var navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+  var sections = Array.from(document.querySelectorAll('.file-section'));
+  var crumbs = document.getElementById('crumbs');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s.offsetTop <= scrollY) current = s;
+      else break;
+    }
+    navLinks.forEach(function (a) { a.classList.remove('active'); });
+    if (current) {
+      var link = document.querySelector('.nav-list a[href="#' + current.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        var path = current.querySelector('.file-path');
+        if (path && crumbs) {
+          crumbs.textContent = path.textContent;
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ---------- Search filter ----------
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+  var navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var q = searchInput.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      document.querySelectorAll('.nav-list li').forEach(function (li) {
+        var text = li.textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        li.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+      });
+
+      navGroups.forEach(function (g) {
+        var list = g.nextElementSibling;
+        if (!list || !list.classList.contains('nav-list')) return;
+        var hasVisible = list.querySelector('li:not(.hidden)');
+        g.style.display = hasVisible ? '' : 'none';
+      });
+
+      sections.forEach(function (sec) {
+        var name = (sec.getAttribute('data-name') || '') + ' ' +
+                   (sec.querySelector('.file-path')?.textContent || '') + ' ' +
+                   (sec.querySelector('h2')?.textContent || '');
+        name = name.toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        sec.classList.toggle('hidden', !match);
+      });
+
+      if (noResults) noResults.classList.toggle('visible', visibleCount === 0);
+    });
+  }
+
+  // ---------- Back to top ----------
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('visible', window.scrollY > 500);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---------- Mobile sidebar toggle ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (window.innerWidth <= 700) sidebar.classList.remove('open');
+      });
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

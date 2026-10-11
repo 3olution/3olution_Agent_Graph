@@ -1,0 +1,3468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — MCP Server</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 320px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list li { margin: 0; }
+
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-list a:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+
+/* ---------- Main ---------- */
+main {
+  margin-left: var(--sidebar-w);
+  padding: 0 0 80px;
+  min-height: 100vh;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.topbar .stats {
+  font-size: 12px;
+  color: var(--text-mute);
+  display: flex;
+  gap: 16px;
+}
+
+.topbar .stats span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14.5px;
+  max-width: 780px;
+}
+
+.hero .links {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.hero .links a:hover {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+
+/* ---------- File section ---------- */
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.file-section.hidden { display: none; }
+
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.file-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+
+.file-badge.doc {
+  background: rgba(124, 58, 237, 0.14);
+  color: #a371f7;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.file-badge.md {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.28);
+}
+
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+
+.copy-btn.copied {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(63, 185, 80, 0.08);
+}
+
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.hljs { background: transparent !important; padding: 0 !important; }
+
+/* Markdown / documentation */
+.md-content {
+  padding: 24px 28px;
+  max-height: 900px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.md-content th {
+  background: var(--bg-elev);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.md-content td { color: var(--text-dim); }
+
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+
+.md-content kbd {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11.5px;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+}
+
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 900px) {
+  :root { --sidebar-w: 270px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+
+.nav-list li.hidden { display: none; }
+
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><a href="index.html" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;"><span class="logo-mark">3</span> MCP Server</a></h1>
+    <div class="sub"><a href="index.html" style="color:inherit;text-decoration:none;">← Back to Knowledge Base</a> · Tool Server &amp; Documentation</div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search files & docs…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Documentation</div>
+  <ul class="nav-list" data-group="docs">
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>Overview</a></li>
+    <li><a href="#doc-architecture"><span class="nav-icon md"></span>Architecture</a></li>
+    <li><a href="#doc-compat"><span class="nav-icon md"></span>SDK compatibility shim</a></li>
+    <li><a href="#doc-windows"><span class="nav-icon md"></span>Windows event loop fix</a></li>
+    <li><a href="#doc-banner"><span class="nav-icon md"></span>Banner suppression</a></li>
+    <li><a href="#doc-tools"><span class="nav-icon md"></span>Tool inventory</a></li>
+    <li><a href="#doc-loader"><span class="nav-icon md"></span>Loader pattern</a></li>
+    <li><a href="#doc-add"><span class="nav-icon md"></span>Adding a tool</a></li>
+    <li><a href="#doc-design"><span class="nav-icon md"></span>Tool design guide</a></li>
+    <li><a href="#doc-debug"><span class="nav-icon md"></span>Debugging</a></li>
+  </ul>
+
+  <div class="nav-group">Entry &amp; Core</div>
+  <ul class="nav-list" data-group="core">
+    <li><a href="#f-init"><span class="nav-icon py"></span>__init__.py</a></li>
+    <li><a href="#f-server"><span class="nav-icon py"></span>server.py</a></li>
+    <li><a href="#f-server-internal"><span class="nav-icon py"></span>_server.py</a></li>
+  </ul>
+
+  <div class="nav-group">Tools Package</div>
+  <ul class="nav-list" data-group="tools">
+    <li><a href="#f-tools-init"><span class="nav-icon py"></span>tools/__init__.py</a></li>
+    <li><a href="#f-math-tools"><span class="nav-icon py"></span>math_tools.py</a></li>
+    <li><a href="#f-time-tools"><span class="nav-icon py"></span>time_tools.py</a></li>
+    <li><a href="#f-text-tools"><span class="nav-icon py"></span>text_tools.py</a></li>
+    <li><a href="#f-fs-tools"><span class="nav-icon py"></span>filesystem_tools.py</a></li>
+    <li><a href="#f-tools-readme"><span class="nav-icon md"></span>tools/README.md</a></li>
+  </ul>
+
+  <div class="nav-group">Reference</div>
+  <ul class="nav-list" data-group="ref">
+    <li><a href="#f-doc"><span class="nav-icon md"></span>Extensive Documentation</a></li>
+  </ul>
+
+  <div class="no-results" id="noResults">No matching files.</div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">mcp_server / overview</span>
+    </div>
+    <div class="stats">
+      <span>📄 <strong id="statFiles">10</strong> files</span>
+      <span>🧰 <strong>9</strong> tools</span>
+      <span>🔌 <strong>stdio</strong> transport</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>MCP Tool Server</h1>
+    <p>
+      A FastMCP-compatible subprocess that exposes a small set of
+      deterministic tools — math, time, filesystem, text — to the agent
+      over the Model Context Protocol. Dropping a new <code>.py</code>
+      file into <code>tools/</code> is the entire workflow for adding a
+      new capability. The backend spawns this server as a stdio child
+      process and calls its tools through the LLM's function-calling
+      interface.
+    </p>
+    <div class="links">
+      <a href="index.html">← Back to Knowledge Base</a>
+      <a href="https://3olution.com" target="_blank" rel="noopener">🌐 3olution.com</a>
+      <a href="#doc-architecture">🏗 Architecture</a>
+      <a href="#doc-add">➕ Add a tool</a>
+      <a href="#f-server-internal">📄 _server.py</a>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       DOC — Overview
+       ============================================================= -->
+  <section class="file-section" id="doc-overview" data-name="overview mcp server documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Overview <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server — what it does</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Overview</h1>
+
+      <p>
+        The <code>mcp_server</code> package is a small Python
+        application that implements the
+        <strong>Model Context Protocol</strong> over stdio. It is not
+        the backend — it is a child process that the backend spawns at
+        startup, and it is not the LLM — it is a collection of pure
+        Python functions that the LLM can request the backend to
+        invoke.
+      </p>
+
+      <h2>What the server provides</h2>
+      <ul>
+        <li>
+          A <strong>registry of tools</strong> (currently nine) that
+          the LLM sees as callable functions during a chat turn.
+        </li>
+        <li>
+          The <strong>stdio transport</strong> that
+          <code>backend/mcp_client.py</code> connects to.
+        </li>
+        <li>
+          The <strong>schema generation</strong> — the SDK reads each
+          tool's signature, type hints, and docstring, and produces
+          the JSON schema that the LLM reads.
+        </li>
+      </ul>
+
+      <h2>What the server does <em>not</em> provide</h2>
+      <ul>
+        <li>
+          No HTTP server. The MCP protocol over stdio is entirely
+          request/response on the child's stdin and stdout.
+        </li>
+        <li>
+          No persistence. Tools are stateless functions. Anything
+          that needs to survive between calls goes into the backend's
+          SQLite store.
+        </li>
+        <li>
+          No LLM client. The server never talks to an LLM. It only
+          answers tool calls from the backend, which is the layer
+          that actually drives the model.
+        </li>
+        <li>
+          No authentication. The stdio transport inherits the
+          backend's process permissions. Anyone who can send a
+          request to the backend can call every tool.
+        </li>
+      </ul>
+
+      <h2>Why a separate process?</h2>
+      <p>
+        Isolation, language freedom, and reusability. See the
+        <a href="#doc-architecture">Architecture</a> section for the
+        full rationale.
+      </p>
+
+      <h2>Package layout</h2>
+      <pre>mcp_server/
+├── __init__.py               package docstring + re-exports
+├── server.py                 thin entry point (defines nothing)
+├── _server.py                the shared `mcp` instance + fixes
+├── Extensive_Documentation.md
+├── README.md                 (this folder)
+│
+└── tools/
+    ├── __init__.py           auto-loader for tool modules
+    ├── README.md             guide for adding tools
+    ├── math_tools.py         add, multiply, sqrt, power
+    ├── time_tools.py         current_time
+    ├── filesystem_tools.py   list_directory, read_file
+    └── text_tools.py         word_count, shout</pre>
+
+      <h2>Entry points</h2>
+      <table>
+        <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>python -m mcp_server</code></td>
+            <td>Start the stdio server (blocking). Waits for JSON-RPC frames on stdin.</td>
+          </tr>
+          <tr>
+            <td><code>python -m mcp_server.server</code></td>
+            <td>Same thing.</td>
+          </tr>
+          <tr>
+            <td><code>python run.py backend</code></td>
+            <td>The backend spawns the server automatically. You do not run this package by hand during normal use.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Running standalone produces no output.</strong>
+        The server is silent until it receives a valid JSON-RPC
+        frame. To see what it is doing, watch the backend log
+        instead — the backend captures the server's stderr and
+        forwards it through loguru.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Architecture
+       ============================================================= -->
+  <section class="file-section" id="doc-architecture" data-name="architecture process diagram stdio transport documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Architecture <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server — process diagram</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Architecture</h1>
+
+      <p>
+        The MCP server runs as a <strong>stdio subprocess</strong> of
+        the backend. Communication is symmetric JSON-RPC over the
+        child's stdin and stdout — the backend writes requests, the
+        child writes responses.
+      </p>
+
+      <h2>Process topology</h2>
+      <pre>Backend process (Python)
+    │
+    │  backend/mcp_client.py
+    │      spawns subprocess:
+    │          python -m mcp_server.server
+    │
+    │  stdin  ────────────────────────►  JSON-RPC requests
+    │  stdout ◄────────────────────────  JSON-RPC responses
+    │
+    ▼
+MCP server subprocess (Python)
+    │
+    │  mcp_server/server.py
+    │      thin entry point
+    │
+    │  mcp_server/_server.py
+    │      ┌──────────────────────────┐
+    │      │  Windows event loop fix  │
+    │      │  SDK compatibility shim  │
+    │      │  mcp = MCPServer(...)    │
+    │      └──────────────────────────┘
+    │                 ▲
+    │                 │  @mcp.tool() decorators
+    │                 │
+    │  mcp_server/tools/__init__.py
+    │      auto-loads every .py file:
+    │          math_tools.py        — add, multiply, sqrt, power
+    │          time_tools.py        — current_time
+    │          filesystem_tools.py  — list_directory, read_file
+    │          text_tools.py        — word_count, shout
+    │
+    ▼
+stdio (the MCP transport)</pre>
+
+      <h2>Why a subprocess?</h2>
+      <p>
+        Running the MCP server as a separate process (rather than
+        embedding it in the backend) provides three advantages:
+      </p>
+      <ol>
+        <li>
+          <strong>Isolation.</strong> A crashed tool cannot take down
+          the backend. The backend detects the dead subprocess and
+          logs a clear error, but stays up so the user can use chat
+          without tools.
+        </li>
+        <li>
+          <strong>Language freedom.</strong> The MCP protocol is
+          language-agnostic. Today the server is Python; tomorrow it
+          could be Node.js or Go, and the backend would not change.
+        </li>
+        <li>
+          <strong>Reusability.</strong> The same MCP server can be
+          attached to any other MCP-compatible client — Claude
+          Desktop, Continue, Cursor, etc. — without modification.
+        </li>
+      </ol>
+
+      <h2>Import graph inside the subprocess</h2>
+      <pre>server.py
+    │
+    ├── imports _server.py
+    │       │
+    │       ├── sets WindowsSelectorEventLoopPolicy (if Win32)
+    │       │
+    │       ├── imports MCPServer / FastMCP from the mcp SDK
+    │       │
+    │       └── creates the shared instance:  mcp = MCPServer("3olution Tools")
+    │
+    └── imports tools/__init__.py
+            │
+            ├── iterates over every *.py in tools/
+            │
+            └── for each non-underscore file:
+                    importlib.import_module("mcp_server.tools.<stem>")
+                            │
+                            └── the module does:
+                                    from .._server import mcp
+                                    @mcp.tool()
+                                    def my_tool(...): ...</pre>
+
+      <p>
+        The critical detail is the <strong>order</strong>: the shared
+        instance must be created before any tool module imports it.
+        That is why <code>server.py</code> imports
+        <code>_server</code> first and <code>tools</code> second.
+      </p>
+
+      <h2>Message flow — one tool call</h2>
+      <pre>1. LLM returns a tool_call in a streaming response
+       │
+       ▼
+2. backend/agent.py picks up the tool_call
+       │
+       ▼
+3. backend/mcp_client.py::call_tool(name, args)
+       │
+       ▼
+4. session.call_tool(name, args)  ── via stdio_client ──►  MCP server
+       │
+       ▼
+5. MCPServer dispatches to the registered Python function
+       │
+       ▼
+6. The tool runs (sync or async), returns a value
+       │
+       ▼
+7. The return value is wrapped in a content block
+       │
+       ▼
+8. JSON-RPC response  ◄── via stdout ──
+       │
+       ▼
+9. mcp_client extracts .text from the content block
+       │
+       ▼
+10. The text becomes a `tool` message in the conversation
+       │
+       ▼
+11. The next LLM turn sees the result and answers the user</pre>
+
+      <h2>Transport details</h2>
+      <ul>
+        <li>
+          <strong>Encoding.</strong> Newline-delimited JSON-RPC 2.0.
+          One JSON object per line, no length prefix.
+        </li>
+        <li>
+          <strong>Buffering.</strong> The subprocess writes to
+          stdout with line buffering. The SDK handles this. Do not
+          print to stdout from a tool — it corrupts the stream.
+          Use <code>loguru</code> or <code>sys.stderr</code>
+          instead.
+        </li>
+        <li>
+          <strong>Startup.</strong> The child must complete its
+          initialization handshake before the backend's
+          <code>session.initialize()</code> returns. If the banner
+          leaks into stdout, this handshake fails (see
+          <a href="#doc-banner">banner suppression</a>).
+        </li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Never print to stdout in a tool.</strong>
+        The stdout channel is the JSON-RPC transport. A stray
+        <code>print()</code> writes garbage into the middle of a
+        response frame and the backend's SDK raises a parse error.
+        Use <code>loguru</code> (writes to stderr) instead.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — SDK compatibility shim
+       ============================================================= -->
+  <section class="file-section" id="doc-compat" data-name="sdk compatibility shim mcp 1.x 2.x import path documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>SDK Compatibility Shim <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server/_server.py — import resolution</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>SDK Compatibility Shim</h1>
+
+      <p>
+        The MCP Python SDK renamed its high-level server class between
+        major versions, and — for a while — moved it around between
+        point releases. <code>_server.py</code> tries the newest path
+        first and falls back through the alternatives.
+      </p>
+
+      <h2>The three import paths</h2>
+      <table>
+        <thead><tr><th>SDK version</th><th>Class name</th><th>Import path</th></tr></thead>
+        <tbody>
+          <tr><td>1.x</td><td><code>FastMCP</code></td><td><code>mcp.server.fastmcp</code></td></tr>
+          <tr><td>2.x (early)</td><td><code>MCPServer</code></td><td><code>mcp.server</code></td></tr>
+          <tr><td>2.x (current)</td><td><code>MCPServer</code></td><td><code>mcp.server.mcpserver</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>The resolution code</h2>
+      <pre>_SERVER_CLASS = None
+
+try:
+    # mcp >= 2.0 canonical path
+    from mcp.server.mcpserver import MCPServer
+    _SERVER_CLASS = MCPServer
+except ImportError:
+    try:
+        # Some 2.x point releases exposed it directly
+        from mcp.server import MCPServer
+        _SERVER_CLASS = MCPServer
+    except ImportError:
+        try:
+            # mcp 1.x fallback
+            from mcp.server.fastmcp import FastMCP
+            _SERVER_CLASS = FastMCP
+        except ImportError as exc:
+            raise ImportError(
+                "Could not import a supported MCP server class …"
+            ) from exc</pre>
+
+      <h2>Why not just pin the SDK?</h2>
+      <p>
+        Pinning is brittle for a project that is meant to run on
+        whatever Python environment the user already has. Users who
+        install with <code>pip install mcp</code> end up with
+        whichever version is current at the time. The shim absorbs
+        the difference so tool code never has to change.
+      </p>
+
+      <h2>What the tool modules see</h2>
+      <p>
+        Nothing. Every tool module imports from
+        <code>.._server</code>, which is a stable path that does not
+        change between SDK versions:
+      </p>
+      <pre>from .._server import mcp
+
+@mcp.tool()
+def my_tool(x: int) -> int:
+    """Docstring."""
+    return x * 2</pre>
+      <p>
+        The <code>@mcp.tool()</code> decorator exists on both
+        <code>FastMCP</code> (1.x) and <code>MCPServer</code> (2.x),
+        with the same signature. Tool code is therefore portable
+        across SDK versions with zero modification.
+      </p>
+
+      <h2>What happens on an unsupported SDK</h2>
+      <p>
+        If none of the three imports succeed, the module raises an
+        <code>ImportError</code> with an actionable message naming
+        every expected import path and pointing at
+        <code>pip install 'mcp&gt;=2.0.0'</code>. This is the only
+        failure mode that prevents the server from starting, and it
+        is loud.
+      </p>
+
+      <div class="callout">
+        <strong>In practice, only the first import runs.</strong>
+        Modern installs pull <code>mcp&gt;=2.0.0</code>, so
+        <code>mcp.server.mcpserver.MCPServer</code> resolves on the
+        first try. The fallback chain is a defensive measure, not a
+        hot path.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Windows event loop fix
+       ============================================================= -->
+  <section class="file-section" id="doc-windows" data-name="windows event loop proactor selector fix documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Windows Event Loop Fix <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server/_server.py — platform handling</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Windows Event Loop Fix</h1>
+
+      <p>
+        This is the subtlest part of the whole package. Without it,
+        the MCP handshake fails roughly one time in five on Windows
+        with a "Connection closed" error and no other diagnostics.
+      </p>
+
+      <h2>The bug</h2>
+      <ol>
+        <li>
+          Python 3.8+ on Windows defaults to
+          <code>ProactorEventLoop</code>.
+        </li>
+        <li>
+          Proactor supports <code>asyncio.create_subprocess_exec</code>
+          but has known bugs reading from child process pipes.
+        </li>
+        <li>
+          FastMCP's stdio transport continuously reads from its own
+          stdin pipe.
+        </li>
+        <li>
+          Result: the initial MCP handshake hangs roughly 20% of the
+          time. It looks like a random "Connection closed" error on
+          the backend side.
+        </li>
+      </ol>
+
+      <h2>The fix</h2>
+      <p>
+        Switch to <code>WindowsSelectorEventLoopPolicy</code> before
+        importing the SDK:
+      </p>
+      <pre>import asyncio
+import sys
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())</pre>
+
+      <p>
+        <code>SelectorEventLoop</code> has reliable pipe support. It
+        lacks <code>create_subprocess_exec</code>, but the MCP server
+        does not need that — it only reads and writes to its own
+        stdio.
+      </p>
+
+      <h2>Why the ordering matters</h2>
+      <p>
+        The policy must be set <strong>before</strong> the SDK import.
+        Some SDK versions capture the current event loop policy at
+        import time; setting it afterwards has no effect.
+        <code>_server.py</code> enforces the ordering by placing the
+        <code>set_event_loop_policy</code> call above the
+        <code>from mcp...</code> block:
+      </p>
+      <pre># ── Windows fix FIRST ─────────────────────────────────────────
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+# ── SDK import SECOND ─────────────────────────────────────────
+try:
+    from mcp.server.mcpserver import MCPServer
+    ...
+except ImportError:
+    ...</pre>
+
+      <h2>What the user sees without this fix</h2>
+      <p>
+        The backend log shows:
+      </p>
+      <pre>WARNING | MCP connect attempt 1/2 failed: Connection closed
+WARNING | MCP connect attempt 2/2 failed: Connection closed
+ERROR   | MCP connection failed after 2 attempt(s).
+Hint: run this to see the real error:
+    python -m mcp_server.server</pre>
+      <p>
+        Running the server manually produces no error output because
+        the hang is invisible from the child's perspective — it is
+        waiting for data on a pipe that has silently broken.
+      </p>
+
+      <h2>Interaction with the backend</h2>
+      <p>
+        The <em>backend's</em> event loop policy is set separately in
+        <code>scripts/serve.py</code>. The two processes are
+        independent — each sets its own policy. This is correct: the
+        backend needs Proactor for its own subprocess management, and
+        the MCP server needs Selector for its stdio reads.
+      </p>
+
+      <div class="callout success">
+        <strong>The cost of the fix is zero.</strong>
+        SelectorEventLoop is not slower for this workload. The only
+        feature it lacks is subprocess creation, which this server
+        never does.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Banner suppression
+       ============================================================= -->
+  <section class="file-section" id="doc-banner" data-name="banner suppression rich stdout json-rpc documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Banner Suppression <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server/_server.py — run()</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Banner Suppression</h1>
+
+      <p>
+        Both <code>FastMCP</code> (1.x) and <code>MCPServer</code>
+        (2.x) print a Rich-rendered startup banner to stdout unless
+        told otherwise. That banner contains box-drawing characters
+        that are not valid JSON, and it corrupts the first
+        JSON-RPC frame the backend tries to read.
+      </p>
+
+      <h2>What the banner looks like</h2>
+      <pre>╭─────────────────────────────────────────╮
+│                                          │
+│   ███╗   ███╗ ██████╗██████╗             │
+│   ████╗ ████║██╔════╝██╔══██╗            │
+│   ██╔████╔██║██║     ██████╔╝            │
+│   ██║╚██╔╝██║██║     ██╔═══╝             │
+│   ██║ ╚═╝ ██║╚██████╗██║                 │
+│   ╚═╝     ╚═╝ ╚═════╝╚═╝                 │
+│                                          │
+│   FastMCP 2.0.0                          │
+│   The fast, Pythonic way to build MCP …  │
+│                                          │
+╰─────────────────────────────────────────╯</pre>
+
+      <h2>Why this breaks the handshake</h2>
+      <ol>
+        <li>
+          The backend's <code>stdio_client</code> reads the child's
+          stdout line by line, expecting JSON-RPC frames.
+        </li>
+        <li>
+          The first line it reads is the top of the box
+          (<code>╭────…</code>).
+        </li>
+        <li>
+          <code>json.loads()</code> raises a decode error.
+        </li>
+        <li>
+          The SDK treats a malformed frame as a fatal transport
+          error and closes the connection.
+        </li>
+        <li>
+          The backend logs <em>"Connection closed"</em> — with no
+          reference to the banner, because the banner was already
+          consumed by the parser.
+        </li>
+      </ol>
+
+      <h2>The fix</h2>
+      <pre>def run() -> None:
+    try:
+        mcp.run(show_banner=False)
+    except TypeError:
+        # Older SDK — fall through to the plain call.
+        mcp.run()</pre>
+
+      <p>
+        <code>show_banner=False</code> suppresses the box on both
+        SDK families. <code>mcp 1.0</code> does not accept the kwarg
+        and raises <code>TypeError</code>; the fallback accepts the
+        banner. That is a workaround for a specific old version —
+        the server still works, just with a noisy first line that
+        happens not to break the handshake on that version.
+      </p>
+
+      <div class="callout warn">
+        <strong>The fallback is imperfect.</strong>
+        If you are running an SDK that needs the fallback (mcp 1.0)
+        and you see a "Connection closed" error at startup, upgrade
+        with <code>pip install 'mcp&gt;=2.0.0'</code>. The banner
+        suppression works reliably on every version that supports
+        the kwarg.
+      </div>
+
+      <h2>Detecting the failure</h2>
+      <p>
+        The symptom in the backend log is:
+      </p>
+      <pre>WARNING | MCP connect attempt 1/2 failed: Connection closed
+WARNING | MCP connect attempt 2/2 failed: Connection closed
+ERROR   | MCP connection failed after 2 attempt(s).</pre>
+      <p>
+        If you see this on a fresh install, check that the
+        <code>mcp</code> version is at least 2.0.0:
+      </p>
+      <pre>python -c "import mcp; print(mcp.__version__)"</pre>
+      <p>
+        If the version is older, upgrade. If it is newer and you
+        still see the failure, run the server manually and pipe a
+        request to it to see the raw output:
+      </p>
+      <pre>python -m mcp_server.server
+# In another terminal, the server should sit silent, waiting on stdin.
+# If it prints a banner, that is the bug.</pre>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Tool inventory
+       ============================================================= -->
+  <section class="file-section" id="doc-tools" data-name="tool inventory math time filesystem text documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Tool Inventory <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server/tools — the nine built-in tools</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Tool Inventory</h1>
+
+      <p>
+        After the current batch, the MCP server exposes
+        <strong>nine tools</strong> across four modules. Each one is
+        a plain Python function decorated with
+        <code>@mcp.tool()</code>. The SDK generates its JSON schema
+        from the signature, type hints, and docstring.
+      </p>
+
+      <h2>math_tools.py</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Signature</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>add</code></td><td><code>(a: float, b: float) → float</code></td><td>Exact IEEE 754 addition</td></tr>
+          <tr><td><code>multiply</code></td><td><code>(a: float, b: float) → float</code></td><td>Exact IEEE 754 multiplication</td></tr>
+          <tr><td><code>sqrt</code></td><td><code>(x: float) → float</code></td><td>Raises <code>ValueError</code> on negative input</td></tr>
+          <tr><td><code>power</code></td><td><code>(base: float, exponent: float) → float</code></td><td>Supports fractional and negative exponents</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        These exist because LLMs are unreliable arithmetic engines.
+        A model that confidently computes <code>1749 × 2134</code> in
+        its head will be wrong some of the time; a tool call to
+        <code>multiply(1749, 2134)</code> is always right.
+      </p>
+
+      <h2>time_tools.py</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Signature</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>current_time</code></td>
+            <td><code>() → str</code></td>
+            <td>ISO 8601 UTC timestamp, e.g. <code>2025-01-15T12:34:56.789012+00:00</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Models have no internal clock. Without this tool, any
+        question of the form "what time is it" is answered either
+        with a refusal or a hallucinated timestamp.
+      </p>
+
+      <h2>filesystem_tools.py</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Signature</th><th>Behaviour</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>list_directory</code></td>
+            <td><code>(path: str = ".") → str</code></td>
+            <td>Newline-separated, sorted, no type info</td>
+          </tr>
+          <tr>
+            <td><code>read_file</code></td>
+            <td><code>(path: str, max_bytes: int = 4096) → str</code></td>
+            <td>UTF-8 only; truncated at <code>max_bytes</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout danger">
+        <strong>No sandboxing.</strong>
+        These tools run with the backend process's privileges. On a
+        single-user machine that is the user's own account, which is
+        fine. On a shared machine, do not expose the backend to
+        untrusted clients without authentication in front of it.
+      </div>
+
+      <h2>text_tools.py</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Signature</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>word_count</code></td>
+            <td><code>(text: str) → dict</code></td>
+            <td><code>{"words": int, "characters": int, "unique_words": int}</code></td>
+          </tr>
+          <tr>
+            <td><code>shout</code></td>
+            <td><code>(text: str) → str</code></td>
+            <td>Uppercased text</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <code>word_count</code>'s <code>dict</code> return is
+        stringified to JSON by the SDK. The LLM receives it as a JSON
+        object in the tool result and can index into it by field
+        name.
+      </p>
+
+      <h2>Schema generation</h2>
+      <p>
+        The SDK reads each tool's <strong>name</strong>,
+        <strong>signature</strong>, <strong>type hints</strong>, and
+        <strong>docstring</strong> to build the JSON schema that the
+        LLM sees. For example:
+      </p>
+      <pre>@mcp.tool()
+def word_count(text: str) -> dict:
+    """
+    Count words and characters in a string.
+    ...
+    """</pre>
+      <p>
+        Becomes approximately:
+      </p>
+      <pre>{
+  "type": "function",
+  "function": {
+    "name": "word_count",
+    "description": "Count words and characters in a string. ...",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "text": {"type": "string"}
+      },
+      "required": ["text"]
+    }
+  }
+}</pre>
+
+      <h2>Return value handling</h2>
+      <p>
+        Anything a tool returns is converted to text on the way out.
+        Strings pass through unchanged. Numbers, booleans, dicts,
+        and lists are JSON-serialised. The LLM reads the text — it
+        does not receive a typed object.
+      </p>
+      <p>
+        This means structured returns are convenient but not
+        magical: the model has to parse the JSON back if it wants to
+        index into it. For a simple "does this contain X" question,
+        returning a formatted string is often cleaner than returning
+        a dict.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Loader pattern
+       ============================================================= -->
+  <section class="file-section" id="doc-loader" data-name="loader pattern auto-discovery modules documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Loader Pattern <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server/tools/__init__.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Loader Pattern</h1>
+
+      <p>
+        Every non-underscore <code>.py</code> file in
+        <code>mcp_server/tools/</code> is imported automatically when
+        the <code>tools</code> package is imported. That import
+        triggers <code>load_all()</code>, which iterates the folder
+        and calls <code>importlib.import_module</code> on each
+        candidate.
+      </p>
+
+      <h2>How it works</h2>
+      <pre>def load_all() -> None:
+    pkg_dir = Path(__file__).resolve().parent
+    loaded = 0
+    failed = 0
+
+    for py_file in sorted(pkg_dir.glob("*.py")):
+        stem = py_file.stem
+        if stem.startswith("_"):
+            continue
+
+        module_name = f"{_PACKAGE}.{stem}"
+        try:
+            importlib.import_module(module_name)
+            loaded += 1
+        except Exception:
+            logger.exception("Failed to load MCP tool module '{}'", stem)
+            failed += 1
+
+    if loaded or failed:
+        logger.info("MCP tool loader: {} loaded, {} failed", loaded, failed)</pre>
+
+      <p>
+        Each imported module is expected to do exactly two things:
+      </p>
+      <ol>
+        <li>
+          <code>from .._server import mcp</code> — import the shared
+          instance.
+        </li>
+        <li>
+          Decorate functions with <code>@mcp.tool()</code> — register
+          them on that instance.
+        </li>
+      </ol>
+      <p>
+        There is no explicit "register" call. The decorator is the
+        registration.
+      </p>
+
+      <h2>Skipping rules</h2>
+      <table>
+        <thead><tr><th>Pattern</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>*.py</code> (top level)</td><td>Loaded</td></tr>
+          <tr><td><code>_*.py</code></td><td>Skipped (private helper)</td></tr>
+          <tr><td><code>__init__.py</code></td><td>Skipped (starts with <code>_</code>)</td></tr>
+          <tr><td><code>__pycache__/</code></td><td>Skipped (not matched by <code>glob("*.py")</code>)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Failure isolation</h2>
+      <p>
+        Each module is imported inside its own
+        <code>try/except</code>. A module that raises on import —
+        missing dependency, syntax error, bad relative import — logs
+        a full traceback and is skipped. The remaining modules still
+        load.
+      </p>
+      <p>
+        This is why a broken experimental tool cannot brick the
+        entire server. If a tool file refuses to load, the backend
+        simply sees fewer tools than it expected, and the log tells
+        you which module failed.
+      </p>
+
+      <h2>Idempotency</h2>
+      <p>
+        <code>load_all()</code> can be called multiple times. Once a
+        module is imported, Python caches it in
+        <code>sys.modules</code> and a subsequent
+        <code>import_module</code> is a no-op. Safe to call from
+        tests.
+      </p>
+
+      <h2>The same pattern elsewhere in the project</h2>
+      <p>
+        The custom-node loader at
+        <code>backend/graph/custom_nodes/__init__.py</code> uses the
+        identical convention. Learning one means knowing the other:
+      </p>
+      <table>
+        <thead><tr><th>Aspect</th><th>MCP tools</th><th>Graph custom nodes</th></tr></thead>
+        <tbody>
+          <tr><td>Folder</td><td><code>mcp_server/tools/</code></td><td><code>backend/graph/custom_nodes/</code></td></tr>
+          <tr><td>Registry</td><td>The <code>mcp</code> instance</td><td>The <code>registry</code> module</td></tr>
+          <tr><td>Registration</td><td><code>@mcp.tool()</code></td><td><code>register(NodeType(...))</code></td></tr>
+          <tr><td>Skip prefix</td><td><code>_</code></td><td><code>_</code></td></tr>
+          <tr><td>Failure handling</td><td>Log + continue</td><td>Log + continue</td></tr>
+          <tr><td>Env disable</td><td>(none built-in)</td><td><code>AGENT_LOAD_CUSTOM_NODES</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>No hot reload.</strong>
+        Adding a tool file has no effect until the backend is
+        restarted. There is no file watcher in the MCP server. This
+        is intentional: the backend spawns the subprocess once at
+        startup and expects a stable tool list for the lifetime of
+        the process.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Adding a tool
+       ============================================================= -->
+  <section class="file-section" id="doc-add" data-name="adding a tool workflow example documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Adding a Tool <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server/tools — end-to-end walkthrough</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Adding a Tool — End to End</h1>
+
+      <p>
+        A complete walkthrough that adds a new tool to the server.
+        The whole workflow is: write a file, restart the backend,
+        talk to the agent.
+      </p>
+
+      <h2>Step 1 — Create the module</h2>
+      <p>
+        Create <code>mcp_server/tools/units_tools.py</code>:
+      </p>
+      <pre>from .._server import mcp
+
+@mcp.tool()
+def km_to_miles(km: float) -> float:
+    """Convert kilometers to miles (1 km ≈ 0.621371 mi)."""
+    return km * 0.621371</pre>
+
+      <p>
+        Three lines of logic, plus the import and the decorator. That
+        is a complete MCP tool.
+      </p>
+
+      <h2>Step 2 — Restart the backend</h2>
+      <pre>python run.py backend</pre>
+
+      <h2>Step 3 — Watch the log</h2>
+      <p>
+        Look for these lines during startup:
+      </p>
+      <pre>INFO | Loaded MCP tool module: math_tools
+INFO | Loaded MCP tool module: time_tools
+INFO | Loaded MCP tool module: filesystem_tools
+INFO | Loaded MCP tool module: text_tools
+INFO | Loaded MCP tool module: units_tools
+INFO | MCP tool loader: 5 loaded, 0 failed
+INFO | Spawning MCP server: ... -m mcp_server.server
+INFO | MCP session initialised</pre>
+      <p>
+        Five loaded, zero failed. If you see <em>"5 loaded, 1
+        failed"</em>, scroll up for the traceback — the loader
+        logs it at ERROR level.
+      </p>
+
+      <h2>Step 4 — Ask the agent</h2>
+      <p>
+        In the chat UI:
+      </p>
+      <pre>How many miles is 5 kilometers?</pre>
+
+      <p>
+        The agent:
+      </p>
+      <ol>
+        <li>
+          Sends the tool schema for <code>km_to_miles</code> to the
+          LLM as part of the chat request.
+        </li>
+        <li>
+          Receives a <code>tool_call</code> for
+          <code>km_to_miles(5)</code> in the streaming response.
+        </li>
+        <li>
+          Invokes the MCP tool with the parsed arguments.
+        </li>
+        <li>
+          Receives <code>3.106855</code> as the tool result.
+        </li>
+        <li>
+          Sends a second LLM turn with the tool result appended to
+          the conversation.
+        </li>
+        <li>
+          Answers: <em>"5 kilometers is about 3.1 miles."</em>
+        </li>
+      </ol>
+
+      <h2>What you did not have to touch</h2>
+      <ul>
+        <li><code>server.py</code></li>
+        <li><code>_server.py</code></li>
+        <li><code>tools/__init__.py</code></li>
+        <li>Any backend file</li>
+        <li>Any frontend file</li>
+      </ul>
+      <p>
+        The auto-loader picked up the new module. The decorator
+        registered the tool. The SDK generated the schema. The
+        backend's tool listing includes it on the next turn.
+      </p>
+
+      <h2>The rules, condensed</h2>
+      <ol>
+        <li>
+          <strong>Filename must not start with <code>_</code>.</strong>
+          Files starting with underscore are skipped by the loader so
+          you can keep private helpers there.
+        </li>
+        <li>
+          <strong>Import <code>mcp</code> from <code>.._server</code>,
+          not from <code>..server</code>.</strong>
+          The latter triggers a circular import:
+          <pre style="margin-top:6px"># ✅ Correct
+from .._server import mcp
+
+# ❌ Circular — raises ImportError
+from ..server import mcp</pre>
+        </li>
+        <li>
+          <strong>Decorate with <code>@mcp.tool()</code>.</strong>
+          The decorator is what registers the function. Without it
+          the function is invisible to the LLM.
+        </li>
+        <li>
+          <strong>The docstring is prompt engineering.</strong>
+          The LLM reads it to decide when to call the tool. Write it
+          as an instruction: what the tool does, what it needs, what
+          it returns. One line is often enough.
+        </li>
+        <li>
+          <strong>Type hints become parameter types.</strong>
+          Use <code>float</code>, <code>int</code>,
+          <code>str</code>, <code>bool</code>,
+          <code>list[str]</code>, <code>dict[str, int]</code>. The
+          SDK translates them into JSON schema types.
+        </li>
+        <li>
+          <strong>Return JSON-serializable values.</strong>
+          Strings, numbers, booleans, dicts, lists, or
+          <code>None</code>. Anything else gets stringified.
+        </li>
+        <li>
+          <strong>Async functions work too.</strong>
+          A tool can be <code>async def</code> and use
+          <code>await</code> — the SDK handles it.
+        </li>
+        <li>
+          <strong>Never print to stdout.</strong>
+          That channel is the JSON-RPC transport. Use
+          <code>loguru</code>.
+        </li>
+      </ol>
+
+      <h2>Testing a tool in isolation</h2>
+      <p>
+        Verify a tool module imports cleanly without starting the
+        whole server:
+      </p>
+      <pre>python -c "import mcp_server.tools.units_tools; print('OK')"</pre>
+      <p>
+        Call a specific tool function directly:
+      </p>
+      <pre>python -c "
+from mcp_server.tools.math_tools import add, sqrt
+print(add(2, 3))
+print(sqrt(144))
+"</pre>
+      <p>
+        The tool functions are ordinary Python functions. The
+        <code>@mcp.tool()</code> decorator attaches metadata but
+        does not change the call signature.
+      </p>
+
+      <div class="callout success">
+        <strong>That is the entire workflow.</strong>
+        If you can write a Python function, you can add a tool. No
+        registration boilerplate, no configuration file, no schema
+        to hand-write.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Tool design guide
+       ============================================================= -->
+  <section class="file-section" id="doc-design" data-name="tool design guide best practices documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Tool Design Guide <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server/tools/README.md — design principles</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Tool Design Guide</h1>
+
+      <p>
+        A tool is an instruction to a language model as much as it is
+        a Python function. The name, docstring, and parameter names
+        all end up in the schema the model reads. Small choices in
+        those strings have outsized effects on how reliably the
+        model uses the tool.
+      </p>
+
+      <h2>One job per tool</h2>
+      <p>
+        <code>search_and_download</code> is worse than
+        <code>search</code> plus <code>download</code>. The model can
+        compose the two simpler tools into the same behaviour, and
+        it has more ways to recover when one step goes wrong.
+      </p>
+
+      <h2>Fail with a message, not a raise</h2>
+      <p>
+        Return <code>"Error: file not found"</code> rather than
+        raising <code>FileNotFoundError</code>. The model reads the
+        tool result and can try a different path, or tell the user
+        what went wrong. A raised exception becomes a generic
+        <code>"Error calling tool 'read_file': ..."</code> string
+        with the same information but less context for the model to
+        act on.
+      </p>
+      <p>
+        Exception to the rule: if the failure is a programmer error
+        (bad argument shape, missing dependency), raise. The user
+        needs to see it in the logs, not have the model apologise
+        for it.
+      </p>
+
+      <h2>Name tools verb-first</h2>
+      <p>
+        <code>add</code>, <code>multiply</code>,
+        <code>read_file</code>, <code>current_time</code>. Consistent
+        with the built-in tools, and easier for the model to select
+        from a list where everything reads as an action.
+      </p>
+
+      <h2>Keep descriptions short and imperative</h2>
+      <p>
+        One line is often enough:
+      </p>
+      <pre>"""Convert kilometers to miles (1 km ≈ 0.621371 mi)."""</pre>
+      <p>
+        Long docstrings make the tool schema bigger and slow down
+        every LLM request, without measurably improving the model's
+        decision to call the tool.
+      </p>
+
+      <h2>Document edge cases</h2>
+      <p>
+        The constraints the model needs to know go into the
+        docstring:
+      </p>
+      <ul>
+        <li>"rejects negatives"</li>
+        <li>"returns ISO 8601"</li>
+        <li>"UTF-8 only"</li>
+        <li>"truncates at 4 KB"</li>
+        <li>"path is relative to the project root"</li>
+      </ul>
+      <p>
+        A model that knows the tool rejects negatives will not waste
+        a turn calling it with a negative and then apologising.
+      </p>
+
+      <h2>Prefer primitives to structured returns</h2>
+      <p>
+        If the answer is a number, return a number. If it is a
+        sentence, return a string. <code>dict</code> and
+        <code>list</code> returns are useful when the caller has to
+        index into them, but for many questions a formatted string
+        is what the user actually wants, and the model will just
+        re-render the JSON anyway.
+      </p>
+
+      <h2>Keep the tool list small</h2>
+      <p>
+        Every tool appears in every chat request. Twenty tools means
+        the model spends attention choosing between them. A tight
+        set of six or eight well-scoped tools is faster, cheaper,
+        and more accurate than fifty overlapping ones.
+      </p>
+
+      <h2>Do not do LLM work inside a tool</h2>
+      <p>
+        A tool that itself calls an LLM is a tool that can hang, cost
+        money, and produce non-deterministic results. The MCP server
+        is a deterministic function library; keep it that way.
+        Compose LLM calls at the graph layer (where
+        <code>llm.chat</code> exists) or in a single agent turn.
+      </p>
+
+      <h2>Cross-check: the built-in tools</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Docstring style</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>add</code></td>
+            <td>"Add two numbers together. Use this for any arithmetic addition the user asks for. Prefer this over computing in your head."</td>
+          </tr>
+          <tr>
+            <td><code>read_file</code></td>
+            <td>Documents the <code>max_bytes</code> default, the truncation behaviour, the UTF-8 requirement, and the return type on failure.</td>
+          </tr>
+          <tr>
+            <td><code>current_time</code></td>
+            <td>Documents the exact return format and tells the model to render it in a friendly format rather than paste the raw ISO string.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        The docstrings are longer than the code. That is the point —
+        the docstring is the interface the model sees; the code is
+        an implementation detail.
+      </p>
+
+      <h2>What is <em>not</em> a tool</h2>
+      <p>
+        These are graph nodes, not MCP tools. They live in
+        <code>backend/graph/nodes.py</code> and
+        <code>backend/graph/custom_nodes/</code>:
+      </p>
+      <ul>
+        <li><code>input.text</code>, <code>input.number</code>, <code>input.json</code></li>
+        <li><code>llm.chat</code>, <code>llm.prompt</code></li>
+        <li><code>tool.call</code>, <code>tool.list</code></li>
+        <li><code>control.branch</code>, <code>control.foreach</code>, <code>control.merge</code></li>
+        <li>Everything under the "Custom" category</li>
+      </ul>
+      <p>
+        MCP tools are callable by the LLM during a chat, or by the
+        <code>tool.call</code> graph node. Graph nodes are callable
+        by the graph engine. The two registries are separate.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOC — Debugging
+       ============================================================= -->
+  <section class="file-section" id="doc-debug" data-name="debugging troubleshooting mcp server documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Debugging <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">mcp_server — troubleshooting</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Debugging</h1>
+
+      <h2>A new tool does not appear</h2>
+      <p>Check these in order:</p>
+      <ol>
+        <li>
+          <strong>Backend log for the loader line.</strong>
+          Look for:
+          <pre style="margin-top:6px">INFO  | Loaded MCP tool module: my_tools
+INFO  | MCP tool loader: 5 loaded, 0 failed</pre>
+          If <code>my_tools</code> is not listed, the file name is
+          being skipped or the module failed to import.
+        </li>
+        <li>
+          <strong>File name starts with <code>_</code>?</strong>
+          Underscore-prefixed files are skipped by design. Rename it.
+        </li>
+        <li>
+          <strong>Import is from <code>.._server</code>?</strong>
+          <pre style="margin-top:6px">from .._server import mcp   # ✅
+from ..server import mcp    # ❌ circular import</pre>
+        </li>
+        <li>
+          <strong>File is in the right folder?</strong>
+          <code>mcp_server/tools/</code>, not <code>mcp_server/</code>.
+        </li>
+        <li>
+          <strong>Did you restart the backend?</strong>
+          There is no hot reload. Stop and start again.
+        </li>
+      </ol>
+
+      <h2>Testing a module in isolation</h2>
+      <pre>python -c "import mcp_server.tools.my_tools"</pre>
+      <p>
+        If that raises, the traceback tells you exactly what is
+        wrong — a typo, a missing import, a syntax error.
+      </p>
+
+      <h2>Testing a specific tool function</h2>
+      <pre>python -c "
+from mcp_server.tools.math_tools import add, sqrt
+print(add(2, 3))
+print(sqrt(144))
+"</pre>
+      <p>
+        The tool functions are ordinary Python functions. Calling
+        them directly bypasses MCP entirely.
+      </p>
+
+      <h2>"Connection closed" at startup</h2>
+      <p>
+        The most common cause is the Rich startup banner leaking
+        into stdout before the first JSON-RPC frame. See the
+        <a href="#doc-banner">Banner suppression</a> section for the
+        full story.
+      </p>
+      <p>
+        Second most common cause: a tool module printed to stdout
+        during import. Search your tool files for
+        <code>print(</code>. Every <code>print()</code> in the
+        subprocess corrupts the transport. Replace with
+        <code>logger.info()</code>.
+      </p>
+
+      <h2>"MCP connection failed after 2 attempt(s)"</h2>
+      <p>
+        The subprocess either failed to start or failed to complete
+        its initialization handshake. The backend logs a hint:
+      </p>
+      <pre>Hint: run this to see the real error:
+    python -m mcp_server.server</pre>
+      <p>
+        Run that command directly. If the server starts and sits
+        silently, the problem is on the backend side (see "Connection
+        closed" above). If it prints a traceback, the problem is on
+        the server side — most likely the MCP SDK version.
+      </p>
+
+      <h2>Checking the SDK version</h2>
+      <pre>python -c "import mcp; print(mcp.__version__)"</pre>
+      <p>
+        Anything older than 2.0.0 may need the banner fallback
+        path and is more likely to encounter compatibility issues.
+        Upgrade with:
+      </p>
+      <pre>pip install 'mcp&gt;=2.0.0'</pre>
+
+      <h2>Watching the raw stdio stream</h2>
+      <p>
+        For low-level debugging, you can pipe a request into the
+        server and see its raw response:
+      </p>
+      <pre>echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{...}}' \
+    | python -m mcp_server.server</pre>
+      <p>
+        The response is a single JSON line on stdout. If you see a
+        Rich banner before it, the suppression is not working.
+      </p>
+
+      <h2>A tool raises at runtime</h2>
+      <p>
+        The exception is caught by the SDK and returned to the
+        backend as an error string in the tool result. The model
+        sees it and can react. The backend log shows:
+      </p>
+      <pre>ERROR | Tool 'my_tool' failed: &lt;exception&gt;</pre>
+      <p>
+        If the failure is deterministic and the tool's own docstring
+        does not warn the model about it, add the constraint to the
+        docstring. That is often more useful than changing the code.
+      </p>
+
+      <h2>Checking which tools the LLM sees</h2>
+      <p>
+        The backend logs every chat request at DEBUG level:
+      </p>
+      <pre>DEBUG | LLM request (auto, batch): model=... messages=... tools=N</pre>
+      <p>
+        If <code>tools</code> is 0 and you expect it to be 9, the
+        tool listing failed. Check the backend log for
+        <code>"Failed to list MCP tools"</code> or
+        <code>"MCP session not connected"</code>.
+      </p>
+
+      <div class="callout">
+        <strong>No stdout, ever.</strong>
+        If debugging the MCP server ever seems impossible, search
+        every file in <code>mcp_server/</code> for <code>print(</code>.
+        There should be zero hits. This single rule prevents the
+        majority of "the server is silent and the backend says the
+        connection closed" bugs.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — __init__.py
+       ============================================================= -->
+  <section class="file-section" id="f-init" data-name="mcp server __init__.py package entry">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>__init__.py <span class="file-badge">python</span></h2>
+        <span class="file-path">mcp_server/__init__.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+3olution MCP tool server.
+https://3olution.com
+
+This package contains a FastMCP-compatible tool server that the
+backend spawns as a stdio subprocess. It exposes a set of tools
+(math, time, filesystem, text) that the agent can invoke through
+the LLM's function-calling interface.
+
+================================================================
+  ARCHITECTURE
+================================================================
+
+  ┌────────────────────────────┐
+  │  Backend process           │
+  │  (backend/mcp_client.py)   │
+  │                            │
+  │  stdio_client ──┐          │
+  └─────────────────┼──────────┘
+                    │ stdin/stdout (JSON-RPC)
+                    ▼
+  ┌────────────────────────────┐
+  │  MCP server subprocess     │
+  │  (python -m mcp_server)    │
+  │                            │
+  │  ┌──────────────────────┐  │
+  │  │ _server.py           │  │
+  │  │   the shared mcp     │  │
+  │  │   instance           │  │
+  │  └──────────────────────┘  │
+  │           ▲                │
+  │           │ registers      │
+  │           │ tools on       │
+  │  ┌────────┴─────────────┐  │
+  │  │ tools/*.py           │  │
+  │  │   math_tools         │  │
+  │  │   time_tools         │  │
+  │  │   filesystem_tools   │  │
+  │  │   text_tools         │  │
+  │  └──────────────────────┘  │
+  └────────────────────────────┘
+
+================================================================
+  WHY A SUBPROCESS?
+================================================================
+
+  Running the MCP server as a separate process (rather than
+  embedding it in the backend) provides three advantages:
+
+    1. Isolation: a crashed tool cannot take down the backend.
+       The backend detects the dead subprocess and logs a clear
+       error, but stays up so the user can use chat without tools.
+
+    2. Language freedom: the MCP protocol is language-agnostic.
+       Today the server is Python; tomorrow it could be Node.js
+       or Go, and the backend would not change.
+
+    3. Reusability: the same MCP server can be attached to any
+       other MCP-compatible client — Claude Desktop, Continue,
+       Cursor, etc. — without modification.
+
+================================================================
+  ENTRY POINT
+================================================================
+
+  Running this package as a module:
+
+      python -m mcp_server
+
+  ...is equivalent to running:
+
+      python -m mcp_server.server
+
+  Both start the stdio server and block waiting for JSON-RPC
+  messages on stdin.
+"""
+
+from .server import mcp, run
+
+
+__all__ = ["mcp", "run"]</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — server.py
+       ============================================================= -->
+  <section class="file-section" id="f-server" data-name="server.py entry point mcp server">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>server.py <span class="file-badge">python</span></h2>
+        <span class="file-path">mcp_server/server.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+MCP server entry point.
+https://3olution.com
+
+This module is intentionally thin. Its only job is to:
+
+    1. Trigger creation of the shared `mcp` instance (via the
+       import of `_server`).
+    2. Import the `tools` package, whose module-level code
+       registers every tool on the shared instance.
+    3. Expose a `run()` function that starts the stdio server.
+
+Everything else lives in `_server.py` (the instance and Windows
+fixes) or in `tools/*.py` (the tool implementations).
+
+================================================================
+  HOW TO ADD A TOOL
+================================================================
+
+  Drop a new .py file into `mcp_server/tools/`. Inside it:
+
+      from .._server import mcp
+
+      @mcp.tool()
+      def my_tool(arg1: str, arg2: int) -> str:
+          \"\"\"One-line description the LLM will read.\"\"\"
+          return "result"
+
+  Restart the backend. The tool appears in the agent's tool list on
+  the next turn.
+
+  See `tools/README.md` for the full guide.
+
+================================================================
+  RUNNING STANDALONE
+================================================================
+
+  For debugging, you can run the server directly:
+
+      python -m mcp_server.server
+
+  It will start and wait for JSON-RPC messages on stdin. You will
+  not see any output unless you send valid MCP requests — the
+  server is silent until spoken to. Press Ctrl+C to stop.
+"""
+
+from __future__ import annotations
+
+# Step 1 — create the shared instance (import side effect).
+from ._server import mcp, run
+
+# Step 2 — import the tools package. The tools/__init__.py loader
+# runs at import time and pulls in every tool module, registering
+# their @mcp.tool() functions on the shared instance.
+from . import tools as _tools  # noqa: F401
+
+
+__all__ = ["mcp", "run"]
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Standalone entry point
+# ══════════════════════════════════════════════════════════════════════
+#
+#  This block makes `python -m mcp_server.server` work. It also makes
+#  the module safe to import from tests, because the run() call only
+#  happens when the module is executed directly.
+
+if __name__ == "__main__":
+    run()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — _server.py
+       ============================================================= -->
+  <section class="file-section" id="f-server-internal" data-name="_server.py shared instance windows fix sdk compat">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>_server.py <span class="file-badge">python</span></h2>
+        <span class="file-path">mcp_server/_server.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Shared MCP server instance.
+https://3olution.com
+
+This module owns the global `mcp` object that every tool module
+decorates against. It also handles the two compatibility shims that
+would otherwise need to be duplicated in every tool file:
+
+    1. The Windows event loop policy fix. On Windows, Python's
+       default ProactorEventLoop is incompatible with stdio
+       subprocesses; FastMCP will randomly hang during the initial
+       handshake. Setting SelectorEventLoopPolicy before importing
+       the SDK fixes it.
+
+    2. The mcp 1.x / 2.x class name change. mcp 1.x exposes
+       `FastMCP`; mcp 2.x renamed the class to `MCPServer` and
+       moved it to `mcp.server.mcpserver`. We try the 2.x import
+       first and fall back to 1.x.
+
+================================================================
+  WHY A SEPARATE MODULE
+================================================================
+
+  Tool modules live in `tools/` and need to import the `mcp`
+  instance. If the instance were created inside `server.py`, then
+  importing a tool file would trigger a circular import:
+
+        server.py
+          imports tools/__init__.py
+            imports tools/math_tools.py
+              imports server.py  ← circular
+
+  By placing the instance in `_server.py`, the cycle is broken:
+
+        server.py
+          imports _server.py       ← OK, no cycles
+          imports tools/__init__.py
+            imports tools/math_tools.py
+              imports _server.py   ← already loaded, fine
+"""
+
+from __future__ import annotations
+
+import asyncio
+import sys
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Windows event loop fix
+# ══════════════════════════════════════════════════════════════════════
+#
+#  MUST run before importing the MCP SDK. Python 3.8+ on Windows
+#  defaults to ProactorEventLoop, which implements subprocess
+#  creation but has known bugs when reading from the subprocess's
+#  pipes. FastMCP's stdio transport reads from pipes continuously;
+#  Proactor's pipe handling causes the initial handshake to hang
+#  roughly 20% of the time.
+#
+#  SelectorEventLoop has reliable pipe support. It lacks
+#  subprocess.create_subprocess_exec, but the MCP server does not
+#  need that — it only reads and writes to its own stdio.
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  SDK import with 1.x / 2.x compatibility
+# ══════════════════════════════════════════════════════════════════════
+#
+#  The MCP Python SDK renamed its high-level server class between
+#  major versions:
+#
+#      mcp 1.x:  from mcp.server.fastmcp import FastMCP
+#      mcp 2.x:  from mcp.server.mcpserver import MCPServer
+#
+#  Some 2.x point releases also exposed MCPServer directly from
+#  mcp.server. We try the newest path first, fall back through the
+#  alternatives, and finally accept the 1.x name.
+
+_SERVER_CLASS = None
+
+try:
+    # mcp >= 2.0 canonical path
+    from mcp.server.mcpserver import MCPServer  # type: ignore[import-not-found]
+    _SERVER_CLASS = MCPServer
+except ImportError:
+    try:
+        # Some 2.x point releases exposed it directly
+        from mcp.server import MCPServer  # type: ignore[import-not-found,no-redef]
+        _SERVER_CLASS = MCPServer
+    except ImportError:
+        try:
+            # mcp 1.x fallback
+            from mcp.server.fastmcp import FastMCP  # type: ignore[import-not-found,no-redef]
+            _SERVER_CLASS = FastMCP
+        except ImportError as exc:
+            raise ImportError(
+                "Could not import a supported MCP server class from "
+                "the installed `mcp` package.\n"
+                "Expected one of:\n"
+                "    mcp.server.mcpserver.MCPServer    (mcp >= 2.0)\n"
+                "    mcp.server.MCPServer              (some 2.x)\n"
+                "    mcp.server.fastmcp.FastMCP        (mcp 1.x)\n"
+                "Install a supported version with:\n"
+                "    pip install 'mcp>=2.0.0'"
+            ) from exc
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  The shared instance
+# ══════════════════════════════════════════════════════════════════════
+#
+#  Every tool module does:
+#
+#      from .._server import mcp
+#
+#  and then decorates its functions with `@mcp.tool()`. The
+#  decorator registers the tool on this instance.
+
+mcp = _SERVER_CLASS("3olution Tools")
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Entry point
+# ══════════════════════════════════════════════════════════════════════
+
+def run() -> None:
+    """
+    Start the MCP server over stdio.
+
+    Tries `show_banner=False` first. The banner is a Rich-rendered
+    box that includes box-drawing characters (╭, │, ╰). Those are
+    not valid JSON-RPC and corrupt the first message the client
+    reads, causing an immediate "Connection closed" on the backend
+    side. Suppressing it is essential on all platforms.
+
+    Older SDK versions (mcp 1.0) do not accept the `show_banner`
+    kwarg and raise TypeError. We catch that and call run() without
+    arguments — the banner will appear but the server still works.
+    """
+    try:
+        mcp.run(show_banner=False)
+    except TypeError:
+        # Older SDK — fall through to the plain call.
+        mcp.run()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — tools/__init__.py
+       ============================================================= -->
+  <section class="file-section" id="f-tools-init" data-name="tools __init__.py loader auto import">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>tools/__init__.py <span class="file-badge">python</span></h2>
+        <span class="file-path">mcp_server/tools/__init__.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Auto-loader for MCP tool modules.
+https://3olution.com
+
+Every non-underscore .py file in this folder is imported when the
+tools package is imported. Each tool module is expected to:
+
+    1. Import the shared instance:  from .._server import mcp
+    2. Decorate its functions with @mcp.tool()
+
+The decorator registers the tool on the shared instance. There is no
+explicit `load()` call — the import of this package does the work.
+
+================================================================
+  LOADER BEHAVIOUR
+================================================================
+
+  Failures are isolated. If one tool module fails to import (missing
+  dependency, syntax error, bad import), the loader logs a full
+  traceback and continues loading the remaining modules. The
+  backend will see fewer tools than expected, but it will not
+  crash.
+
+  This design means a broken experimental tool cannot brick the
+  whole server. You can comment out or rename the offending file
+  to remove it from the palette.
+
+================================================================
+  FILE NAMING CONVENTION
+================================================================
+
+  Files whose names start with an underscore (_private.py) are
+  skipped. Use this for shared helpers that are not themselves
+  tool definitions:
+
+      tools/
+          __init__.py         ← this file, auto-runs on import
+          README.md           ← documentation
+          math_tools.py       ← loaded
+          time_tools.py       ← loaded
+          text_tools.py       ← loaded
+          _helpers.py         ← skipped (leading underscore)
+"""
+
+from __future__ import annotations
+
+import importlib
+from pathlib import Path
+
+from loguru import logger
+
+
+_PACKAGE = "mcp_server.tools"
+
+
+def load_all() -> None:
+    """
+    Import every tool module in this folder.
+
+    Idempotent: a second call re-imports the same modules, which
+    Python's import system treats as a no-op. Safe to call from
+    tests.
+    """
+    pkg_dir = Path(__file__).resolve().parent
+    loaded = 0
+    failed = 0
+
+    for py_file in sorted(pkg_dir.glob("*.py")):
+        stem = py_file.stem
+
+        # Skip __init__.py and any explicitly-private module.
+        if stem.startswith("_"):
+            continue
+
+        module_name = f"{_PACKAGE}.{stem}"
+
+        try:
+            importlib.import_module(module_name)
+            logger.info("Loaded MCP tool module: {}", stem)
+            loaded += 1
+        except Exception:
+            logger.exception(
+                "Failed to load MCP tool module '{}'. "
+                "Skipping — other tool modules will still load.",
+                stem,
+            )
+            failed += 1
+
+    if loaded or failed:
+        logger.info(
+            "MCP tool loader: {} loaded, {} failed", loaded, failed,
+        )
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Run the loader on package import
+# ══════════════════════════════════════════════════════════════════════
+#
+#  This side effect is what makes `from . import tools` sufficient
+#  in server.py. No explicit call needed.
+
+load_all()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — math_tools.py
+       ============================================================= -->
+  <section class="file-section" id="f-math-tools" data-name="math tools add multiply sqrt power mcp">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>math_tools.py <span class="file-badge">python</span></h2>
+        <span class="file-path">mcp_server/tools/math_tools.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Math tools.
+https://3olution.com
+
+Basic arithmetic operations. All accept float arguments and return
+a float. The LLM calls these for explicit "what is X op Y" questions
+where the model wants deterministic arithmetic rather than its own
+learned approximations.
+"""
+
+from __future__ import annotations
+
+import math
+
+from .._server import mcp
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Binary operations
+# ══════════════════════════════════════════════════════════════════════
+
+@mcp.tool()
+def add(a: float, b: float) -> float:
+    """
+    Add two numbers together.
+
+    Use this for any arithmetic addition the user asks for. Prefer
+    this over computing in your head — the result is exact for
+    floating-point values.
+    """
+    return a + b
+
+
+@mcp.tool()
+def multiply(a: float, b: float) -> float:
+    """
+    Multiply two numbers together.
+
+    Use this for any multiplication the user asks for. The result
+    is exact within IEEE 754 double precision.
+    """
+    return a * b
+
+
+@mcp.tool()
+def power(base: float, exponent: float) -> float:
+    """
+    Raise `base` to the power of `exponent`.
+
+    Supports fractional and negative exponents (e.g. power(2, 0.5)
+    returns sqrt(2), power(2, -1) returns 0.5).
+    """
+    return base ** exponent
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Unary operations
+# ══════════════════════════════════════════════════════════════════════
+
+@mcp.tool()
+def sqrt(x: float) -> float:
+    """
+    Return the square root of a non-negative number.
+
+    Raises a ValueError for negative inputs — imaginary results are
+    not supported. The agent loop turns the raise into an error
+    string in the conversation so the model can react.
+    """
+    if x < 0:
+        raise ValueError("sqrt requires a non-negative number")
+    return math.sqrt(x)</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — time_tools.py
+       ============================================================= -->
+  <section class="file-section" id="f-time-tools" data-name="time tools current_time iso8601 utc mcp">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>time_tools.py <span class="file-badge">python</span></h2>
+        <span class="file-path">mcp_server/tools/time_tools.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Time tools.
+https://3olution.com
+
+Provides the current time in a format the LLM can parse reliably.
+The model has no internal clock; without this tool it will refuse
+or hallucinate a timestamp.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+from .._server import mcp
+
+
+@mcp.tool()
+def current_time() -> str:
+    """
+    Return the current UTC time in ISO 8601 format.
+
+    The returned string looks like:
+        2025-01-15T12:34:56.789012+00:00
+
+    Use this whenever the user asks "what time is it", "what's the
+    date", "how long until X", or any question that requires
+    knowing the current moment. Always report the result to the
+    user in a friendly format — do not paste the raw ISO string
+    unless they asked for it.
+    """
+    return datetime.now(timezone.utc).isoformat()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — text_tools.py
+       ============================================================= -->
+  <section class="file-section" id="f-text-tools" data-name="text tools word_count shout mcp">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>text_tools.py <span class="file-badge">python</span></h2>
+        <span class="file-path">mcp_server/tools/text_tools.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Text manipulation tools.
+https://3olution.com
+
+Simple deterministic text operations. Each tool does one thing and
+returns a primitive value, so the LLM can compose them.
+"""
+
+from __future__ import annotations
+
+from .._server import mcp
+
+
+@mcp.tool()
+def word_count(text: str) -> dict:
+    """
+    Count words and characters in a string.
+
+    Returns a dict with three fields:
+
+        words         — number of whitespace-separated tokens
+        characters    — total character count including whitespace
+        unique_words  — number of distinct lowercased words
+
+    Useful for essay-length checks, content analysis, and any
+    question of the form "how many words is this?".
+    """
+    words = text.split()
+    return {
+        "words": len(words),
+        "characters": len(text),
+        "unique_words": len(set(w.lower() for w in words)),
+    }
+
+
+@mcp.tool()
+def shout(text: str) -> str:
+    """
+    Convert the given text to uppercase.
+
+    A trivial but useful demonstration tool: the LLM can call it
+    when the user asks to "shout" a message, "yell" a string, or
+    anything that maps to uppercasing. It also serves as the
+    canonical example of a simple tool for anyone extending the
+    server.
+    """
+    return text.upper()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — filesystem_tools.py
+       ============================================================= -->
+  <section class="file-section" id="f-fs-tools" data-name="filesystem tools list_directory read_file mcp">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>filesystem_tools.py <span class="file-badge">python</span></h2>
+        <span class="file-path">mcp_server/tools/filesystem_tools.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Filesystem tools.
+https://3olution.com
+
+Read-only access to the local filesystem. These tools run with the
+same privileges as the backend process, which is usually the user's
+own account.
+
+================================================================
+  SECURITY NOTE
+================================================================
+
+  There is NO sandboxing. A user who can reach the chat interface
+  can read any file the backend process can read. On a
+  single-user machine this is fine. On a shared machine, do not
+  expose the backend to untrusted clients without authentication
+  in front of it.
+
+  The tools do not support writing, deleting, or moving files. If
+  you need those, write a new tool in a separate module and add
+  explicit safeguards (allowlisted root directory, size limits,
+  path validation).
+"""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from .._server import mcp
+
+
+@mcp.tool()
+def list_directory(path: str = ".") -> str:
+    """
+    List the entries in a directory.
+
+    The path is interpreted relative to the MCP server's working
+    directory, which is the project root when the backend spawns it.
+
+    Returns a newline-separated list of entry names, sorted
+    alphabetically. Directories are not distinguished from files in
+    the output — the caller can stat individual entries if needed.
+
+    Returns a descriptive error string on failure (permission
+    denied, not a directory, does not exist).
+    """
+    try:
+        entries = sorted(os.listdir(path))
+    except OSError as exc:
+        return f"Error: {exc}"
+
+    if not entries:
+        return "(empty directory)"
+    return "\n".join(entries)
+
+
+@mcp.tool()
+def read_file(path: str, max_bytes: int = 4096) -> str:
+    """
+    Read up to `max_bytes` bytes from a text file.
+
+    The path is interpreted relative to the MCP server's working
+    directory.
+
+    The byte limit defaults to 4096 (4 KB) and is enforced by
+    truncation, not rejection — reading a 10 MB file with the
+    default limit returns the first 4 KB. This keeps the LLM's
+    context window from being flooded by an accidental large read.
+
+    Returns the decoded UTF-8 text. If the file is not valid UTF-8
+    (binary, or a different encoding), returns an error string
+    instead of raising.
+
+    Use this to inspect configuration files, logs, source code, or
+    any small text file the user asks about.
+    """
+    p = Path(path)
+    if not p.is_file():
+        return f"Error: not a file: {path}"
+
+    try:
+        data = p.read_bytes()[:max_bytes]
+    except OSError as exc:
+        return f"Error: {exc}"
+
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        return "Error: file is not valid UTF-8"</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — tools/README.md
+       ============================================================= -->
+  <section class="file-section" id="f-tools-readme" data-name="tools README guide adding tools">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>tools/README.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">mcp_server/tools/README.md</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>MCP Tool Modules</h1>
+
+      <p>
+        Every <code>.py</code> file in this folder is imported
+        automatically when the MCP server starts. Each module
+        registers its tools by decorating functions with
+        <code>@mcp.tool()</code> against the shared <code>mcp</code>
+        instance.
+      </p>
+
+      <p>
+        Adding a tool requires no changes to any other file — just
+        drop a new <code>.py</code> file here and restart the
+        backend.
+      </p>
+
+      <hr>
+
+      <h2>Minimal example</h2>
+      <p>Create <code>my_tools.py</code>:</p>
+      <pre>from .._server import mcp
+
+
+@mcp.tool()
+def celsius_to_fahrenheit(celsius: float) -> float:
+    """Convert a temperature from Celsius to Fahrenheit."""
+    return celsius * 9 / 5 + 32</pre>
+
+      <p>
+        Restart the backend with <code>python run.py backend</code>.
+        The <code>celsius_to_fahrenheit</code> tool is now available
+        to the LLM in chats and callable from a
+        <code>tool.call</code> node in the graph editor.
+      </p>
+
+      <hr>
+
+      <h2>The rules</h2>
+
+      <ol>
+        <li>
+          <strong>File name must not start with <code>_</code>.</strong>
+          Files starting with <code>_</code> are skipped by the
+          loader so you can keep private helpers there.
+        </li>
+        <li>
+          <strong>Import <code>mcp</code> from
+          <code>.._server</code>, not from <code>..server</code>:</strong>
+          <pre style="margin-top:6px">from .._server import mcp    # ✅ correct
+from ..server import mcp     # ❌ circular import</pre>
+        </li>
+        <li>
+          <strong>Decorate each tool with
+          <code>@mcp.tool()</code>.</strong>
+          The decorator reads the function's name, signature, type
+          hints, and docstring to build the JSON schema the LLM
+          sees.
+        </li>
+        <li>
+          <strong>The docstring is prompt engineering.</strong>
+          The LLM reads it to decide when to call the tool. Write it
+          like an instruction: describe what the tool does, what it
+          needs, and what it returns.
+        </li>
+        <li>
+          <strong>Type hints become parameter types.</strong>
+          Use <code>float</code>, <code>int</code>,
+          <code>str</code>, <code>bool</code>,
+          <code>list[str]</code>, <code>dict[str, int]</code>, etc.
+          FastMCP / MCPServer translates these into JSON schema
+          types automatically.
+        </li>
+        <li>
+          <strong>Return JSON-serializable values.</strong>
+          <code>str</code>, <code>int</code>, <code>float</code>,
+          <code>bool</code>, <code>dict</code>, <code>list</code>,
+          or <code>None</code>. Structured returns are stringified
+          in the conversation.
+        </li>
+        <li>
+          <strong>Async functions work too.</strong>
+          A tool can be <code>async def</code> and use
+          <code>await</code> — the server handles it.
+        </li>
+      </ol>
+
+      <hr>
+
+      <h2>Tool design tips</h2>
+      <ul>
+        <li>
+          <strong>One job per tool.</strong>
+          <code>search_and_download</code> is worse than
+          <code>search</code> + <code>download</code> because the
+          model can compose them.
+        </li>
+        <li>
+          <strong>Fail with a message, not a raise.</strong>
+          Returning <code>"Error: file not found"</code> lets the
+          model recover. Raising a bare exception produces a generic
+          error the model cannot act on.
+        </li>
+        <li>
+          <strong>Name tools verb-first.</strong>
+          <code>add</code>, <code>multiply</code>,
+          <code>read_file</code>, <code>current_time</code> —
+          consistent with the built-in tools.
+        </li>
+        <li>
+          <strong>Keep descriptions short and imperative.</strong>
+          One line is often enough.
+        </li>
+        <li>
+          <strong>Document edge cases.</strong>
+          "rejects negatives", "returns ISO 8601", "UTF-8 only" —
+          these are the constraints the model needs.
+        </li>
+      </ul>
+
+      <hr>
+
+      <h2>What is NOT a tool</h2>
+      <p>
+        These are graph nodes, not MCP tools. They live in
+        <code>backend/graph/nodes.py</code> and
+        <code>backend/graph/custom_nodes/</code>:
+      </p>
+      <ul>
+        <li><code>input.text</code>, <code>input.number</code>, <code>input.json</code></li>
+        <li><code>llm.chat</code>, <code>llm.prompt</code></li>
+        <li><code>tool.call</code>, <code>tool.list</code></li>
+        <li><code>control.branch</code>, <code>control.foreach</code>, <code>control.merge</code></li>
+        <li>Everything under the "Custom" category</li>
+      </ul>
+      <p>
+        MCP tools are only callable by the LLM during a chat, or by
+        the <code>tool.call</code> graph node. Graph nodes are only
+        callable by the graph engine. They are separate registries.
+      </p>
+
+      <hr>
+
+      <h2>Debugging</h2>
+      <p>If a new tool doesn't appear:</p>
+      <ul>
+        <li>
+          Check the backend log for
+          <code>Failed to load MCP tool module: …</code> or
+          <code>MCP tool loader: N loaded, M failed</code>.
+        </li>
+        <li>
+          Verify the file name doesn't start with <code>_</code>.
+        </li>
+        <li>
+          Verify the import is
+          <code>from .._server import mcp</code>.
+        </li>
+        <li>
+          Verify the file is in <code>mcp_server/tools/</code>, not
+          <code>mcp_server/</code>.
+        </li>
+        <li>
+          Restart the backend — there is no hot reload.
+        </li>
+      </ul>
+      <p>To test a single module in isolation:</p>
+      <pre>python -c "import mcp_server.tools.my_tools"</pre>
+      <p>
+        If that raises, the traceback tells you exactly what's wrong.
+      </p>
+
+      <hr>
+
+      <h2>The old way (deprecated)</h2>
+      <p>
+        Before this folder existed, tools were defined inline in
+        <code>mcp_server/server.py</code>. That still works in
+        principle, but adding tools there bloats the file and mixes
+        unrelated concerns. New tools should always go into this
+        folder.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — Extensive_Documentation.md
+       ============================================================= -->
+  <section class="file-section" id="f-doc" data-name="extensive documentation mcp server reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Extensive_Documentation.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">mcp_server/Extensive_Documentation.md</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>The MCP server in one diagram</h1>
+      <pre>Backend process (Python)
+    │
+    │  backend/mcp_client.py
+    │      spawns subprocess:
+    │          python -m mcp_server.server
+    │
+    │  stdin  ────────────────────────►  JSON-RPC requests
+    │  stdout ◄────────────────────────  JSON-RPC responses
+    │
+    ▼
+MCP server subprocess (Python)
+    │
+    │  mcp_server/server.py
+    │      thin entry point
+    │
+    │  mcp_server/_server.py
+    │      ┌──────────────────────────┐
+    │      │  Windows event loop fix  │
+    │      │  SDK compatibility shim  │
+    │      │  mcp = MCPServer(...)    │
+    │      └──────────────────────────┘
+    │                 ▲
+    │                 │  @mcp.tool() decorators
+    │                 │
+    │  mcp_server/tools/__init__.py
+    │      auto-loads every .py file:
+    │          math_tools.py        — add, multiply, sqrt, power
+    │          time_tools.py        — current_time
+    │          filesystem_tools.py  — list_directory, read_file
+    │          text_tools.py        — word_count, shout
+    │
+    ▼
+stdio (the MCP transport)</pre>
+
+      <h2>The compatibility shim in _server.py</h2>
+      <p>
+        The <code>mcp</code> Python SDK changed its public API
+        between major versions:
+      </p>
+      <table>
+        <thead><tr><th>SDK version</th><th>Class name</th><th>Import path</th></tr></thead>
+        <tbody>
+          <tr><td>1.x</td><td><code>FastMCP</code></td><td><code>mcp.server.fastmcp</code></td></tr>
+          <tr><td>2.x (early)</td><td><code>MCPServer</code></td><td><code>mcp.server</code></td></tr>
+          <tr><td>2.x (current)</td><td><code>MCPServer</code></td><td><code>mcp.server.mcpserver</code></td></tr>
+        </tbody>
+      </table>
+      <p>
+        <code>_server.py</code> tries the 2.x canonical path first,
+        then the early-2.x alternate, then falls back to 1.x. That
+        means the same tool files work against any
+        currently-installed SDK without modification.
+      </p>
+      <p>
+        If none of the three imports succeed, the module raises an
+        <code>ImportError</code> with a specific, actionable message
+        naming each expected import path and pointing at
+        <code>pip install 'mcp&gt;=2.0.0'</code>.
+      </p>
+
+      <h2>The Windows event loop fix</h2>
+      <p>
+        The subtle bug this avoids:
+      </p>
+      <ul>
+        <li>
+          Python 3.8+ on Windows defaults to
+          <code>ProactorEventLoop</code>.
+        </li>
+        <li>
+          Proactor supports
+          <code>asyncio.create_subprocess_exec</code> but has known
+          bugs reading from child process pipes.
+        </li>
+        <li>
+          FastMCP's stdio transport continuously reads from its own
+          stdin pipe.
+        </li>
+        <li>
+          Result: the initial MCP handshake hangs ~20% of the time.
+        </li>
+      </ul>
+      <p>
+        Setting <code>WindowsSelectorEventLoopPolicy</code> before
+        importing FastMCP switches to
+        <code>SelectorEventLoop</code>, which has reliable pipe
+        support. The MCP server does not need
+        <code>create_subprocess_exec</code> itself — it only reads
+        and writes its own stdio — so the trade-off is free.
+      </p>
+      <p>
+        The policy must be set before the SDK import.
+        <code>_server.py</code> enforces this ordering by placing
+        the <code>asyncio.set_event_loop_policy</code> call above
+        the <code>from mcp... import ...</code> block.
+      </p>
+
+      <h2>The banner suppression</h2>
+      <p>
+        FastMCP 1.x and MCPServer 2.x both print a Rich-rendered
+        startup banner to stdout unless told otherwise. The banner
+        contains box-drawing characters:
+      </p>
+      <pre>╭─────────────────────────────────────────╮
+│                                          │
+│   ███╗   ███╗ ██████╗██████╗             │
+│   ...</pre>
+      <p>
+        Those characters are not valid JSON. If the banner appears
+        before the first JSON-RPC message, the backend's stdio
+        reader tries to parse it and fails — producing a "Connection
+        closed" error on the backend side and an apparently silent
+        server.
+      </p>
+      <p>
+        <code>run()</code> calls
+        <code>mcp.run(show_banner=False)</code> to suppress it.
+        Older SDK versions do not accept the
+        <code>show_banner</code> kwarg and raise
+        <code>TypeError</code>; the
+        <code>except TypeError</code> fallback calls plain
+        <code>mcp.run()</code> and accepts the banner.
+      </p>
+
+      <h2>Tool inventory</h2>
+      <p>
+        After this batch, the MCP server exposes nine tools:
+      </p>
+      <table>
+        <thead><tr><th>Module</th><th>Tool</th><th>Signature</th></tr></thead>
+        <tbody>
+          <tr><td>math_tools</td><td>add</td><td><code>(a: float, b: float) → float</code></td></tr>
+          <tr><td>math_tools</td><td>multiply</td><td><code>(a: float, b: float) → float</code></td></tr>
+          <tr><td>math_tools</td><td>sqrt</td><td><code>(x: float) → float</code></td></tr>
+          <tr><td>math_tools</td><td>power</td><td><code>(base: float, exponent: float) → float</code></td></tr>
+          <tr><td>time_tools</td><td>current_time</td><td><code>() → str</code></td></tr>
+          <tr><td>filesystem_tools</td><td>list_directory</td><td><code>(path: str = ".") → str</code></td></tr>
+          <tr><td>filesystem_tools</td><td>read_file</td><td><code>(path: str, max_bytes: int = 4096) → str</code></td></tr>
+          <tr><td>text_tools</td><td>word_count</td><td><code>(text: str) → dict</code></td></tr>
+          <tr><td>text_tools</td><td>shout</td><td><code>(text: str) → str</code></td></tr>
+        </tbody>
+      </table>
+      <p>
+        The JSON schemas are generated by the MCP SDK from the
+        function signatures and docstrings.
+        <code>word_count</code>'s return type
+        <code>dict</code> becomes <code>{"type": "object"}</code> in
+        the schema; the LLM receives it as a JSON string when
+        called.
+      </p>
+
+      <h2>Loader pattern</h2>
+      <p>
+        The tool loader in <code>tools/__init__.py</code> mirrors
+        the custom-node loader in
+        <code>backend/graph/custom_nodes/__init__.py</code>. Same
+        naming convention, same per-module try/except, same "drop a
+        file and restart" workflow. Learning one means knowing the
+        other.
+      </p>
+      <pre>tools/
+    __init__.py         ← loader, runs at import time
+    README.md           ← documentation
+    math_tools.py       ← auto-loaded
+    time_tools.py       ← auto-loaded
+    filesystem_tools.py ← auto-loaded
+    text_tools.py       ← auto-loaded
+    _helpers.py         ← skipped (leading underscore)
+    __pycache__/        ← skipped (not a .py file at the top level)</pre>
+
+      <p>Skipping rules:</p>
+      <table>
+        <thead><tr><th>Pattern</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>*.py</code> (top level)</td><td>Loaded</td></tr>
+          <tr><td><code>_*.py</code></td><td>Skipped</td></tr>
+          <tr><td><code>__init__.py</code></td><td>Skipped (implicitly, via the <code>_</code> check)</td></tr>
+          <tr><td><code>__pycache__/</code></td><td>Skipped (not matched by <code>glob("*.py")</code>)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Adding a new tool — end to end</h2>
+      <p>
+        Create <code>mcp_server/tools/units_tools.py</code>:
+      </p>
+      <pre>from .._server import mcp
+
+@mcp.tool()
+def km_to_miles(km: float) -> float:
+    """Convert kilometers to miles (1 km ≈ 0.621371 mi)."""
+    return km * 0.621371</pre>
+
+      <p>Restart the backend:</p>
+      <pre>python run.py backend</pre>
+
+      <p>Watch the backend log for:</p>
+      <pre>INFO | Loaded MCP tool module: units_tools
+INFO | MCP tool loader: 5 loaded, 0 failed
+INFO | Spawning MCP server: ... -m mcp_server.server
+INFO | MCP session initialised</pre>
+
+      <p>
+        Ask the chat UI:
+        <em>"How many miles is 5 kilometers?"</em>
+      </p>
+
+      <p>The agent will:</p>
+      <ol>
+        <li>send the tool schema to the LLM</li>
+        <li>receive a <code>tool_call</code> for <code>km_to_miles(5)</code></li>
+        <li>invoke the MCP tool</li>
+        <li>receive <code>3.106855</code></li>
+        <li>answer "5 kilometers is about 3.1 miles."</li>
+      </ol>
+
+      <p>
+        No changes to <code>server.py</code>,
+        <code>_server.py</code>, <code>tools/__init__.py</code>, or
+        any other file are needed.
+      </p>
+
+      <h2>Testing a tool in isolation</h2>
+      <p>
+        To verify a tool module imports cleanly without starting the
+        whole server:
+      </p>
+      <pre>python -c "import mcp_server.tools.math_tools; print('OK')"</pre>
+
+      <p>To test a specific tool function directly:</p>
+      <pre>python -c "
+from mcp_server.tools.math_tools import add, sqrt
+print(add(2, 3))
+print(sqrt(144))
+"</pre>
+
+      <p>
+        The tool functions are ordinary Python functions. The
+        <code>@mcp.tool()</code> decorator attaches metadata but
+        does not change the call signature.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<button class="to-top visible" id="toTop" title="Back to top">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/markdown.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Highlight all code blocks ----------
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      try { hljs.highlightElement(el); } catch (e) {}
+    });
+  }
+
+  // ---------- Line count for each file ----------
+  document.querySelectorAll('.file-section').forEach(function (sec) {
+    var code = sec.querySelector('pre code');
+    var badge = sec.querySelector('[data-lines]');
+    if (!badge) return;
+    if (code) {
+      var text = code.textContent || '';
+      var lines = text.split('\n').length;
+      badge.textContent = lines + ' lines';
+    } else {
+      badge.textContent = 'doc';
+    }
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.file-section');
+      if (!sec) return;
+      var code = sec.querySelector('pre code');
+      var md = sec.querySelector('.md-content');
+      var text = code ? code.textContent : (md ? md.innerText : '');
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = '✗ Failed';
+        setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600);
+      });
+    });
+  });
+
+  // ---------- Active nav tracking ----------
+  var navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+  var sections = Array.from(document.querySelectorAll('.file-section'));
+  var crumbs = document.getElementById('crumbs');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s.offsetTop <= scrollY) current = s;
+      else break;
+    }
+    navLinks.forEach(function (a) { a.classList.remove('active'); });
+    if (current) {
+      var link = document.querySelector('.nav-list a[href="#' + current.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        var path = current.querySelector('.file-path');
+        if (path && crumbs) {
+          crumbs.textContent = path.textContent;
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ---------- Search filter ----------
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+  var navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var q = searchInput.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      document.querySelectorAll('.nav-list li').forEach(function (li) {
+        var text = li.textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        li.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+      });
+
+      navGroups.forEach(function (g) {
+        var list = g.nextElementSibling;
+        if (!list || !list.classList.contains('nav-list')) return;
+        var hasVisible = list.querySelector('li:not(.hidden)');
+        g.style.display = hasVisible ? '' : 'none';
+      });
+
+      sections.forEach(function (sec) {
+        var name = (sec.getAttribute('data-name') || '') + ' ' +
+                   (sec.querySelector('.file-path')?.textContent || '') + ' ' +
+                   (sec.querySelector('h2')?.textContent || '');
+        name = name.toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        sec.classList.toggle('hidden', !match);
+      });
+
+      if (noResults) noResults.classList.toggle('visible', visibleCount === 0);
+    });
+  }
+
+  // ---------- Back to top ----------
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('visible', window.scrollY > 500);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---------- Mobile sidebar toggle ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (window.innerWidth <= 700) sidebar.classList.remove('open');
+      });
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

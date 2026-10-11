@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — Models &amp; Logs Folders</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 320px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+.nav-list { list-style: none; margin: 0; padding: 0; }
+.nav-list li { margin: 0; }
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-list a:hover { background: var(--bg-elev); color: var(--text); }
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+.nav-icon.txt { background: #6e7681; }
+main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.topbar .stats { font-size: 12px; color: var(--text-mute); display: flex; gap: 16px; }
+.topbar .stats span { display: flex; align-items: center; gap: 5px; }
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+.hero p { margin: 0; color: var(--text-dim); font-size: 14.5px; max-width: 780px; }
+.hero .links { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.hero .links a:hover { border-color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.file-section.hidden { display: none; }
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.file-title { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+.file-badge.doc {
+  background: rgba(124, 58, 237, 0.14);
+  color: #a371f7;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.file-badge.md {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.28);
+}
+.file-badge.txt {
+  background: rgba(139, 148, 158, 0.14);
+  color: var(--text-dim);
+  border-color: rgba(139, 148, 158, 0.28);
+}
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.08); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, 0.08); }
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+/* Inline syntax highlighting tokens */
+.tok-comment { color: #8b949e; font-style: italic; }
+.tok-string { color: #a5d6ff; }
+.tok-keyword { color: #ff7b72; }
+.tok-builtin { color: #79c0ff; }
+.tok-number { color: #79c0ff; }
+.tok-function { color: #d2a8ff; }
+.tok-decorator { color: #ffa657; }
+.tok-md-header { color: #79c0ff; font-weight: 700; }
+.tok-md-code { color: #a5d6ff; }
+.tok-md-quote { color: #8b949e; font-style: italic; }
+.tok-md-pipe { color: #ff7b72; }
+.md-content {
+  padding: 24px 28px;
+  max-height: 900px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.md-content th { background: var(--bg-elev); color: var(--text); font-weight: 600; }
+.md-content td { color: var(--text-dim); }
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+.md-content kbd {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11.5px;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+}
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 900px) {
+  :root { --sidebar-w: 270px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+.nav-list li.hidden { display: none; }
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><a href="index.html" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;"><span class="logo-mark">3</span> Models &amp; Logs</a></h1>
+    <div class="sub"><a href="index.html" style="color:inherit;text-decoration:none;">← Back to Knowledge Base</a> · Runtime Folders &amp; Documentation</div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search docs &amp; files…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Documentation</div>
+  <ul class="nav-list" data-group="docs">
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>Overview</a></li>
+    <li><a href="#doc-downloading"><span class="nav-icon md"></span>Downloading GGUF files</a></li>
+    <li><a href="#doc-quantization"><span class="nav-icon md"></span>Quantization explained</a></li>
+    <li><a href="#doc-configuring"><span class="nav-icon md"></span>Configuration</a></li>
+    <li><a href="#doc-api"><span class="nav-icon md"></span>Backend API</a></li>
+    <li><a href="#doc-naming"><span class="nav-icon md"></span>Naming &amp; subfolders</a></li>
+    <li><a href="#doc-disk"><span class="nav-icon md"></span>Disk space &amp; RAM</a></li>
+    <li><a href="#doc-verify"><span class="nav-icon md"></span>Verification</a></li>
+    <li><a href="#doc-troubleshooting"><span class="nav-icon md"></span>Troubleshooting</a></li>
+    <li><a href="#doc-logs"><span class="nav-icon md"></span>The logs folder</a></li>
+  </ul>
+
+  <div class="nav-group">Source Files</div>
+  <ul class="nav-list" data-group="source">
+    <li><a href="#f-models-readme"><span class="nav-icon md"></span>models/README.md</a></li>
+    <li><a href="#f-logs-gitkeep"><span class="nav-icon txt"></span>logs/.gitkeep</a></li>
+  </ul>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">models / overview</span>
+    </div>
+    <div class="stats">
+      <span>📄 <strong id="statFiles">2</strong> files</span>
+      <span>🗄️ <strong>GGUF</strong> model store</span>
+      <span>📋 <strong>14</strong>-day log retention</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Models &amp; Logs Folders</h1>
+    <p>
+      Two runtime folders the backend manages automatically. <code>models/</code>
+      holds the GGUF weight files the local llama-cpp server loads on demand;
+      <code>logs/</code> holds the rotating daily log files the backend and
+      desktop client write to. Neither folder is committed to git, but both
+      are documented here so new users know exactly what goes in them and how
+      to fill them.
+    </p>
+    <div class="links">
+      <a href="index.html">← Back to Knowledge Base</a>
+      <a href="https://3olution.com" target="_blank" rel="noopener">🌐 3olution.com</a>
+      <a href="#doc-downloading">⬇ Download a model</a>
+      <a href="#doc-quantization">📊 Pick a quant</a>
+      <a href="#doc-api">🔌 Backend API</a>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section class="file-section" id="doc-overview" data-name="overview models logs folders documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Overview <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — purpose &amp; ownership</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Overview</h1>
+
+      <p>
+        The <code>models/</code> folder holds GGUF weight files for the
+        locally-managed llama-cpp server. It is created on first startup
+        by <code>backend/models_setup.py</code>, and a README is written
+        into it the first time it does not exist. Neither the folder's
+        contents nor its README are committed to git — GGUF files are
+        gigabytes each and are covered by <code>.gitignore</code>.
+      </p>
+
+      <div class="callout warn">
+        <strong>Do not commit model files.</strong>
+        A single 7B Q4_K_M model is roughly 4.5 GB. Git LFS is not
+        configured by default, and even with LFS the repository would
+        be unusable on a fresh clone. Keep the folder empty in version
+        control and drop files in locally.
+      </div>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead><tr><th>Extension</th><th>Purpose</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>*.gguf</code></td>
+            <td>Quantized model weights, loaded by llama-cpp</td>
+            <td><code>llama-3.2-3b.Q4_K_M.gguf</code></td>
+          </tr>
+          <tr>
+            <td><code>*.gguf</code> (embedding)</td>
+            <td>Optional embedding model for <code>/v1/embeddings</code></td>
+            <td><code>bge-m3-Q8_0.gguf</code></td>
+          </tr>
+          <tr>
+            <td><code>README.md</code></td>
+            <td>Written automatically on folder creation</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Anything else</td>
+            <td>Ignored by the backend's listing function</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Who owns the folder</h2>
+      <p><code>backend/models_setup.py</code> is the single owner. It:</p>
+      <ol>
+        <li>Creates the folder on first startup (if it doesn't exist).</li>
+        <li>Writes the README on first creation.</li>
+        <li>Lists all <code>.gguf</code> files whenever the settings page or the model picker requests them.</li>
+        <li>Resolves a model name like <code>"Bonsai-8B.gguf"</code> to an absolute path against this folder.</li>
+      </ol>
+
+      <p>
+        The model file itself is loaded into memory by the
+        <code>llama-cpp</code> subprocess, which the backend spawns on
+        demand. See <code>backend/llama_server.py</code> for that side
+        of the picture.
+      </p>
+
+      <h2>Path resolution</h2>
+      <p>
+        <code>resolve_model_path()</code> accepts three shapes of input,
+        tried in order:
+      </p>
+      <ol>
+        <li>An absolute path that already exists as a file → returned as-is.</li>
+        <li>A path relative to this folder → returned if the file exists.</li>
+        <li>A path relative to the project root → returned if the file exists.</li>
+      </ol>
+      <p>
+        If none match, the function returns <code>None</code> and the
+        caller produces a clear error. Bare filenames therefore resolve
+        against <code>models/</code>, which is what you want 99% of the
+        time.
+      </p>
+
+      <h2>Related folder: logs</h2>
+      <p>
+        The <code>logs/</code> folder is the second runtime folder the
+        backend manages. It is populated by loguru on the first log
+        write — one daily file per process. See the
+        <a href="#doc-logs">logs folder</a> section below.
+      </p>
+    </div>
+  </section>
+
+  <!-- DOWNLOADING -->
+  <section class="file-section" id="doc-downloading" data-name="downloading models gguf huggingface cli documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Downloading GGUF Files <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — fetching weights</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Downloading GGUF Files</h1>
+
+      <p>
+        GGUF files are hosted on
+        <a href="https://huggingface.co" target="_blank" rel="noopener">Hugging Face</a>.
+        The <code>huggingface-cli</code> tool is the easiest way to
+        fetch them — it handles resume, integrity checks, and large
+        files without timeouts.
+      </p>
+
+      <h2>Install the CLI</h2>
+      <pre>pip install huggingface-hub</pre>
+
+      <h2>Download a model</h2>
+      <pre>cd models
+huggingface-cli download &lt;repo-id&gt; &lt;filename&gt;.gguf --local-dir .</pre>
+
+      <p>Example:</p>
+      <pre>huggingface-cli download TheBloke/Llama-2-7B-Chat-GGUF \
+    llama-2-7b-chat.Q4_K_M.gguf --local-dir .</pre>
+
+      <p>
+        The file lands in <code>models/</code> with the exact filename
+        you passed. Restart the backend (or open the settings page)
+        to see it in the model picker.
+      </p>
+
+      <h2>Popular model repositories</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Model family</th>
+            <th>Repository</th>
+            <th>Typical size (Q4_K_M)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Llama 3.2 3B</td><td><code>bartowski/Llama-3.2-3B-Instruct-GGUF</code></td><td>2.0 GB</td></tr>
+          <tr><td>Llama 3.1 8B</td><td><code>bartowski/Meta-Llama-3.1-8B-Instruct-GGUF</code></td><td>4.9 GB</td></tr>
+          <tr><td>Mistral 7B</td><td><code>TheBloke/Mistral-7B-Instruct-v0.2-GGUF</code></td><td>4.4 GB</td></tr>
+          <tr><td>Qwen 2.5 7B</td><td><code>bartowski/Qwen2.5-7B-Instruct-GGUF</code></td><td>4.7 GB</td></tr>
+          <tr><td>Qwen 2.5 Coder 7B</td><td><code>bartowski/Qwen2.5-Coder-7B-Instruct-GGUF</code></td><td>4.7 GB</td></tr>
+          <tr><td>Phi-3 Mini</td><td><code>microsoft/Phi-3-mini-4k-instruct-gguf</code></td><td>2.4 GB</td></tr>
+          <tr><td>Gemma 2 9B</td><td><code>bartowski/gemma-2-9b-it-GGUF</code></td><td>5.7 GB</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Tips</h2>
+      <ul>
+        <li><strong>Prefer Q4_K_M.</strong> It is the balanced default — see <a href="#doc-quantization">Quantization explained</a>.</li>
+        <li><strong>Use <code>--local-dir .</code></strong> from inside <code>models/</code>, so the file lands in the right place without a later move.</li>
+        <li><strong>Match the quant name to the file name.</strong> <code>llama-3.2-3b.Q4_K_M.gguf</code> tells you at a glance what you have.</li>
+        <li><strong>Downloads can be paused and resumed.</strong> The CLI stores partial downloads in a cache directory and picks up where it left off.</li>
+      </ul>
+
+      <h2>Alternative: Ollama</h2>
+      <p>
+        If you would rather use Ollama's model library, you can skip
+        this folder entirely. Ollama manages its own model storage
+        (usually under <code>~/.ollama/models</code>) and the backend
+        talks to it via the primary LLM endpoint. The
+        <code>models/</code> folder is only used by the local
+        llama-cpp server.
+      </p>
+
+      <div class="callout">
+        <strong>Both providers can coexist.</strong>
+        The model picker in the chat UI lists Ollama models and local
+        GGUF files side by side, tagged with their provider. You can
+        route individual requests to either one.
+      </div>
+    </div>
+  </section>
+
+  <!-- QUANTIZATION -->
+  <section class="file-section" id="doc-quantization" data-name="quantization gguf q4_k_m q5 q8 bits quality documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Quantization Explained <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — picking a quant</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Quantization Explained</h1>
+
+      <p>
+        A quantized model stores its weights at reduced precision.
+        Instead of 16-bit floats (fp16), it uses 4-bit or 8-bit integers
+        with a shared scale factor. This shrinks the file by 4× to 8×
+        and speeds up inference on CPUs, at the cost of a small quality
+        loss.
+      </p>
+
+      <h2>The suffix table</h2>
+      <table>
+        <thead>
+          <tr><th>Suffix</th><th>Bits</th><th>Quality</th><th>Size</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Q2_K</code></td><td>2</td><td>Lowest</td><td>Smallest</td></tr>
+          <tr><td><code>Q3_K_S</code></td><td>3</td><td>Very low</td><td>—</td></tr>
+          <tr><td><code>Q4_0</code></td><td>4</td><td>Low</td><td>—</td></tr>
+          <tr><td><code>Q4_K_M</code></td><td>4</td><td>Balanced — <strong>recommended default</strong></td><td>—</td></tr>
+          <tr><td><code>Q5_K_M</code></td><td>5</td><td>Good</td><td>—</td></tr>
+          <tr><td><code>Q6_K</code></td><td>6</td><td>Very good</td><td>—</td></tr>
+          <tr><td><code>Q8_0</code></td><td>8</td><td>Excellent</td><td>Largest</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <code>Q4_K_M</code> is the sweet spot for most users: the
+        quality drop from full precision is minor, and the size is
+        roughly a quarter of the original fp16 model.
+      </p>
+
+      <h2>What the letters mean</h2>
+      <ul>
+        <li><strong><code>Q</code></strong> — quantized. Everything is a Q-something.</li>
+        <li><strong>the number</strong> — bits per weight. Higher is larger and better.</li>
+        <li><strong><code>_K</code></strong> — k-quant method. Uses a mixed scheme where some tensors are stored at higher precision than others. Generally better quality per byte than <code>_0</code> and <code>_1</code> variants.</li>
+        <li><strong><code>_0</code>, <code>_1</code></strong> — the older "legacy" quant methods. Still produced for compatibility, but <code>_K</code> variants dominate.</li>
+        <li><strong><code>_S</code>, <code>_M</code>, <code>_L</code></strong> — small, medium, large. A k-quant family like Q4_K comes in these three sizes; <code>Q4_K_M</code> is the medium variant.</li>
+      </ul>
+
+      <h2>Choosing a quant</h2>
+      <table>
+        <thead><tr><th>Situation</th><th>Recommended</th></tr></thead>
+        <tbody>
+          <tr><td>You have plenty of RAM and care about quality</td><td><code>Q6_K</code> or <code>Q8_0</code></td></tr>
+          <tr><td>Balanced — the default choice</td><td><code>Q4_K_M</code></td></tr>
+          <tr><td>You are tight on RAM or disk</td><td><code>Q3_K_S</code> or <code>Q4_0</code></td></tr>
+          <tr><td>Absolute smallest, quality is secondary</td><td><code>Q2_K</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Does the quant change the chat template?</h2>
+      <p>
+        No. The chat template is a separate concern — it lives in the
+        model's metadata and determines how the prompt is formatted
+        before it reaches the tokenizer. The backend's
+        <code>AGENT_LLAMA_CPP_CHAT_FORMAT</code> setting tells the
+        server which template to expect; it does not depend on the
+        quant.
+      </p>
+      <p>If a model produces garbage output, the chat template is wrong, not the quant. Common formats:</p>
+      <table>
+        <thead><tr><th>Model family</th><th>Chat format</th></tr></thead>
+        <tbody>
+          <tr><td>Llama 3.x</td><td><code>llama-3</code></td></tr>
+          <tr><td>Llama 2</td><td><code>llama-2</code></td></tr>
+          <tr><td>Mistral</td><td><code>mistral</code></td></tr>
+          <tr><td>Qwen 2.x</td><td><code>qwen</code></td></tr>
+          <tr><td>ChatML-based models (Hermes, Phi)</td><td><code>chatml</code></td></tr>
+        </tbody>
+      </table>
+      <p>
+        The default is <code>chatml</code>, which works with the
+        majority of current instruction-tuned models. If your model is
+        derived from Llama 3 or Mistral, set the matching format.
+      </p>
+
+      <div class="callout warn">
+        <strong>Do not mix quants of the same model in the same folder without renaming.</strong>
+        The backend resolves model names by filename. Two files with
+        the same name but different content will confuse the model
+        picker. Include the quant suffix in the file name — see
+        <a href="#doc-naming">Naming &amp; subfolders</a>.
+      </div>
+    </div>
+  </section>
+
+  <!-- CONFIGURATION -->
+  <section class="file-section" id="doc-configuring" data-name="configuration env settings documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Configuration <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — .env settings</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Configuration</h1>
+
+      <p>The startup model is set in <code>.env</code> at the project root:</p>
+      <pre>AGENT_LLAMA_CPP_ENABLED=true
+AGENT_LLAMA_CPP_MODEL=Bonsai-8B.gguf</pre>
+
+      <p>The <code>AGENT_LLAMA_CPP_MODEL</code> value can be either:</p>
+      <ul>
+        <li><strong>A bare filename</strong> — resolved against <code>models/</code>.</li>
+        <li><strong>An absolute path</strong> — used as-is.</li>
+        <li><strong>A relative path with a subfolder</strong> — e.g. <code>chat/llama-3.2-3b.Q4_K_M.gguf</code>.</li>
+      </ul>
+
+      <p>
+        If the file is not found at startup, the backend logs a
+        warning and continues. The user can load a different model
+        from the settings page or the chat header's
+        <em>Load GGUF</em> button without restarting the backend.
+      </p>
+
+      <h2>Other llama-cpp settings</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Default</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>AGENT_LLAMA_CPP_ENABLED</code></td><td><code>true</code></td><td>Enable the local server subprocess</td></tr>
+          <tr><td><code>AGENT_LLAMA_CPP_MODEL</code></td><td><code>Bonsai-8B.gguf</code></td><td>Startup model filename or path</td></tr>
+          <tr><td><code>AGENT_LLAMA_CPP_N_CTX</code></td><td><code>8192</code></td><td>Context size (tokens)</td></tr>
+          <tr><td><code>AGENT_LLAMA_CPP_N_GPU_LAYERS</code></td><td><code>-1</code></td><td>GPU layers to offload; <code>-1</code> = all, <code>0</code> = CPU-only</td></tr>
+          <tr><td><code>AGENT_LLAMA_CPP_CHAT_FORMAT</code></td><td><code>chatml</code></td><td>Chat template to use</td></tr>
+          <tr><td><code>AGENT_LLAMA_CPP_ALIAS</code></td><td><code>local</code></td><td>Model ID the server advertises</td></tr>
+          <tr><td><code>AGENT_LLAMA_CPP_ALLOW_RUNTIME_SWAP</code></td><td><code>true</code></td><td>Allow loading a different model at runtime</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Runtime swap without restart</h2>
+      <p>Even with a configured startup model, the user can switch models at runtime from:</p>
+      <ul>
+        <li>The settings page → <em>LLM Runtime</em> section → model dropdown → <em>Load</em>.</li>
+        <li>The chat header's <em>Load GGUF</em> button.</li>
+        <li>A direct API call to <code>POST /api/llama/runtime/load</code>.</li>
+      </ul>
+      <p>
+        Runtime swaps stop the subprocess, start it again with the
+        new model, and wait for readiness. The old model's VRAM is
+        released during the stop, so a swap cannot run out of memory
+        because both models are loaded at once.
+      </p>
+
+      <h2>Disabling the local server</h2>
+      <p>
+        If you only want to use Ollama or a remote OpenAI-compatible
+        endpoint, set:
+      </p>
+      <pre>AGENT_LLAMA_CPP_ENABLED=false</pre>
+      <p>
+        The backend will skip the llama-server startup, and the
+        <code>/api/llama/runtime/*</code> endpoints will return 503.
+        The <code>models/</code> folder is still created (for
+        consistency) but nothing reads from it.
+      </p>
+    </div>
+  </section>
+
+  <!-- BACKEND API -->
+  <section class="file-section" id="doc-api" data-name="backend api endpoints llama runtime models documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Backend API <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — endpoints that touch this folder</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Backend API</h1>
+
+      <p>Five HTTP endpoints list and manage files in this folder.</p>
+
+      <table>
+        <thead><tr><th>Method</th><th>Path</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>GET</code></td><td><code>/api/llama/runtime/models</code></td><td>List all <code>.gguf</code> files in this folder</td></tr>
+          <tr><td><code>POST</code></td><td><code>/api/llama/runtime/load</code></td><td>Swap the loaded model to a different file</td></tr>
+          <tr><td><code>POST</code></td><td><code>/api/llama/runtime/unload</code></td><td>Stop the subprocess, freeing VRAM</td></tr>
+          <tr><td><code>POST</code></td><td><code>/api/llama/runtime/retry</code></td><td>Restart the subprocess with the configured model</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/llama/all-models</code></td><td>Unified list — Ollama models + local GGUF files</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Response shape — <code>/api/llama/runtime/models</code></h2>
+      <pre>{
+  "models": [
+    {
+      "name": "llama-3.2-3b.Q4_K_M.gguf",
+      "path": "/abs/path/models/llama-3.2-3b.Q4_K_M.gguf",
+      "size": 2012345678,
+      "size_gb": 2.01,
+      "loaded": false
+    }
+  ],
+  "count": 1,
+  "loaded": null,
+  "models_dir": "/abs/path/models",
+  "runtime_swap_enabled": true,
+  "manager_present": true,
+  "server_running": false
+}</pre>
+
+      <p>
+        The <code>loaded</code> field is <code>true</code> only for
+        the file the running subprocess actually has in memory. If
+        the server is stopped, every file has <code>loaded: false</code>
+        and the top-level <code>loaded</code> is <code>null</code>.
+      </p>
+
+      <h2>Response shape — <code>/api/llama/all-models</code></h2>
+      <pre>{
+  "models": [
+    {
+      "id": "ollama::llama3.2",
+      "provider": "ollama",
+      "model": "llama3.2",
+      "display": "Ollama · llama3.2",
+      "size_gb": 2.0,
+      "loaded": null
+    },
+    {
+      "id": "llama_cpp::llama-3.2-3b.Q4_K_M.gguf",
+      "provider": "llama_cpp",
+      "model": "llama-3.2-3b.Q4_K_M.gguf",
+      "display": "Local GGUF · llama-3.2-3b.Q4_K_M.gguf",
+      "size_gb": 2.01,
+      "loaded": false
+    }
+  ],
+  "count": 2
+}</pre>
+
+      <p>
+        The <code>id</code> field is the encoded form
+        <code>provider::model</code> that the frontend sends back
+        when the user picks a model. The backend decodes it in
+        <code>LLMClient._resolve()</code>.
+      </p>
+
+      <h2>Loading a model</h2>
+      <pre>curl -X POST http://127.0.0.1:8000/api/llama/runtime/load \
+     -H 'Content-Type: application/json' \
+     -d '{"filename": "llama-3.2-3b.Q4_K_M.gguf"}'</pre>
+
+      <p>
+        If the server is not running, this starts it. If it is
+        running with a different model, it stops and restarts with
+        the new one. The operation is atomic from the caller's
+        perspective.
+      </p>
+      <p>
+        Set <code>AGENT_LLAMA_CPP_ALLOW_RUNTIME_SWAP=false</code> to
+        reject these requests with HTTP 403.
+      </p>
+
+      <h2>Unloading a model</h2>
+      <pre>curl -X POST http://127.0.0.1:8000/api/llama/runtime/unload</pre>
+      <p>
+        Stops the subprocess and frees the memory. The model file
+        itself is not deleted — only unloaded.
+      </p>
+
+      <h2>Extension case sensitivity</h2>
+      <p>
+        The <code>.gguf</code> extension is case-sensitive on Linux
+        and case-insensitive on Windows. The backend's listing
+        function uses <code>glob("*.gguf")</code>, which is
+        case-insensitive on Windows and case-sensitive elsewhere.
+      </p>
+      <p>
+        To avoid a subtle bug when moving files between platforms,
+        <strong>keep the extension lowercase</strong>. Files named
+        <code>model.GGUF</code> will list on Windows but not on Linux.
+      </p>
+    </div>
+  </section>
+
+  <!-- NAMING -->
+  <section class="file-section" id="doc-naming" data-name="naming conventions subfolders organization documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Naming &amp; Subfolders <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — file organization</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Naming &amp; Subfolders</h1>
+
+      <p>
+        Use whatever names you like — the backend stores and reports
+        the filename verbatim. The filename is also what the LLM
+        sees when picking a model, so a clear name matters.
+      </p>
+
+      <h2>Recommended: include the quant and size</h2>
+      <pre>models/
+    llama-3.2-3b.Q4_K_M.gguf
+    qwen2.5-coder-7b.Q4_K_M.gguf
+    gemma-2-9b.Q5_K_M.gguf</pre>
+
+      <p>
+        The pattern <code>&lt;family&gt;-&lt;size&gt;.&lt;quant&gt;.gguf</code>
+        is unambiguous when you come back to the folder in six
+        months. It also sorts alphabetically by model family.
+      </p>
+
+      <h2>Optional: use subfolders for organization</h2>
+      <pre>models/
+    chat/
+        llama-3.2-3b.Q4_K_M.gguf
+    code/
+        qwen2.5-coder-7b.Q4_K_M.gguf
+    embedding/
+        bge-m3-Q8_0.gguf</pre>
+
+      <p>
+        The backend's listing function does <strong>not</strong>
+        recurse into subfolders. If you use subfolders, pass the
+        relative path explicitly in <code>AGENT_LLAMA_CPP_MODEL</code>
+        or the load request:
+      </p>
+      <pre>AGENT_LLAMA_CPP_MODEL=chat/llama-3.2-3b.Q4_K_M.gguf</pre>
+
+      <h2>Trade-off: subfolders vs flat</h2>
+      <table>
+        <thead><tr><th>Aspect</th><th>Flat</th><th>Subfolders</th></tr></thead>
+        <tbody>
+          <tr><td>Appears in model picker</td><td>✔ immediately</td><td>✘ must be loaded by path</td></tr>
+          <tr><td>Easy to scan visually</td><td>✘ a wall of names</td><td>✔ grouped by purpose</td></tr>
+          <tr><td>Works with <code>Load GGUF</code> button</td><td>✔</td><td>✔ (path accepted)</td></tr>
+          <tr><td>Works with <code>AGENT_LLAMA_CPP_MODEL</code></td><td>✔ bare name</td><td>✔ relative path</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        For most users with two to five models, the flat layout is
+        simpler. Subfolders pay off once you have a dozen or more,
+        or when you want to keep chat and embedding models cleanly
+        separated.
+      </p>
+
+      <h2>What not to do</h2>
+      <ul>
+        <li><strong>Do not use spaces in filenames.</strong> They work but need quoting everywhere — the .env value, the load request, the CLI. Use dashes or underscores.</li>
+        <li><strong>Do not use uppercase extensions.</strong> See <a href="#doc-api">Extension case sensitivity</a>.</li>
+        <li><strong>Do not rename after loading.</strong> The backend resolves the model name at load time. If you rename the file, the picker will not find it until the file is re-listed.</li>
+        <li><strong>Do not put other file types in this folder.</strong> The backend only lists <code>*.gguf</code>. Notes, READMEs, and shell scripts sit alongside but are invisible to the model picker.</li>
+      </ul>
+
+      <h2>The README is overwritten? No.</h2>
+      <p>
+        The README file is written only when the folder is first
+        created. If you edit it, your edits persist — the backend
+        checks <code>if not readme.exists()</code> before writing.
+        You can safely add your own notes.
+      </p>
+    </div>
+  </section>
+
+  <!-- DISK SPACE -->
+  <section class="file-section" id="doc-disk" data-name="disk space ram requirements model sizes documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Disk Space &amp; RAM <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — sizing estimates</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Disk Space &amp; RAM</h1>
+
+      <p>
+        Two different numbers matter: the file size on disk, and the
+        memory footprint while the model is loaded. The first is
+        static; the second grows with the context length and with
+        how many layers are offloaded to the GPU.
+      </p>
+
+      <h2>File sizes on disk</h2>
+      <table>
+        <thead><tr><th>Model size</th><th>Q4_K_M</th><th>Q8_0</th></tr></thead>
+        <tbody>
+          <tr><td>3B params</td><td>2.0 GB</td><td>3.4 GB</td></tr>
+          <tr><td>7B params</td><td>4.5 GB</td><td>7.6 GB</td></tr>
+          <tr><td>13B params</td><td>7.9 GB</td><td>13.8 GB</td></tr>
+          <tr><td>70B params</td><td>42 GB</td><td>74 GB</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Runtime memory</h2>
+      <p>
+        The llama-cpp server keeps the model weights in RAM (or
+        VRAM) while loaded. On top of that, the KV cache — the
+        attention state for the whole context window — grows with:
+      </p>
+      <ul>
+        <li><strong>The context size</strong> (<code>AGENT_LLAMA_CPP_N_CTX</code>, default 8192). Doubling the context roughly doubles the cache.</li>
+        <li><strong>The number of GPU layers</strong> (<code>AGENT_LLAMA_CPP_N_GPU_LAYERS</code>). Layers offloaded to the GPU consume VRAM; layers left on the CPU consume RAM.</li>
+      </ul>
+
+      <p>
+        Rough rule for KV cache at 8192 context, 32-layer 7B model:
+        <strong>~500 MB to 1 GB</strong>. Bigger contexts and bigger
+        models scale this up linearly.
+      </p>
+
+      <h2>Practical sizing</h2>
+      <table>
+        <thead><tr><th>Total RAM / VRAM</th><th>Comfortable max</th></tr></thead>
+        <tbody>
+          <tr><td>8 GB</td><td>3B Q4_K_M</td></tr>
+          <tr><td>16 GB</td><td>7B Q4_K_M</td></tr>
+          <tr><td>32 GB</td><td>13B Q4_K_M, or 7B Q8_0</td></tr>
+          <tr><td>64 GB+</td><td>70B Q4_K_M (tight), or 13B Q8_0</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        These are rough. A GPU with 12 GB VRAM handles a 7B Q4_K_M
+        with most layers offloaded; a CPU-only setup with 16 GB RAM
+        handles the same model at a much slower tokens-per-second.
+      </p>
+
+      <h2>Reducing the footprint</h2>
+      <ul>
+        <li><strong>Lower the context</strong>: <code>AGENT_LLAMA_CPP_N_CTX=4096</code> halves the KV cache.</li>
+        <li><strong>Use a smaller quant</strong>: <code>Q3_K_S</code> instead of <code>Q4_K_M</code> cuts the file by ~25%.</li>
+        <li><strong>Set <code>N_GPU_LAYERS=0</code></strong> for CPU-only: all weights in system RAM, no VRAM pressure.</li>
+        <li><strong>Unload when idle</strong>: the settings page has an <em>Unload</em> button that frees memory without deleting the file.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Loading is the bottleneck, not inference.</strong>
+        The first request to a cold model spends 20–60 seconds
+        reading the file from disk into memory. Once loaded,
+        subsequent requests are much faster. The backend's
+        <code>AGENT_LLM_WARMUP</code> setting sends a one-token
+        ping at startup to move this cost off the first user
+        message.
+      </div>
+    </div>
+  </section>
+
+  <!-- VERIFICATION -->
+  <section class="file-section" id="doc-verify" data-name="verification check models folder listing api documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Verification <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — is the folder picked up?</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Verification</h1>
+
+      <p>
+        After dropping a GGUF file into this folder, confirm the
+        backend has picked it up. Three ways, in increasing order of
+        detail.
+      </p>
+
+      <h2>1. The settings page</h2>
+      <p>
+        Open <a href="/settings">/settings</a> and look at the
+        <em>Local GGUF</em> section of the model table. Your file
+        should be listed with its size and a "loaded" indicator.
+      </p>
+
+      <h2>2. The API directly</h2>
+      <pre>curl http://127.0.0.1:8000/api/llama/runtime/models</pre>
+
+      <p>Expected response:</p>
+      <pre>{
+  "models": [
+    {
+      "name": "llama-3.2-3b.Q4_K_M.gguf",
+      "path": "/path/to/models/llama-3.2-3b.Q4_K_M.gguf",
+      "size": 2012345678,
+      "size_gb": 2.01,
+      "loaded": false
+    }
+  ],
+  "count": 1,
+  "loaded": null,
+  "models_dir": "/path/to/models",
+  "runtime_swap_enabled": true,
+  "manager_present": true,
+  "server_running": false
+}</pre>
+
+      <h2>3. The health endpoint</h2>
+      <pre>curl http://127.0.0.1:8000/api/health</pre>
+      <p>
+        The <code>llama_cpp</code> block confirms the manager is
+        present and whether the subprocess is running:
+      </p>
+      <pre>"llama_cpp": {
+  "enabled": true,
+  "running": false,
+  "ready": false,
+  "loaded_model": null,
+  "base_url": "http://127.0.0.1:8080"
+}</pre>
+
+      <h2>What "ready" means</h2>
+      <p>
+        The <code>running</code> field is True when the subprocess
+        exists. The <code>ready</code> field is True when it also
+        answers <code>/v1/models</code>. There is a brief window
+        during startup when <code>running</code> is True but
+        <code>ready</code> is False — the model is still loading.
+      </p>
+
+      <h2>Testing a load</h2>
+      <pre>curl -X POST http://127.0.0.1:8000/api/llama/runtime/load \
+     -H 'Content-Type: application/json' \
+     -d '{"filename": "llama-3.2-3b.Q4_K_M.gguf"}'</pre>
+
+      <p>Successful response:</p>
+      <pre>{
+  "ok": true,
+  "filename": "llama-3.2-3b.Q4_K_M.gguf",
+  "path": "/path/to/models/llama-3.2-3b.Q4_K_M.gguf",
+  "error": null,
+  "previous": "Bonsai-8B.gguf"
+}</pre>
+
+      <p>
+        The <code>previous</code> field shows which model was loaded
+        before the swap. On the first load it is <code>null</code>.
+      </p>
+
+      <h2>Watching the load in progress</h2>
+      <p>
+        Loading a model takes seconds to minutes depending on size
+        and disk speed. Watch the backend log for:
+      </p>
+      <pre>INFO | Spawning llama-server (native, model size 2.00 GB,
+       port 8080, alias 'local')
+INFO | llama-server ready at http://127.0.0.1:8080
+       (model=llama-3.2-3b.Q4_K_M.gguf, backend=native, alias=local)</pre>
+
+      <p>
+        If the load hangs, the log will show subprocess output
+        lines at DEBUG level prefixed with
+        <code>[llama-server]</code>.
+      </p>
+    </div>
+  </section>
+
+  <!-- TROUBLESHOOTING -->
+  <section class="file-section" id="doc-troubleshooting" data-name="troubleshooting models folder errors documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Troubleshooting <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">models/README.md — common failures</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Troubleshooting</h1>
+
+      <table>
+        <thead>
+          <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>File not listed</td>
+            <td>Extension is not <code>.gguf</code></td>
+            <td>Rename the file</td>
+          </tr>
+          <tr>
+            <td>File listed but load fails</td>
+            <td>File is truncated or corrupted</td>
+            <td>Re-download; check the file size matches upstream</td>
+          </tr>
+          <tr>
+            <td>Load hangs at 90%</td>
+            <td>Model is too large for available RAM</td>
+            <td>Choose a smaller quant or a smaller model</td>
+          </tr>
+          <tr>
+            <td><code>unknown pre-tokenizer</code> error</td>
+            <td><code>AGENT_LLAMA_CPP_CHAT_FORMAT</code> doesn't match the model</td>
+            <td>Set the correct chat format (chatml, llama-2, mistral, qwen, etc.)</td>
+          </tr>
+          <tr>
+            <td>Out of memory on load</td>
+            <td>VRAM or RAM insufficient for the chosen layers</td>
+            <td>Set <code>AGENT_LLAMA_CPP_N_GPU_LAYERS=0</code> for CPU-only, or reduce the number</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>File not listed at all</h2>
+      <p>First check the extension. The backend's listing function matches <code>glob("*.gguf")</code>, so:</p>
+      <ul>
+        <li><code>model.gguf</code> → listed (Windows and Linux).</li>
+        <li><code>model.GGUF</code> → listed on Windows, not on Linux.</li>
+        <li><code>model.ggml</code> → not listed anywhere.</li>
+        <li><code>model.gguf.backup</code> → not listed anywhere.</li>
+      </ul>
+      <p>
+        If you renamed a file to add <code>.gguf</code>, the old
+        name is gone — the backend reads the current name from
+        <code>readdir</code> on every listing request, so it does
+        not cache.
+      </p>
+
+      <h2>File listed but load fails</h2>
+      <p>
+        Compare the on-disk size against the size reported on
+        Hugging Face. A common failure is a partial download
+        (interrupted, out of disk space). Re-download the file.
+      </p>
+      <p>For deeper diagnostics, run the model through the llama.cpp CLI directly:</p>
+      <pre>llama-cli -m models/llama-3.2-3b.Q4_K_M.gguf -p "Hello"</pre>
+      <p>
+        If that fails, the file is bad. If it succeeds, the
+        problem is in the server's command-line flags — check the
+        <code>AGENT_LLAMA_CPP_CHAT_FORMAT</code> and
+        <code>AGENT_LLAMA_CPP_N_CTX</code> settings.
+      </p>
+
+      <h2>Load hangs near the end</h2>
+      <p>
+        Typically memory pressure. Windows swaps to disk and the
+        load slows to a crawl; Linux triggers the OOM killer and
+        the subprocess dies. Check the backend log for a
+        <code>llama-server exited with code …</code> line.
+      </p>
+      <p>Fixes, in order of preference:</p>
+      <ol>
+        <li>Use a smaller quant (Q4_K_M instead of Q8_0).</li>
+        <li>Use a smaller model (3B instead of 7B).</li>
+        <li>Reduce the context size (<code>AGENT_LLAMA_CPP_N_CTX=2048</code>).</li>
+        <li>Reduce GPU offload (<code>AGENT_LLAMA_CPP_N_GPU_LAYERS=0</code>) so the weights stay in RAM where the OS can page them.</li>
+      </ol>
+
+      <h2>Unknown pre-tokenizer error</h2>
+      <p>
+        The chat format does not match the model's expected template.
+        The model file itself contains tokenizer metadata, but the
+        server needs to know how to format the prompt before the
+        tokenizer runs.
+      </p>
+      <p>Set the chat format in <code>.env</code> to match the model family:</p>
+      <pre>AGENT_LLAMA_CPP_CHAT_FORMAT=llama-3</pre>
+      <p>
+        Restart the server (or just unload and reload the model)
+        and the error goes away. Garbage output with no error is the
+        same problem — the model is producing tokens but reading
+        them against the wrong template.
+      </p>
+
+      <h2>Subprocess crashes on CPU without AVX-512</h2>
+      <p>
+        The <code>llama-cpp-python</code> wheels are compiled with
+        AVX-512 instructions. On a CPU that lacks AVX-512 (Intel 9th
+        gen and older), the first GGML kernel raises
+        <code>STATUS_ILLEGAL_INSTRUCTION (0xC000001D)</code> and the
+        process dies.
+      </p>
+      <p>
+        The fix is to use a native <code>llama-server.exe</code>
+        binary (compiled with AVX2 or baseline instructions) instead
+        of the Python module. The backend's
+        <code>find_llama_server()</code> prefers the native binary
+        automatically if one is present at
+        <code>runtime/llama-server/</code>.
+      </p>
+      <p>
+        Download a native binary from
+        <a href="https://github.com/ggml-org/llama.cpp/releases" target="_blank" rel="noopener">github.com/ggml-org/llama.cpp/releases</a>
+        and extract it into <code>runtime/llama-server/</code>. Then
+        restart the backend.
+      </p>
+
+      <h2>Still stuck?</h2>
+      <p>Capture the output of:</p>
+      <ul>
+        <li><code>GET /api/llama/runtime/models</code> — is the file listed?</li>
+        <li><code>GET /api/llama/runtime/status</code> — what does the manager think?</li>
+        <li><code>GET /api/logs/recent?lines=200</code> — what did the log say during the load?</li>
+      </ul>
+      <p>Those three together usually identify the failure in one look.</p>
+    </div>
+  </section>
+
+  <!-- LOGS FOLDER -->
+  <section class="file-section" id="doc-logs" data-name="logs folder gitkeep retention loguru documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>The logs Folder <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">logs/.gitkeep — runtime log directory</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>The logs Folder</h1>
+
+      <p>
+        The <code>logs/</code> folder is the second runtime folder the
+        backend manages. It is populated by loguru on the first log
+        write — one daily file per process. The folder is committed to
+        git (via a <code>.gitkeep</code> placeholder), but the log
+        files themselves are gitignored.
+      </p>
+
+      <h2>What lives here</h2>
+      <table>
+        <thead><tr><th>File</th><th>Written by</th><th>Content</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>backend-YYYY-MM-DD.log</code></td>
+            <td>Backend (loguru)</td>
+            <td>Everything at DEBUG level: startup, LLM requests, tool calls, subprocess output</td>
+          </tr>
+          <tr>
+            <td><code>desktop-YYYY-MM-DD.log</code></td>
+            <td>Desktop client (loguru)</td>
+            <td>Desktop client lifecycle, window state, forwarded backend lines</td>
+          </tr>
+          <tr>
+            <td><code>.gitkeep</code></td>
+            <td>Repo maintainers</td>
+            <td>Empty placeholder so git tracks the folder</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Rotation &amp; retention</h2>
+      <ul>
+        <li><strong>Rotation:</strong> at midnight UTC. The current day's file is named <code>backend-2025-01-15.log</code>; at 00:00 UTC a new file <code>backend-2025-01-16.log</code> starts and the old one is closed.</li>
+        <li><strong>Retention:</strong> <code>AGENT_LOG_RETENTION_DAYS</code> days (default 14). Files older than that are deleted automatically by loguru at rotation time.</li>
+      </ul>
+
+      <h2>Level configuration</h2>
+      <table>
+        <thead><tr><th>Sink</th><th>Level</th><th>Setting</th></tr></thead>
+        <tbody>
+          <tr><td>Console (stderr)</td><td>INFO</td><td><code>AGENT_LOG_LEVEL</code></td></tr>
+          <tr><td>File (this folder)</td><td>DEBUG</td><td><code>AGENT_LOG_FILE_LEVEL</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        The file sink captures everything — including the debug
+        lines that would be noise on the console. This is by design:
+        a bug report from a user can be diagnosed from the file
+        without asking the user to re-enable verbose logging.
+      </p>
+
+      <h2>Safe on Windows</h2>
+      <p>
+        The file sink uses <code>enqueue=True</code>, which routes
+        every log write through a background thread. This avoids
+        the classic Windows issue where an antivirus scanner holds
+        the file open while Python tries to rotate it. It also
+        means logging never blocks the asyncio event loop.
+      </p>
+
+      <div class="callout">
+        <strong>Some lines may be lost on SIGKILL.</strong>
+        If the process is killed with SIGKILL (or Ctrl+Break on
+        Windows), lines still in the enqueue queue are lost. This
+        is acceptable — the alternative is synchronous file writes
+        on every log line, which is a significant performance cost
+        on the hot path.
+      </div>
+
+      <h2>Viewing the logs</h2>
+      <table>
+        <thead><tr><th>Method</th><th>Command</th></tr></thead>
+        <tbody>
+          <tr><td>Desktop client</td><td>View menu → <em>View Logs…</em> (<kbd>Ctrl+L</kbd>)</td></tr>
+          <tr><td>Browser</td><td><code>GET /api/logs/recent?lines=500&amp;source=all</code></td></tr>
+          <tr><td>Terminal (Unix)</td><td><code>tail -f logs/backend-*.log</code></td></tr>
+          <tr><td>Terminal (Windows)</td><td><code>Get-Content logs\backend-*.log -Wait -Tail 50</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Log file structure</h2>
+      <p>Every line has the same format:</p>
+      <pre>2025-01-15 12:34:56.789 | INFO     | backend.llm:142 — LLM request (auto, batch): model=llama3.2 messages=3 tools=9</pre>
+      <p>The fields are:</p>
+      <ul>
+        <li><strong>Timestamp</strong> — millisecond precision, UTC.</li>
+        <li><strong>Level</strong> — <code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code>.</li>
+        <li><strong>Module:line</strong> — where the log call originated.</li>
+        <li><strong>Message</strong> — the actual text.</li>
+      </ul>
+      <p>Grep is your friend:</p>
+      <pre>grep ERROR logs/backend-*.log
+grep "llama-server" logs/backend-2025-01-15.log
+grep "tool '" logs/backend-*.log</pre>
+
+      <h2>Making the file sink read-only</h2>
+      <p>
+        If the folder cannot be created (read-only filesystem,
+        permission denied), the file sink is skipped and a warning
+        is logged at the console level. The backend continues with
+        console-only logging. This matches the desktop client's
+        behaviour.
+      </p>
+
+      <h2>Disabling file logging</h2>
+      <pre>AGENT_LOG_TO_FILE=false</pre>
+      <p>
+        Set this in <code>.env</code> to disable the file sink
+        entirely. Useful in containerized deployments where logs
+        are collected from stdout instead.
+      </p>
+    </div>
+  </section>
+
+  <!-- SOURCE: models/README.md -->
+  <section class="file-section" id="f-models-readme" data-name="models README gguf huggingface configuration documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>models/README.md <span class="file-badge md">markdown</span></h2>
+        <span class="file-path">models/README.md</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-markdown"># Models Folder
+
+This folder holds GGUF files for the locally-managed
+llama-cpp-python server.
+
+**Do not commit the contents of this folder to git.** GGUF files are
+gigabytes each and are covered by `.gitignore`.
+
+---
+
+## How this folder is used
+
+The backend's `backend/models_setup.py` module:
+
+1. Creates this folder on first startup (if it doesn't exist).
+2. Writes this README on first creation.
+3. Lists all `.gguf` files whenever the settings page or the model
+   picker requests them.
+4. Resolves a model name like `"Bonsai-8B.gguf"` to an absolute path
+   against this folder.
+
+The model file itself is loaded into memory by the
+`llama-cpp-python` server subprocess, which the backend spawns on
+demand.
+
+---
+
+## Downloading models
+
+GGUF files are hosted on [Hugging Face](https://huggingface.co).
+The `huggingface-cli` tool is the easiest way to fetch them.
+
+```cmd
+pip install huggingface-hub
+cd models
+huggingface-cli download &lt;repo-id&gt; &lt;filename&gt;.gguf --local-dir .
+Example:
+
+cmd
+huggingface-cli download TheBloke/Llama-2-7B-Chat-GGUF \
+    llama-2-7b-chat.Q4_K_M.gguf --local-dir .
+Popular model repositories with GGUF quants:
+
+Model family	Repository	Typical size (Q4_K_M)
+Llama 3.2 3B	bartowski/Llama-3.2-3B-Instruct-GGUF	2.0 GB
+Llama 3.1 8B	bartowski/Meta-Llama-3.1-8B-Instruct-GGUF	4.9 GB
+Mistral 7B	TheBloke/Mistral-7B-Instruct-v0.2-GGUF	4.4 GB
+Qwen 2.5 7B	bartowski/Qwen2.5-7B-Instruct-GGUF	4.7 GB
+Qwen 2.5 Coder 7B	bartowski/Qwen2.5-Coder-7B-Instruct-GGUF	4.7 GB
+Phi-3 Mini	microsoft/Phi-3-mini-4k-instruct-gguf	2.4 GB
+Gemma 2 9B	bartowski/gemma-2-9b-it-GGUF	5.7 GB
+Quantization suffixes explained:
+
+Suffix	Bits	Quality	Size
+Q2_K	2	Lowest	Smallest
+Q3_K_S	3	Very low	
+Q4_0	4	Low	
+Q4_K_M	4	Balanced — recommended default	
+Q5_K_M	5	Good	
+Q6_K	6	Very good	
+Q8_0	8	Excellent	Largest
+Q4_K_M is the sweet spot for most users: noticeable quality drop
+from full precision is minor, and the size is roughly a quarter of
+the original.
+
+Configuring
+The startup model is set in .env:
+
+env
+AGENT_LLAMA_CPP_ENABLED=true
+AGENT_LLAMA_CPP_MODEL=Bonsai-8B.gguf
+The value can be either:
+
+A bare filename — resolved against this folder.
+
+An absolute path — used as-is.
+
+If the file isn't found at startup, the backend logs a warning and
+continues. The user can load a different model from the settings
+page or the chat header's Load GGUF button without restarting the
+backend.
+
+Backend API
+The following endpoints list and manage files in this folder:
+
+Method	Path	Purpose
+GET	/api/llama/runtime/models	List all .gguf files
+POST	/api/llama/runtime/load	Swap the loaded model
+POST	/api/llama/runtime/unload	Stop the subprocess
+POST	/api/llama/runtime/retry	Restart the subprocess
+GET	/api/llama/all-models	Unified list (Ollama + GGUF)
+The .gguf extension is case-sensitive on Linux and case-insensitive
+on Windows. The backend's listing function uses glob("*.gguf"),
+which is case-insensitive on Windows and case-sensitive elsewhere. To
+avoid a subtle bug when moving files between platforms, keep the
+extension lowercase.
+
+Naming conventions
+Use whatever names you like — the backend stores and reports the
+filename verbatim. Two suggestions for multi-model setups:
+
+Include the quant and size:
+
+text
+llama-3.2-3b.Q4_K_M.gguf
+qwen2.5-coder-7b.Q4_K_M.gguf
+Use subfolders for organization:
+
+text
+models/
+    chat/
+        llama-3.2-3b.Q4_K_M.gguf
+    code/
+        qwen2.5-coder-7b.Q4_K_M.gguf
+The backend's listing function does not recurse into subfolders.
+If you use subfolders, pass the relative path explicitly in
+AGENT_LLAMA_CPP_MODEL or the load request:
+
+env
+AGENT_LLAMA_CPP_MODEL=chat/llama-3.2-3b.Q4_K_M.gguf
+Disk space
+Rough sizes for common quantizations:
+
+Model size	Q4_K_M	Q8_0
+3B params	2.0 GB	3.4 GB
+7B params	4.5 GB	7.6 GB
+13B params	7.9 GB	13.8 GB
+70B params	42 GB	74 GB
+Plus overhead: the llama-cpp server keeps the model in RAM while
+loaded, and KV cache usage grows with context length.
+
+Verification
+To verify this folder is being picked up correctly, open the settings
+page at /settings and check the "Local GGUF" section of the model
+table. Alternatively, query the API directly:
+
+bash
+curl http://127.0.0.1:8000/api/llama/runtime/models
+Expected response:
+
+json
+{
+  "models": [
+    {
+      "name": "llama-3.2-3b.Q4_K_M.gguf",
+      "path": "/path/to/models/llama-3.2-3b.Q4_K_M.gguf",
+      "size": 2012345678,
+      "size_gb": 2.01,
+      "loaded": false
+    }
+  ],
+  "count": 1,
+  "loaded": null,
+  "models_dir": "/path/to/models",
+  "runtime_swap_enabled": true,
+  "manager_present": true,
+  "server_running": false
+}
+Troubleshooting
+Symptom	Cause	Fix
+File not listed	Extension is not .gguf	Rename the file
+File listed but load fails	File is truncated or corrupted	Re-download; check the file size matches upstream
+Load hangs at 90%	Model is too large for available RAM	Choose a smaller quant or a smaller model
+unknown pre-tokenizer error	AGENT_LLAMA_CPP_CHAT_FORMAT doesn't match the model	Set the correct chat format (chatml, llama-2, mistral, qwen, etc.)
+Out of memory on load	VRAM or RAM insufficient for the chosen layers	Set AGENT_LLAMA_CPP_N_GPU_LAYERS=0 for CPU-only, or reduce the number	</code></pre></div>
+</section> <!-- SOURCE: logs/.gitkeep --> <section class="file-section" id="f-logs-gitkeep" data-name="logs gitkeep placeholder log directory"> <div class="file-header"> <div class="file-title"> <h2>logs/.gitkeep <span class="file-badge txt">text</span></h2> <span class="file-path">logs/.gitkeep</span> </div> <div class="file-meta"> <span class="meta-pill" data-lines>—</span> <button class="copy-btn" data-copy>⧉ Copy</button> </div> </div> <div class="code-wrap"><pre><code class="language-text"># This file exists only so that git tracks the empty `logs/` directory. # The actual log files (`backend-*.log`, `desktop-*.log`) are gitignored. # # The backend creates logs/backend-YYYY-MM-DD.log automatically on # first write. The desktop client creates logs/desktop-YYYY-MM-DD.log # the first time it starts with file logging enabled. # # Log files rotate at midnight UTC and are pruned after # AGENT_LOG_RETENTION_DAYS days (default: 14). # # To view logs: # - In the desktop app: View menu → "View Logs…" (Ctrl+L) # - In a browser: GET /api/logs/recent?lines=500&source=all # - In a terminal: tail -f logs/backend-*.log</code></pre></div> </section></main>
+<button class="to-top visible" id="toTop" title="Back to top">↑</button>
+
+<script> (function () { 'use strict'; // ───────────────────────────────────────────────────────────────── // Inline syntax highlighting (no external dependencies) // ───────────────────────────────────────────────────────────────── function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); } // Token-pool approach: stash marked-up fragments and swap them in // at the very end so subsequent regexes cannot match their contents. function makeHighlighter(stages) { return function (raw) { var code = escapeHtml(raw); var tokens = []; function stash(html) { var id = '\u0000T' + tokens.length + '\u0000'; tokens.push(html); return id; } for (var i = 0; i < stages.length; i++) { code = stages[i](code, stash); } // Restore in reverse order so any nested placeholders resolve. for (var j = tokens.length - 1; j >= 0; j--) { code = code.split('\u0000T' + j + '\u0000').join(tokens[j]); } return code; }; } var PY_KEYWORDS = /\b(def|class|import|from|as|if|elif|else|for|while|return|yield|try|except|finally|raise|with|async|await|True|False|None|and|or|not|in|is|lambda|pass|break|continue|global|nonlocal|del|assert|match|case|self|cls)\b/g; var PY_BUILTINS = /\b(print|len|range|str|int|float|bool|dict|list|set|tuple|type|isinstance|issubclass|open|super|repr|hash|min|max|sum|abs|any|all|zip|map|filter|enumerate|sorted|reversed|iter|next|getattr|setattr|hasattr|callable|vars|dir|id|input|format|bytes|bytearray|memoryview|object|Exception|ValueError|TypeError|ImportError|KeyError|IndexError|RuntimeError|AttributeError|FileNotFoundError|OSError|StopIteration|NotImplementedError|BaseException|SystemExit|KeyboardInterrupt)\b/g; var highlightPython = makeHighlighter([ // Comments first (greedy to end of line). function (c, stash) { return c.replace(/(#[^\n]*)/g, function (m) { return stash('<span class="tok-comment">' + m + '</span>'); }); }, // Decorators. function (c, stash) { return c.replace(/(^|\n)(\s*)(@[\w.]+)/g, function (m, nl, ws, dec) { return nl + ws + stash('<span class="tok-decorator">' + dec + '</span>'); }); }, // Triple-quoted strings. function (c, stash) { return c.replace(/("""[\s\S]*?"""|'''[\s\S]*?''')/g, function (m) { return stash('<span class="tok-string">' + m + '</span>'); }); }, // Single/double-quoted strings (escape-aware). function (c, stash) { return c.replace(/("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')/g, function (m) { return stash('<span class="tok-string">' + m + '</span>'); }); }, // Keywords. function (c, stash) { return c.replace(PY_KEYWORDS, function (m) { return stash('<span class="tok-keyword">' + m + '</span>'); }); }, // Builtins. function (c, stash) { return c.replace(PY_BUILTINS, function (m) { return stash('<span class="tok-builtin">' + m + '</span>'); }); }, // Numbers (but not numbers already inside a stash placeholder). function (c, stash) { return c.replace(/\b(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b/g, function (m) { return stash('<span class="tok-number">' + m + '</span>'); }); }, // Function calls: identifier immediately followed by (. function (c, stash) { return c.replace(/\b([A-Za-z_]\w*)\s*(?=\()/g, function (m, name) { return stash('<span class="tok-function">' + name + '</span>'); }); } ]); var highlightMarkdown = makeHighlighter([ // Fenced code blocks. function (c, stash) { return c.replace(/(```[\s\S]*?```)/g, function (m) { return stash('<span class="tok-md-code">' + m + '</span>'); }); }, // Headers at start of line. function (c, stash) { return c.replace(/^(#{1,6}\s.+)$/gm, function (m) { return stash('<span class="tok-md-header">' + m + '</span>'); }); }, // Inline code. function (c, stash) { return c.replace(/(`[^`\n]+`)/g, function (m) { return stash('<span class="tok-md-code">' + m + '</span>'); }); }, // Block quotes. function (c, stash) { return c.replace(/^(\s*&gt;.+)$/gm, function (m) { return stash('<span class="tok-md-quote">' + m + '</span>'); }); }, // Table pipes. function (c, stash) { return c.replace(/(\|)/g, function (m) { return stash('<span class="tok-md-pipe">' + m + '</span>'); }); } ]); // ───────────────────────────────────────────────────────────────── // Apply highlighting to every <pre><code> block // ───────────────────────────────────────────────────────────────── document.querySelectorAll('pre code').forEach(function (el) { var raw = el.textContent; var lang = 'text'; var cls = el.className || ''; if (cls.indexOf('language-python') !== -1) lang = 'python'; else if (cls.indexOf('language-markdown') !== -1) lang = 'markdown'; else if (cls.indexOf('language-json') !== -1) lang = 'json'; else if (cls.indexOf('language-bash') !== -1 || cls.indexOf('language-cmd') !== -1 || cls.indexOf('language-env') !== -1) lang = 'text'; if (lang === 'python') { el.innerHTML = highlightPython(raw); } else if (lang === 'markdown') { el.innerHTML = highlightMarkdown(raw); } else { el.innerHTML = escapeHtml(raw); } }); // ───────────────────────────────────────────────────────────────── // Line counts // ───────────────────────────────────────────────────────────────── document.querySelectorAll('.file-section').forEach(function (sec) { var code = sec.querySelector('pre code'); var badge = sec.querySelector('[data-lines]'); if (!badge) return; if (code) { var text = code.textContent || ''; var lines = text.split('\n').length; badge.textContent = lines + ' lines'; } else { badge.textContent = 'doc'; } }); // ───────────────────────────────────────────────────────────────── // Copy buttons // ───────────────────────────────────────────────────────────────── document.querySelectorAll('[data-copy]').forEach(function (btn) { btn.addEventListener('click', function () { var sec = btn.closest('.file-section'); if (!sec) return; var code = sec.querySelector('pre code'); var md = sec.querySelector('.md-content'); var text = code ? code.textContent : (md ? md.innerText : ''); if (!text) return; function done() { var original = btn.textContent; btn.textContent = '✓ Copied'; btn.classList.add('copied'); setTimeout(function () { btn.textContent = original; btn.classList.remove('copied'); }, 1600); } function fail() { btn.textContent = '✗ Failed'; setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600); } if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, fail); } else { // Fallback for file:// in older browsers. try { var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); } catch (e) { fail(); } } }); }); // ───────────────────────────────────────────────────────────────── // Active nav tracking // ───────────────────────────────────────────────────────────────── var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav-list a')); var sections = Array.prototype.slice.call(document.querySelectorAll('.file-section')); var crumbs = document.getElementById('crumbs'); function updateActive() { var scrollY = window.scrollY + 120; var current = null; for (var i = 0; i < sections.length; i++) { var s = sections[i]; if (s.offsetTop <= scrollY) current = s; else break; } navLinks.forEach(function (a) { a.classList.remove('active'); }); if (current) { var link = document.querySelector('.nav-list a[href="#' + current.id + '"]'); if (link) { link.classList.add('active'); var path = current.querySelector('.file-path'); if (path && crumbs) crumbs.textContent = path.textContent; } } } window.addEventListener('scroll', updateActive, { passive: true }); updateActive(); // ───────────────────────────────────────────────────────────────── // Search filter // ───────────────────────────────────────────────────────────────── var searchInput = document.getElementById('searchInput'); var noResults = document.getElementById('noResults'); var navGroups = Array.prototype.slice.call(document.querySelectorAll('.nav-group')); if (searchInput) { searchInput.addEventListener('input', function () { var q = searchInput.value.trim().toLowerCase(); var visibleCount = 0; document.querySelectorAll('.nav-list li').forEach(function (li) { var text = li.textContent.toLowerCase(); var match = !q || text.indexOf(q) !== -1; li.classList.toggle('hidden', !match); if (match) visibleCount++; }); navGroups.forEach(function (g) { var list = g.nextElementSibling; if (!list || !list.classList.contains('nav-list')) return; var hasVisible = list.querySelector('li:not(.hidden)'); g.style.display = hasVisible ? '' : 'none'; }); sections.forEach(function (sec) { var fp = sec.querySelector('.file-path'); var h2 = sec.querySelector('h2'); var name = (sec.getAttribute('data-name') || '') + ' ' + (fp ? fp.textContent : '') + ' ' + (h2 ? h2.textContent : ''); name = name.toLowerCase(); var match = !q || name.indexOf(q) !== -1; sec.classList.toggle('hidden', !match); }); if (noResults) noResults.classList.toggle('visible', visibleCount === 0); }); } // ───────────────────────────────────────────────────────────────── // Back to top // ───────────────────────────────────────────────────────────────── var toTop = document.getElementById('toTop'); window.addEventListener('scroll', function () { toTop.classList.toggle('visible', window.scrollY > 500); }, { passive: true }); toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }); // ───────────────────────────────────────────────────────────────── // Mobile sidebar toggle // ───────────────────────────────────────────────────────────────── var menuBtn = document.getElementById('menuBtn'); var sidebar = document.getElementById('sidebar'); if (menuBtn && sidebar) { menuBtn.addEventListener('click', function () { sidebar.classList.toggle('open'); }); navLinks.forEach(function (a) { a.addEventListener('click', function () { if (window.innerWidth <= 700) sidebar.classList.remove('open'); }); }); } })(); </script></body> </html>

@@ -1,0 +1,5091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — Desktop Client</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 300px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list li { margin: 0; }
+
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-list a:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+
+main {
+  margin-left: var(--sidebar-w);
+  padding: 0 0 80px;
+  min-height: 100vh;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.topbar .stats {
+  font-size: 12px;
+  color: var(--text-mute);
+  display: flex;
+  gap: 16px;
+}
+
+.topbar .stats span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14.5px;
+  max-width: 720px;
+}
+
+.hero .links {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.hero .links a:hover {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.file-section.hidden { display: none; }
+
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.file-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+
+.copy-btn.copied {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(63, 185, 80, 0.08);
+}
+
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.hljs { background: transparent !important; padding: 0 !important; }
+
+.md-content {
+  padding: 24px 28px;
+  max-height: 800px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.md-content th {
+  background: var(--bg-elev);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.md-content td { color: var(--text-dim); }
+
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 900px) {
+  :root { --sidebar-w: 260px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+
+.nav-list li.hidden { display: none; }
+
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo-mark">3</span> Desktop Client</h1>
+    <div class="sub">PyQt6 Frontends</div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Documentation</div>
+  <ul class="nav-list" data-group="docs">
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>Architecture overview</a></li>
+    <li><a href="#doc-compare"><span class="nav-icon md"></span>App vs native_chat</a></li>
+    <li><a href="#doc-launcher"><span class="nav-icon md"></span>Backend launcher lifecycle</a></li>
+    <li><a href="#doc-install-dialog"><span class="nav-icon md"></span>Install dialog &amp; SSE</a></li>
+    <li><a href="#doc-logging"><span class="nav-icon md"></span>Logging &amp; access filter</a></li>
+    <li><a href="#doc-close"><span class="nav-icon md"></span>Close behavior</a></li>
+    <li><a href="#doc-platform"><span class="nav-icon md"></span>Platform notes</a></li>
+    <li><a href="#doc-run"><span class="nav-icon md"></span>Running the client</a></li>
+  </ul>
+
+  <div class="nav-group">Source</div>
+  <ul class="nav-list" data-group="source">
+    <li><a href="#f-init"><span class="nav-icon py"></span>__init__.py</a></li>
+    <li><a href="#f-app"><span class="nav-icon py"></span>app.py</a></li>
+    <li><a href="#f-backend-launcher"><span class="nav-icon py"></span>backend_launcher.py</a></li>
+    <li><a href="#f-install-dialog"><span class="nav-icon py"></span>install_dialog.py</a></li>
+    <li><a href="#f-logging"><span class="nav-icon py"></span>logging_config.py</a></li>
+    <li><a href="#f-native-chat"><span class="nav-icon py"></span>native_chat.py</a></li>
+    <li><a href="#f-docs"><span class="nav-icon md"></span>Extensive_Documentation.md</a></li>
+  </ul>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">desktop / overview</span>
+    </div>
+    <div class="stats">
+      <span>📄 <strong id="statFiles">7</strong> files</span>
+      <span>🖥️ <strong>PyQt6</strong></span>
+      <span>🌐 <strong>QWebEngine</strong></span>
+      <span>⚙️ <strong>2 clients</strong></span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Desktop Client</h1>
+    <p>
+      Two PyQt6 frontends backed by the same HTTP/WebSocket API as the web UI.
+      <code>desktop.app</code> wraps the web UI in a native window using
+      embedded Chromium (QWebEngineView); <code>desktop.native_chat</code>
+      is a pure-QtWidgets fallback for environments without WebEngine.
+      A shared <code>BackendLauncher</code> spawns and monitors the FastAPI
+      subprocess, a native installer dialog handles llama-cpp wheel selection,
+      and loguru writes a separate <code>desktop-*.log</code> stream.
+    </p>
+    <div class="links">
+      <a href="https://3olution.com" target="_blank" rel="noopener">🌐 3olution.com</a>
+      <a href="#f-app">📄 app.py</a>
+      <a href="#f-native-chat">📄 native_chat.py</a>
+      <a href="#doc-overview">📚 Architecture</a>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       DOCUMENTATION — Architecture overview
+       ============================================================= -->
+  <section class="file-section" id="doc-overview" data-name="overview desktop architecture qwebengine pyqt6 documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Architecture overview <span class="file-badge">docs</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md — Overview</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Desktop architecture</h1>
+
+      <pre>┌─────────────────────────────────────────────────────────────────┐
+│  desktop.app  (primary client)                                  │
+│                                                                 │
+│  ┌──────────────────────┐    ┌──────────────────────────────┐   │
+│  │  QtWidgets           │    │  BackendLauncher             │   │
+│  │  menu, toolbar,      │    │  spawns + monitors the       │   │
+│  │  status bar, log     │    │  backend subprocess          │   │
+│  │  dock                │    │                              │   │
+│  └──────────────────────┘    └──────────────┬───────────────┘   │
+│  ┌──────────────────────┐                   │                   │
+│  │  QWebEngineView      │                   │ HTTP + WS         │
+│  │  → chat UI           │◄──────────────────┘                   │
+│  │  → graph editor      │                                       │
+│  │  → settings page     │                                       │
+│  └──────────────────────┘                                       │
+│  ┌──────────────────────┐                                       │
+│  │  LogViewerDialog     │  reads logs/*.log                     │
+│  └──────────────────────┘                                       │
+│  ┌──────────────────────┐                                       │
+│  │  InstallDialog       │  talks to /api/llama/install/*        │
+│  └──────────────────────┘                                       │
+└─────────────────────────────────────────────────────────────────┘
+                │
+                │  (backend subprocess)
+                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  backend.main:app  (uvicorn)                                    │
+│  ├─ chat / graph / ollama / llama / system / php                │
+│  └─ MCP subprocess, llama-cpp subprocess, PHP-CGI               │
+└─────────────────────────────────────────────────────────────────┘
+                ▲
+                │  (same HTTP API, no subprocess spawn)
+                │
+┌─────────────────────────────────────────────────────────────────┐
+│  desktop.native_chat  (fallback client)                         │
+│  QtWidgets only — no WebEngine                                  │
+└─────────────────────────────────────────────────────────────────┘</pre>
+
+      <h2>Why two frontends?</h2>
+      <p>
+        Rebuilding the entire web UI — chat with streaming, graph editor,
+        settings page, Ollama model management, PHP notes app — in
+        native QtWidgets would double the maintenance burden for zero
+        functional gain.
+      </p>
+      <p>
+        <code>desktop.app</code> sidesteps that by embedding the actual
+        web UI inside a <code>QWebEngineView</code>. The result is a
+        native-looking window (menu bar, toolbar, status bar, dock)
+        with a single source of truth for the UI. When the web team
+        adds a feature, the desktop client gets it for free.
+      </p>
+      <p>
+        <code>desktop.native_chat</code> exists for the environments
+        where that strategy does not work: headless build machines,
+        minimal Linux distributions that cannot install
+        <code>PyQt6-WebEngine</code>, and the occasional user who
+        simply prefers native widgets.
+      </p>
+
+      <h2>Module responsibilities</h2>
+      <table>
+        <thead><tr><th>Module</th><th>Responsibility</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>__init__.py</code></td>
+            <td>Package docstring. Explains the two frontends and the three support modules.</td>
+          </tr>
+          <tr>
+            <td><code>app.py</code></td>
+            <td>The main window. Owns the QWebEngineView, menu bar, toolbar, status bar, log dock, log viewer dialog, and the periodic <code>/api/health</code> poll.</td>
+          </tr>
+          <tr>
+            <td><code>backend_launcher.py</code></td>
+            <td>Spawns and monitors the FastAPI backend subprocess. Attaches to an existing backend when one is already running.</td>
+          </tr>
+          <tr>
+            <td><code>install_dialog.py</code></td>
+            <td>Native installer UI for <code>llama-cpp-python[server]</code>. Consumes the same SSE endpoints as the web settings page.</td>
+          </tr>
+          <tr>
+            <td><code>logging_config.py</code></td>
+            <td>Loguru sink writing to <code>logs/desktop-YYYY-MM-DD.log</code> with the same rotation and retention rules as the backend.</td>
+          </tr>
+          <tr>
+            <td><code>native_chat.py</code></td>
+            <td>Fallback chat window. Pure QtWidgets, talks to <code>/api/chat/stream</code> over SSE.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Data flow: one chat turn</h2>
+      <pre>User types in QWebEngineView (or native_chat's QLineEdit)
+        │
+        ▼
+POST /api/chat/stream    (SSE)
+        │
+        ▼
+Agent loop in backend/agent.py
+        │
+        ├── yields token events   ─► rendered live in the transcript
+        ├── yields thinking events ─► rendered in the reasoning lane
+        ├── yields tool_call      ─► shows the tool name + args
+        ├── yields tool_result    ─► shows the result
+        └── yields final          ─► saves messages[], updates history
+        │
+        ▼
+Session saved to sessions.db</pre>
+
+      <p>
+        In <code>desktop.app</code>, this flow happens inside the
+        embedded Chromium process — the same JavaScript that runs in a
+        browser. In <code>desktop.native_chat</code>, the flow is
+        driven by <code>AgentWorker</code> (a QThread) which reads the
+        SSE stream and emits each parsed event as a Qt signal to the
+        main thread.
+      </p>
+
+      <div class="callout success">
+        <strong>Zero duplicated backend logic.</strong>
+        Both desktop frontends and the web UI talk to the exact same
+        FastAPI routes. The launcher spawns the same
+        <code>scripts/serve.py</code> the terminal uses. There is no
+        desktop-specific backend code.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Compare the two clients
+       ============================================================= -->
+  <section class="file-section" id="doc-compare" data-name="compare desktop app native chat feature parity qwebengine">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>App vs native_chat <span class="file-badge">docs</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md — Feature matrix</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>The two desktop frontends compared</h1>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>desktop.app</th>
+            <th>desktop.native_chat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Embedded Chromium</td><td>✔</td><td>✘</td></tr>
+          <tr><td>Chat with streaming tokens</td><td>✔ (via WebEngine)</td><td>✔ (via SSE)</td></tr>
+          <tr><td>Tool call / result display</td><td>✔ (via WebUI)</td><td>✔</td></tr>
+          <tr><td>Graph editor</td><td>✔ (via WebEngine)</td><td>✘</td></tr>
+          <tr><td>Settings page</td><td>✔ (via WebEngine)</td><td>✘</td></tr>
+          <tr><td>Ollama model management</td><td>✔ (via WebEngine)</td><td>✘</td></tr>
+          <tr><td>Native llama-cpp install UI</td><td>✔ (via InstallDialog)</td><td>✘</td></tr>
+          <tr><td>Save conversation</td><td>✔ (Web UI button)</td><td>✔ (native button)</td></tr>
+          <tr><td>Log viewer dialog</td><td>✔</td><td>✘</td></tr>
+          <tr><td>Stop all action</td><td>✔</td><td>✔</td></tr>
+          <tr><td>Needs PyQt6-WebEngine</td><td>✔</td><td>✘</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        The native client is a reduced feature set aimed at environments
+        where the WebEngine wheel is not available or not wanted. It is
+        not a "lite" version of the same application — it is a targeted
+        fallback whose features were chosen to cover the common cases
+        (chat, tools, save) at the cost of the graph editor and
+        settings page.
+      </p>
+
+      <h2>When to launch which</h2>
+      <table>
+        <thead><tr><th>Scenario</th><th>Recommended</th></tr></thead>
+        <tbody>
+          <tr><td>Windows / macOS user, normal use</td><td><code>desktop.app</code></td></tr>
+          <tr><td>Linux with a desktop environment and QtWebEngine installed</td><td><code>desktop.app</code></td></tr>
+          <tr><td>Headless CI runner</td><td><code>desktop.native_chat</code> or none</td></tr>
+          <tr><td>Minimal Linux without libnss3 / libxcomposite</td><td><code>desktop.native_chat</code></td></tr>
+          <tr><td>Debugging SSE events</td><td><code>desktop.native_chat</code> (surfaces every event as text)</td></tr>
+          <tr><td>Building a graph</td><td><code>desktop.app</code> or the browser</td></tr>
+          <tr><td>Managing Ollama models</td><td><code>desktop.app</code> or the browser</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Graceful WebEngine fallback</h2>
+      <p>
+        If <code>PyQt6.QtWebEngineWidgets</code> cannot be imported,
+        <code>desktop.app</code> does not crash. It catches the
+        <code>ImportError</code>, sets <code>WEBENGINE_AVAILABLE = False</code>,
+        and installs a <code>NoWebEngineWidget</code> as the central
+        widget instead.
+      </p>
+      <p>
+        The window still opens, the menu bar still works, the status
+        bar still polls <code>/api/health</code>, and the log dock still
+        receives backend output. Only the embedded browser view is
+        missing — and the widget offers a button to open the UI in the
+        system browser.
+      </p>
+
+      <div class="callout">
+        <strong>The import is guarded at the top of <code>app.py</code>.</strong>
+        Three names are set to <code>None</code> when the import fails:
+        <code>QWebEngineView</code>, <code>QWebEngineSettings</code>,
+        and <code>QWebEngineProfile</code>. Every use site checks
+        <code>WEBENGINE_AVAILABLE</code> first.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Backend launcher
+       ============================================================= -->
+  <section class="file-section" id="doc-launcher" data-name="backend launcher lifecycle subprocess attach health poll documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Backend launcher lifecycle <span class="file-badge">docs</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md — backend_launcher.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>backend_launcher.py — the subprocess lifecycle</h1>
+
+      <pre>    BackendLauncher.start()
+            │
+            ├── is_running()?        → emit started(), return
+            │
+            ├── _check_health(url)?  → attach, emit started(), return
+            │
+            └── _spawn()
+                    │
+                    ├── build cmd (scripts/serve.py or uvicorn)
+                    ├── build env (PYTHONPATH, AGENT_PORT, UTF-8)
+                    ├── Popen(..., stdout=PIPE, stderr=STDOUT)
+                    ├── spawn reader thread → emit log(line)
+                    └── start QTimer → _poll_health() every 500 ms
+                            │
+                            ├── /api/health returns 200  → started()
+                            ├── process died             → stop, failed()
+                            └── 60 s timeout             → stop, failed()</pre>
+
+      <h2>Two design decisions worth highlighting</h2>
+
+      <h3>1. Attach-first semantics</h3>
+      <p>
+        The launcher first checks whether a backend is already running at
+        the configured URL. If one is found, it <em>attaches</em> to it
+        instead of spawning a duplicate.
+      </p>
+      <p>
+        This makes it possible to develop against <code>uvicorn --reload</code>
+        in a terminal and launch the desktop client separately without
+        a port conflict, without a confusing "address already in use"
+        error, and without two processes fighting over the same SQLite
+        file.
+      </p>
+
+      <h3>2. The <code>spawned_by_us</code> flag</h3>
+      <p>
+        Only processes the launcher itself started are terminated on
+        close. An externally-started backend is deliberately left
+        running, because the user's terminal session controls its
+        lifecycle.
+      </p>
+      <p>
+        The main window reads this flag in <code>_stop_backend()</code>
+        and in <code>closeEvent()</code>. When the flag is False, the
+        close prompt is skipped and a message box explains that the
+        backend must be stopped from its own terminal.
+      </p>
+
+      <h2>Signals</h2>
+      <table>
+        <thead><tr><th>Signal</th><th>Emitted when</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>started()</code></td>
+            <td>The backend answers <code>/api/health</code> with a 200
+              response. Fires once per lifecycle.</td>
+          </tr>
+          <tr>
+            <td><code>stopped()</code></td>
+            <td>The subprocess has exited cleanly, either because the
+              user requested a stop or because the process finished on
+              its own.</td>
+          </tr>
+          <tr>
+            <td><code>failed(str)</code></td>
+            <td>Startup failed or the subprocess exited unexpectedly.
+              The string carries a human-readable reason.</td>
+          </tr>
+          <tr>
+            <td><code>log(str)</code></td>
+            <td>One line of subprocess stdout or stderr. Fires on the
+              reader thread.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Interpreter resolution</h2>
+      <p>
+        The subprocess must run with an interpreter that has the backend
+        dependencies installed. The resolution order is:
+      </p>
+      <ol>
+        <li>
+          <code>.venv/Scripts/python.exe</code> on Windows,
+          <code>.venv/bin/python</code> on Unix. This path exists when
+          the developer ran <code>python run.py setup</code>.
+        </li>
+        <li>
+          <code>sys.executable</code> — the interpreter running the
+          desktop client. This is the fallback that works in packaged
+          builds where the interpreter is bundled inside the PyInstaller
+          archive.
+        </li>
+      </ol>
+
+      <h2>Command construction</h2>
+      <p>
+        The launcher prefers <code>scripts/serve.py</code> because that
+        script handles the Windows event-loop policy and the
+        <code>sys.path</code> fixups the backend needs. If
+        <code>serve.py</code> is missing, it falls back to a direct
+        <code>python -m uvicorn backend.main:app</code> invocation.
+      </p>
+
+      <pre># Preferred
+python scripts/serve.py
+
+# Fallback
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000</pre>
+
+      <h2>Process tree termination</h2>
+      <p>
+        Uvicorn spawns child processes for reload mode, and the MCP
+        server and llama-cpp server are their own subprocesses. Plain
+        <code>Popen.terminate()</code> leaves orphans behind.
+      </p>
+      <p>
+        The launcher uses a platform-conditional strategy:
+      </p>
+      <table>
+        <thead><tr><th>Platform</th><th>Method</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Windows</td>
+            <td><code>taskkill /F /T /PID &lt;pid&gt;</code> — kills the
+              entire process tree, including grandchildren.</td>
+          </tr>
+          <tr>
+            <td>Unix</td>
+            <td><code>SIGTERM</code> first, wait 5 s, then
+              <code>SIGKILL</code> if the process is still alive.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Stop-all vs stop</h2>
+      <p>
+        Two distinct shutdown paths exist:
+      </p>
+      <table>
+        <thead><tr><th>Action</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>stop()</code></td>
+            <td>Terminates the subprocess tree directly. Used on close
+              and from the <em>Stop Backend</em> menu action.</td>
+          </tr>
+          <tr>
+            <td><code>stop_all_async()</code></td>
+            <td>First calls
+              <code>POST /api/system/stop-all</code> so the backend
+              can shut down the MCP and llama-cpp children
+              gracefully, then waits 1.2 s, then force-kills the
+              tree if it is still alive. Bound to
+              <kbd>Ctrl+Shift+Q</kbd>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <strong>Startup timeout is 60 seconds.</strong>
+        The health endpoint responds as soon as uvicorn binds the port
+        — it does not wait for the LLM to warm up. If the backend has
+        not answered in 60 s, something is wrong. The failure dialog
+        shows the last 40 lines of backend output to help diagnose.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Install dialog
+       ============================================================= -->
+  <section class="file-section" id="doc-install-dialog" data-name="install dialog sse llama cpp pip streaming pyqt6">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Install dialog &amp; SSE <span class="file-badge">docs</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md — install_dialog.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>install_dialog.py — pip streaming without a browser</h1>
+
+      <p>
+        The web settings page has its own installer UI. The native
+        dialog exists for two cases:
+      </p>
+      <ol>
+        <li>Users of <code>desktop.native_chat</code>, who never load the web UI.</li>
+        <li>Users who prefer a native file dialog for pip's wheel choice.</li>
+      </ol>
+
+      <p>
+        Crucially, both UIs talk to the <em>same</em> backend endpoints:
+      </p>
+      <pre>GET  /api/llama/install/status     — install state + recommendation
+POST /api/llama/install/install    — pip install    (SSE)
+POST /api/llama/install/uninstall  — pip uninstall  (SSE)</pre>
+
+      <h2>How the dialog works</h2>
+
+      <h3>1. Status detection</h3>
+      <p>
+        On construction, the dialog GETs
+        <code>/api/llama/install/status</code>. The backend runs
+        <code>detect_llama_cpp()</code> and
+        <code>recommend_wheel_index()</code> — the same logic the web
+        UI uses — and returns:
+      </p>
+      <pre>{
+  "installed": true,
+  "version": "0.3.5",
+  "gpu_offload": true,
+  "cuda_version": "12.4",
+  "recommended_wheel": "cu124",
+  "recommended_reason": "CUDA 12.4 detected — using CUDA 12.4 build.",
+  "in_venv": true,
+  "venv_path": "C:\\...\\.venv",
+  "python": "C:\\...\\.venv\\Scripts\\python.exe"
+}</pre>
+      <p>
+        The dialog renders the recommendation banner, preselects the
+        recommended wheel in the combo box, and disables the
+        Uninstall button when nothing is installed.
+      </p>
+
+      <h3>2. SSE streaming without a browser</h3>
+      <p>
+        Server-Sent Events are a plain HTTP stream with a specific
+        framing:
+      </p>
+      <pre>data: {"type": "start", "command": "..."}
+
+data: {"type": "line", "text": "Collecting llama-cpp-python[server]"}
+
+data: {"type": "line", "text": "  Downloading wheel..."}
+
+data: {"type": "success", "version": "0.3.5", "gpu_offload": true}
+
+data: [DONE]</pre>
+      <p>
+        Python's <code>httpx</code> can consume this stream via
+        <code>client.stream(...)</code> and <code>iter_text()</code>.
+        The <code>SSEWorker</code> QThread does exactly that: it
+        buffers chunks, splits on the blank-line frame separator
+        (<code>\n\n</code>), strips the <code>data: </code> prefix,
+        and JSON-parses the payload.
+      </p>
+
+      <pre>class SSEWorker(QThread):
+    event = pyqtSignal(dict)
+
+    def run(self):
+        with httpx.Client(timeout=None) as client:
+            with client.stream("POST", self.url, json=self.payload) as response:
+                buffer = ""
+                for chunk in response.iter_text():
+                    buffer += chunk
+                    while "\n\n" in buffer:
+                        frame, buffer = buffer.split("\n\n", 1)
+                        for line in frame.split("\n"):
+                            if line.startswith("data: "):
+                                self.event.emit(json.loads(line[6:]))</pre>
+
+      <p>
+        Each parsed event is emitted as a Qt signal. The dialog's
+        <code>_on_sse_event</code> slot dispatches on
+        <code>ev["type"]</code>:
+      </p>
+
+      <table>
+        <thead><tr><th>Event type</th><th>Dialog action</th></tr></thead>
+        <tbody>
+          <tr><td><code>start</code></td><td>Log the command line and venv path</td></tr>
+          <tr><td><code>line</code></td><td>Append one pip output line to the log area</td></tr>
+          <tr><td><code>success</code></td><td>Show the green success notice, re-enable buttons, refresh status</td></tr>
+          <tr><td><code>error</code></td><td>Show the red error notice, re-enable buttons</td></tr>
+          <tr><td><code>done</code></td><td>Hide the progress bar, re-enable everything</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3. The install flow</h3>
+      <pre>User picks a wheel from the combo
+        │
+        ▼
+Click Install
+        │
+        ├── clear the log area
+        ├── append "▶ Installing with wheel 'cu124'…"
+        ├── disable controls, show the indeterminate progress bar
+        ├── create SSEWorker(POST /api/llama/install/install, {wheel_index, upgrade})
+        └── start the worker
+                │
+                ▼
+        Backend runs pip install llama-cpp-python[server] \
+            --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
+                │
+                ▼
+        pip's stdout is streamed back line by line as SSE events
+                │
+                ▼
+        Dialog renders each line in the log area</pre>
+
+      <h3>4. Uninstall with a confirmation</h3>
+      <p>
+        Uninstall is destructive (removes the package), so it prompts
+        first. On Windows the prompt also warns that the backend may
+        need to be stopped first — pip cannot replace DLLs that are
+        currently mapped into the running Python process.
+      </p>
+
+      <h2>Why not use QProcess?</h2>
+      <p>
+        The original implementation used <code>QProcess</code> to spawn
+        pip directly. That worked on Linux and macOS but had two
+        problems on Windows:
+      </p>
+      <ul>
+        <li>Pip's progress output uses carriage returns for its
+          progress bars, which <code>QProcess</code>'s line-based
+          reader handles poorly.</li>
+        <li>The pip process ran with the desktop client's environment,
+          which did not always include the venv's <code>Scripts</code>
+          directory on PATH.</li>
+      </ul>
+      <p>
+        Delegating pip to the backend (which already knows the correct
+        venv and has a working subprocess runner) sidesteps both
+        problems. The dialog becomes a pure SSE consumer.
+      </p>
+
+      <h2>Close-while-running behavior</h2>
+      <p>
+        If the user closes the dialog while an install is running, the
+        dialog prompts for confirmation. If they confirm, the dialog
+        closes and the <code>SSEWorker</code> QThread is left to
+        finish on its own — <strong>the pip process on the backend
+        keeps running to completion</strong>.
+      </p>
+      <p>
+        This is intentional: killing pip mid-install can leave a
+        half-installed package with a corrupted <code>.dist-info</code>
+        directory that is painful to repair. Letting the install finish
+        is almost always the right call.
+      </p>
+
+      <div class="callout warn">
+        <strong>Windows DLL lock warning.</strong>
+        When upgrading llama-cpp-python on Windows, the backend must
+        be stopped first. The upgrade checkbox and the success notice
+        both remind the user of this.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Logging & access filter
+       ============================================================= -->
+  <section class="file-section" id="doc-logging" data-name="logging desktop log access filter loguru rotation retention">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Logging &amp; access filter <span class="file-badge">docs</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md — logging_config.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Logging &amp; access filtering</h1>
+
+      <h2>The desktop log file</h2>
+      <table>
+        <thead><tr><th>Path</th><th>Rotation</th><th>Retention</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>logs/desktop-YYYY-MM-DD.log</code></td>
+            <td>Midnight UTC</td>
+            <td>14 days</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The desktop log directory is the same as the backend's
+        (<code>logs/</code>), so the <code>LogViewerDialog</code> can
+        show both sources side by side. Filtering by name prefix
+        (<code>backend-*.log</code> vs <code>desktop-*.log</code>)
+        separates them.
+      </p>
+
+      <h2>Why a separate file from backend/logging_config.py</h2>
+      <p>
+        The backend's <code>logging_config</code> imports
+        <code>backend.config</code>, which in turn imports
+        <code>pydantic-settings</code>. The desktop client does not
+        need to pull in the whole backend config chain just to write
+        logs — the values it needs (logs dir, retention days) are small
+        and can be passed in as arguments.
+      </p>
+      <p>
+        Keeping the two files separate also means the desktop client
+        can be packaged (PyInstaller) without including the backend
+        config module, shaving a small amount off the bundle.
+      </p>
+
+      <h2>Sink configuration</h2>
+      <table>
+        <thead><tr><th>Sink</th><th>Destination</th><th>Level</th></tr></thead>
+        <tbody>
+          <tr><td>Console</td><td>stderr</td><td>INFO (default)</td></tr>
+          <tr><td>File</td><td><code>logs/desktop-YYYY-MM-DD.log</code></td><td>DEBUG (default)</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        The file sink uses <code>enqueue=True</code> — writes go through
+        a background thread, so logging never blocks the Qt event loop.
+        This matches the backend's behavior.
+      </p>
+
+      <h2>Access log filtering</h2>
+      <p>
+        Both <code>desktop.app</code> and the backend's logging filter
+        HTTP access log entries whose status is 2xx or 3xx. This is
+        critical because the desktop client's status bar polls
+        <code>/api/health</code> every 10 seconds, the chat UI polls
+        <code>/api/ollama/ps</code> every 5 seconds, and the graph
+        editor polls <code>/api/graph/runs</code> on page load.
+      </p>
+      <p>
+        Without filtering, a 4-hour session would produce thousands of
+        identical log lines such as:
+      </p>
+      <pre>INFO:     127.0.0.1:54321 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54322 - "GET /api/ollama/ps HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/health HTTP/1.1" 200 OK
+... (×10,000)</pre>
+
+      <p>
+        The filter uses a regex that matches the uvicorn access log
+        format and extracts the status code:
+      </p>
+      <pre>_ACCESS_LOG_RE = re.compile(
+    r'^INFO:\s+\S+\s+-\s+"[A-Z]+\s+\S+\s+HTTP/[\d.]+"\s+(\d{3})\s',
+)
+
+def _is_routine_access_log(line: str) -> bool:
+    m = _ACCESS_LOG_RE.match(line)
+    if not m:
+        return False
+    try:
+        code = int(m.group(1))
+    except ValueError:
+        return False
+    return 200 <= code &lt; 400</pre>
+
+      <p>
+        The filter preserves 4xx and 5xx entries — those are real
+        problems worth keeping. A 404 on a missing route or a 500 on
+        a broken PHP script is not routine, and the desktop client
+        should surface it to the user.
+      </p>
+
+      <div class="callout">
+        <strong>GUI-only vs file-only.</strong>
+        Routine access lines are still appended to the in-app log dock,
+        because users watching a live session like to see the polling
+        activity. They are just not written to the log file.
+      </div>
+
+      <h2>Safe on multiple launches</h2>
+      <p>
+        The desktop client is single-instance by design — the Qt
+        application model does not support multiple GUI processes
+        sharing the same window state. But if a user does launch two
+        copies, loguru's <code>enqueue=True</code> and Python's append
+        mode make both writers cooperate without corrupting the file.
+        Lines may interleave, but no data is lost.
+      </p>
+
+      <h2>Read-only filesystem fallback</h2>
+      <p>
+        If the logs directory cannot be created — read-only filesystem,
+        permission denied — the file sink is skipped and a warning is
+        logged at the console level. The desktop client continues
+        with console-only logging. This matches the backend's
+        behavior.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Close behavior
+       ============================================================= -->
+  <section class="file-section" id="doc-close" data-name="close behavior shutdown event quit stop all">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Close behavior <span class="file-badge">docs</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md — Shutdown semantics</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Close behavior</h1>
+
+      <p>
+        The main window's <code>closeEvent</code> behaves differently
+        based on how the backend was started:
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>On close</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>desktop.app</code> spawned the backend</td>
+            <td>Prompt: <em>"Stop the backend and quit?"</em> — stops on Yes, ignores the close on No</td>
+          </tr>
+          <tr>
+            <td><code>desktop.app</code> attached to an external backend</td>
+            <td>No prompt — external backend untouched, window closes immediately</td>
+          </tr>
+          <tr>
+            <td><code>desktop.native_chat</code> window closes</td>
+            <td>Nothing — the native client never spawns a backend</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>The stop-all accelerator</h2>
+      <p>
+        <kbd>Ctrl+Shift+Q</kbd> triggers the <em>Stop All Processes</em>
+        action. This is different from closing the window:
+      </p>
+      <ol>
+        <li>
+          Sends <code>POST /api/system/stop-all</code> to the backend.
+          The backend acknowledges immediately with
+          <code>{"status": "stopping"}</code> and then shuts down the
+          llama-cpp server, closes the MCP session, and terminates
+          itself.
+        </li>
+        <li>
+          The desktop launcher waits 1.2 seconds for the backend to
+          complete its shutdown hook.
+        </li>
+        <li>
+          If the subprocess is still alive after 1.2 seconds, the
+          launcher force-kills the tree with <code>taskkill /F /T</code>
+          on Windows or SIGTERM + SIGKILL on Unix.
+        </li>
+        <li>
+          The window remains open and shows the log dock with the
+          shutdown progress. The user can restart the backend from
+          the <em>Backend → Start Backend</em> menu.
+        </li>
+      </ol>
+
+      <h2>Window state persistence</h2>
+      <p>
+        The window geometry is saved to <code>QSettings</code> on
+        close, under <code>window/geometry</code>. On the next launch
+        it is restored automatically. If the settings key is missing
+        — first launch, or after clearing the settings — the window
+        opens at 1400 × 900.
+      </p>
+
+      <pre>self.settings.setValue("window/geometry", self.saveGeometry())</pre>
+
+      <p>
+        <code>QSettings</code> writes to platform-specific locations:
+      </p>
+      <table>
+        <thead><tr><th>Platform</th><th>Location</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Windows</td>
+            <td><code>HKCU\Software\3olution\AgentGraph</code></td>
+          </tr>
+          <tr>
+            <td>Linux</td>
+            <td><code>~/.config/3olution/AgentGraph.conf</code></td>
+          </tr>
+          <tr>
+            <td>macOS</td>
+            <td><code>~/Library/Preferences/com.3olution.AgentGraph.plist</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Menu shortcuts</h2>
+      <table>
+        <thead><tr><th>Shortcut</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl+1</kbd></td><td>Navigate to chat</td></tr>
+          <tr><td><kbd>Ctrl+2</kbd></td><td>Navigate to graph editor</td></tr>
+          <tr><td><kbd>Ctrl+3</kbd></td><td>Navigate to settings</td></tr>
+          <tr><td><kbd>Ctrl+L</kbd></td><td>Open log viewer dialog</td></tr>
+          <tr><td><kbd>Ctrl+B</kbd></td><td>Open current page in system browser</td></tr>
+          <tr><td><kbd>Ctrl+Q</kbd></td><td>Quit (same as close)</td></tr>
+          <tr><td><kbd>Ctrl+Shift+Q</kbd></td><td>Stop all processes</td></tr>
+          <tr><td><kbd>F5</kbd></td><td>Reload the page</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Log dock visibility</h2>
+      <p>
+        The backend log dock is hidden by default. Toggle it from
+        <em>View → Show Backend Log</em>, or via the toolbar's
+        checkbox action. Its visibility is not persisted across
+        launches — the dock always starts hidden.
+      </p>
+      <p>
+        The dock maintains a 2000-line ring buffer. When a new line
+        arrives and the buffer is full, the oldest line is removed
+        from the top of the document. This keeps memory bounded even
+        during long sessions.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Platform notes
+       ============================================================= -->
+  <section class="file-section" id="doc-platform" data-name="platform notes windows linux macos qtwebengine dependencies">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Platform notes <span class="file-badge">docs</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md — Platform-specific behavior</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Platform notes</h1>
+
+      <h2>Windows 10 / 11</h2>
+      <ul>
+        <li>
+          <code>CREATE_NO_WINDOW</code> hides the subprocess console.
+          The backend runs invisibly; its stdout and stderr are
+          captured by the launcher's reader thread.
+        </li>
+        <li>
+          <code>taskkill /F /T /PID &lt;pid&gt;</code> terminates the
+          entire process tree, including the MCP server and the
+          llama-cpp server. This is required because uvicorn spawns
+          child processes and plain <code>terminate()</code> would
+          leave them orphaned.
+        </li>
+        <li>
+          The <code>npx</code> command used by some MCP servers is a
+          <code>.ps1</code> shim that cannot be spawned directly. The
+          MCP client wraps it in <code>cmd /c</code>.
+        </li>
+        <li>
+          Antivirus software may flag freshly-extracted PHP binaries.
+          See the <code>bootstrap/</code> documentation for the
+          exclusion list workaround.
+        </li>
+      </ul>
+
+      <h2>Linux</h2>
+      <p>
+        Qt requires a handful of system libraries that are not always
+        installed by default. On Debian / Ubuntu:
+      </p>
+      <pre>sudo apt-get install -y \
+    libxcb-cursor0 libxcb-xinerama0 libxcb-icccm4 \
+    libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+    libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0</pre>
+
+      <p>
+        PyQt6-WebEngine additionally requires:
+      </p>
+      <pre>sudo apt-get install -y \
+    libnss3 libxcomposite1 libxdamage1 libxrandr2 \
+    libgbm1 libasound2 libpango-1.0-0 libcairo2</pre>
+
+      <p>
+        On Fedora / RHEL the equivalent package names differ
+        slightly — see <code>qt6-qtbase</code>, <code>nss</code>,
+        <code>libXcomposite</code>, etc.
+      </p>
+
+      <div class="callout">
+        <strong>Headless environments.</strong>
+        If Qt cannot connect to a display server, the desktop client
+        will not start. Use <code>desktop.native_chat</code> if you
+        only need chat, or run the backend and open the web UI in a
+        browser. For headless CI, no desktop client is needed at all.
+      </div>
+
+      <h2>macOS</h2>
+      <ul>
+        <li>
+          The first launch of a PyInstaller bundle is blocked by
+          Gatekeeper. Run this once to remove the quarantine flag:
+          <pre>xattr -dr com.apple.quarantine dist/3olutionAgentGraph.app</pre>
+        </li>
+        <li>
+          On Apple Silicon, the arm64 wheel of
+          <code>PyQt6-WebEngine</code> is required. The x86_64 wheel
+          will install but fail to load at runtime with a confusing
+          "image not found" error.
+        </li>
+        <li>
+          The application menu integrates with the macOS menu bar.
+          The <em>Quit</em> action is bound to <kbd>Cmd+Q</kbd>
+          automatically by Qt.
+        </li>
+        <li>
+          Retina displays are detected automatically. The web UI
+          renders at native resolution.
+        </li>
+      </ul>
+
+      <h2>PyInstaller packaging</h2>
+      <p>
+        The desktop client can be packaged into a single-folder
+        bundle with PyInstaller. Two flags are required to make
+        QtWebEngine work:
+      </p>
+      <pre>pyinstaller \
+    --windowed \
+    --name 3olutionAgentGraph \
+    --collect-all PyQt6 \
+    --collect-all PyQt6.QtWebEngineCore \
+    --collect-all PyQt6.QtWebEngineWidgets \
+    desktop/app.py</pre>
+
+      <p>
+        The <code>--collect-all</code> flags are essential — PyInstaller
+        does not automatically detect Qt's plugin DLLs, and the
+        resulting bundle would fail at runtime with
+        "Could not find QtWebEngineProcess".
+      </p>
+
+      <h2>Environment variables</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>AGENT_HOST</code></td>
+            <td>Backend host. Defaults to <code>127.0.0.1</code>.</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_PORT</code></td>
+            <td>Backend port. Defaults to <code>8000</code>.</td>
+          </tr>
+          <tr>
+            <td><code>AGENT_DESKTOP_BACKEND</code></td>
+            <td>Full URL override used by <code>native_chat</code>.
+              Defaults to <code>http://127.0.0.1:8000</code>.</td>
+          </tr>
+          <tr>
+            <td><code>QTWEBENGINE_CHROMIUM_FLAGS</code></td>
+            <td>Chromium flags. The app sets
+              <code>--disable-features=TranslateUI --disable-background-networking</code>
+              by default.</td>
+          </tr>
+          <tr>
+            <td><code>NO_COLOR</code></td>
+            <td>Honoured by the loguru console sink. Set to
+              <code>1</code> to disable ANSI color.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Connecting to a remote backend</h2>
+      <p>
+        The desktop client is not restricted to a local backend. Set
+        <code>AGENT_HOST</code> and <code>AGENT_PORT</code> (or
+        <code>AGENT_DESKTOP_BACKEND</code> for the native client) to
+        point at a remote instance:
+      </p>
+      <pre># Point at a backend running on a different machine
+set AGENT_HOST=192.168.1.42
+set AGENT_PORT=8000
+python -m desktop.app</pre>
+      <p>
+        The launcher will detect the remote backend via
+        <code>/api/health</code> and attach to it. It will not spawn
+        a local subprocess.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DOCUMENTATION — Running the client
+       ============================================================= -->
+  <section class="file-section" id="doc-run" data-name="running desktop client entry points command line">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Running the client <span class="file-badge">docs</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md — Entry points</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Running the desktop client</h1>
+
+      <h2>Entry points</h2>
+      <table>
+        <thead><tr><th>Command</th><th>Launches</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>python -m desktop.app</code></td>
+            <td>The primary client (QtWidgets + QWebEngineView)</td>
+          </tr>
+          <tr>
+            <td><code>python -m desktop.native_chat</code></td>
+            <td>The fallback client (QtWidgets only)</td>
+          </tr>
+          <tr>
+            <td><code>python run.py desktop</code></td>
+            <td>Same as <code>desktop.app</code>, via the launcher script</td>
+          </tr>
+          <tr>
+            <td><code>python run.py native</code></td>
+            <td>Same as <code>desktop.native_chat</code>, via the launcher script</td>
+          </tr>
+          <tr>
+            <td><code>dist/3olutionAgentGraph/3olutionAgentGraph</code></td>
+            <td>The packaged executable (PyInstaller)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Prerequisites</h2>
+      <p>
+        The desktop client assumes the backend dependencies are already
+        installed. If you have not run the bootstrap yet:
+      </p>
+      <pre>python bootstrap/setup.py
+python -m pip install PyQt6 PyQt6-WebEngine httpx</pre>
+
+      <p>
+        <code>httpx</code> is required by both frontends — the primary
+        client uses it for the periodic <code>/api/health</code> probe
+        and for stop-all; the native client uses it for the SSE chat
+        stream.
+      </p>
+
+      <p>
+        <code>PyQt6-WebEngine</code> is optional. When it is missing,
+        <code>desktop.app</code> still launches and shows a
+        <code>NoWebEngineWidget</code> with a button to open the UI in
+        the system browser.
+      </p>
+
+      <h2>First launch</h2>
+      <p>
+        The startup sequence is:
+      </p>
+      <ol>
+        <li>
+          <code>setup_desktop_logging()</code> — configures loguru,
+          creates <code>logs/</code> if missing, opens the file sink.
+        </li>
+        <li>
+          A <code>QApplication</code> is created with the Fusion style
+          and a dark palette.
+        </li>
+        <li>
+          A <code>DesktopApp</code> window is created. The central
+          widget shows the loading HTML.
+        </li>
+        <li>
+          A <code>QTimer.singleShot(50, self.backend.start)</code>
+          schedules the backend launch after the event loop begins
+          processing events.
+        </li>
+        <li>
+          The launcher probes <code>/api/health</code>. When the
+          backend answers, the WebView is navigated to
+          <code>http://127.0.0.1:8000/</code>.
+        </li>
+        <li>
+          The status bar starts polling every 10 seconds.
+        </li>
+      </ol>
+
+      <h2>Attaching to an existing backend</h2>
+      <p>
+        If a backend is already running at the configured URL — for
+        example, you started <code>uvicorn --reload</code> in a
+        terminal — the launcher attaches to it instead of spawning a
+        duplicate. The toolbar's <em>Stop Backend</em> button is
+        disabled in this case, because the launcher does not own the
+        process.
+      </p>
+
+      <h2>Overriding the port</h2>
+      <pre>set AGENT_PORT=9000
+python -m desktop.app</pre>
+      <p>
+        The launcher passes the port through to the subprocess via
+        the <code>AGENT_PORT</code> environment variable, and the
+        WebView navigates to the matching URL.
+      </p>
+
+      <h2>Log locations</h2>
+      <table>
+        <thead><tr><th>Log</th><th>Path</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Desktop client</td>
+            <td><code>logs/desktop-YYYY-MM-DD.log</code></td>
+          </tr>
+          <tr>
+            <td>Backend subprocess</td>
+            <td><code>logs/backend-YYYY-MM-DD.log</code> (routed by
+              the launcher's <code>log</code> signal → loguru)</td>
+          </tr>
+          <tr>
+            <td>In-app dock</td>
+            <td>Last 2000 lines of subprocess output, in-memory only</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Common issues</h2>
+
+      <h3>"Qt platform plugin 'xcb' could not be loaded"</h3>
+      <p>
+        Missing X11 libraries on Linux. Install
+        <code>libxcb-cursor0</code> and friends (see the Platform
+        notes section).
+      </p>
+
+      <h3>"Could not find QtWebEngineProcess"</h3>
+      <p>
+        PyInstaller bundle missing a plugin. Rebuild with
+        <code>--collect-all PyQt6.QtWebEngineCore</code>.
+      </p>
+
+      <h3>Backend fails to start</h3>
+      <p>
+        The failure dialog shows the last 40 lines of backend output.
+        Common causes: port already in use (another backend is
+        running), missing dependencies, or a syntax error in the
+        backend code. Run <code>python run.py backend</code> in a
+        terminal to see the full traceback.
+      </p>
+
+      <h3>"Backend did not become ready within 60 seconds"</h3>
+      <p>
+        The health endpoint responds as soon as uvicorn binds the
+        port. If it does not within 60 seconds, something is wrong.
+        Check that the port is not in use and that the venv has the
+        backend dependencies.
+      </p>
+
+      <h3>WebView shows a blank page</h3>
+      <p>
+        Check the log dock for a 404 or 500 response. If the backend
+        is healthy but the page is blank, try <em>View → Reload
+        Page</em> or open the URL in a system browser to compare.
+      </p>
+
+      <div class="callout success">
+        <strong>Debugging the SSE stream?</strong>
+        Use <code>desktop.native_chat</code> — it renders every event
+        as a text line (💭 thinking, 🔧 tool call, 📊 result, ↻ retry).
+        This makes it easy to see exactly what the backend is
+        emitting, without needing browser dev tools.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — __init__.py
+       ============================================================= -->
+  <section class="file-section" id="f-init" data-name="desktop __init__.py package pyqt6 frontends">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>__init__.py <span class="file-badge">python</span></h2>
+        <span class="file-path">desktop/__init__.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+3olution Agent Graph — PyQt6 desktop package.
+https://3olution.com
+
+Two frontends live here, both backed by the same HTTP/WebSocket API:
+
+    desktop.app          — QtWidgets + QWebEngineView
+                            The primary client. Embeds the same web UI
+                            the browser sees, wrapped in a native
+                            window with menu bar, status bar, log
+                            dock, and a Stop All action.
+
+    desktop.native_chat  — QtWidgets only
+                            A fallback for environments without
+                            PyQt6-WebEngine (headless build machines,
+                            minimal Linux installs, macOS installs
+                            that skip the WebEngine wheel).
+
+  Plus three support modules:
+
+    backend_launcher     — spawns and monitors the FastAPI backend
+                            as a subprocess. Detects an
+                            already-running backend and attaches to
+                            it instead of starting a duplicate.
+
+    install_dialog       — native installer UI for llama-cpp-python.
+                            Detects the local CUDA version and picks
+                            the correct wheel automatically.
+
+    logging_config       — loguru sink writing to
+                            logs/desktop-YYYY-MM-DD.log with the
+                            same rotation and retention rules as
+                            the backend.
+
+================================================================
+  ENTRY POINTS
+================================================================
+
+  From the command line:
+
+      python -m desktop.app          # embedded Chromium
+      python -m desktop.native_chat  # native widgets only
+
+  Or via run.py:
+
+      python run.py desktop
+      python run.py native
+
+  Or via the packaged executable:
+
+      dist/3olutionAgentGraph/3olutionAgentGraph
+"""
+
+__all__ = []</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — app.py
+       ============================================================= -->
+  <section class="file-section" id="f-app" data-name="desktop app.py pyqt6 qwebengine main window log viewer">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>app.py <span class="file-badge">python</span></h2>
+        <span class="file-path">desktop/app.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+3olution Agent Graph — main desktop application.
+https://3olution.com
+
+A PyQt6 application that embeds the web UI in a QWebEngineView,
+wraps it in a native window with menu bar, status bar, and a
+collapsible log dock, and manages the backend subprocess via
+BackendLauncher.
+
+================================================================
+  WHY EMBED THE WEB UI?
+================================================================
+
+  The web UI already implements every feature: chat with streaming,
+  graph editor, settings, Ollama model management. Rebuilding all
+  of that in native QtWidgets would double the maintenance burden.
+
+  QWebEngineView gives us a Chromium renderer inside a native
+  window. JavaScript runs normally, WebSockets work, localStorage
+  works. The result is a native-looking app with a single source of
+  truth for the UI.
+
+================================================================
+  STARTUP SEQUENCE
+================================================================
+
+  1. Configure logging.
+  2. Create QApplication and apply the dark palette.
+  3. Create the main window. It shows a loading HTML page while
+     the backend warms up.
+  4. Start the BackendLauncher. When it emits `started`, navigate
+     the WebView to the backend URL.
+  5. Poll /api/health every 10 seconds to keep the status bar
+     current.
+
+================================================================
+  WHAT HAPPENS WITHOUT PYQT6-WEBENGINE?
+================================================================
+
+  If `PyQt6.QtWebEngineWidgets` cannot be imported, the app falls
+  back to a friendly message with a button to open the UI in the
+  system browser. Users in this situation can also launch
+  desktop.native_chat for a full native experience.
+
+  The fallback is graceful: the window still opens, the menu bar
+  still works, the status bar still shows backend health.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import os
+import re
+import sys
+from pathlib import Path
+
+# ── Third-party HTTP client ──────────────────────────────────────────
+# httpx is used by _refresh_health (periodic status polling) and by
+# stop-all (POST to /api/system/stop-all). It must be imported at
+# module scope so that any function in this module can use it
+# without a runtime import dance.
+import httpx
+
+from PyQt6.QtCore import Qt, QSettings, QTimer, QUrl
+from PyQt6.QtGui import QAction, QDesktopServices, QKeySequence
+from PyQt6.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QDialog,
+    QDockWidget,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QPlainTextEdit,
+    QPushButton,
+    QSizePolicy,
+    QSpinBox,
+    QTextEdit,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
+)
+
+# ── WebEngine is optional ────────────────────────────────────────────
+try:
+    from PyQt6.QtWebEngineWidgets import QWebEngineView
+    from PyQt6.QtWebEngineCore import (
+        QWebEngineSettings,
+        QWebEngineProfile,
+    )
+    WEBENGINE_AVAILABLE = True
+except ImportError:
+    QWebEngineView = None  # type: ignore[assignment]
+    QWebEngineSettings = None  # type: ignore[assignment]
+    QWebEngineProfile = None  # type: ignore[assignment]
+    WEBENGINE_AVAILABLE = False
+
+from loguru import logger
+
+from .backend_launcher import BackendLauncher
+from .logging_config import setup_desktop_logging
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Paths and constants
+# ══════════════════════════════════════════════════════════════════════
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+LOG_DIR = PROJECT_ROOT / "logs"
+DOWNLOAD_DIR = Path.home() / "Downloads"
+
+SETTINGS_ORG = "3olution"
+SETTINGS_APP = "AgentGraph"
+
+# Backend defaults. The desktop client can point at a remote backend
+# by setting AGENT_HOST / AGENT_PORT before launching.
+DEFAULT_HOST = os.environ.get("AGENT_HOST", "127.0.0.1")
+DEFAULT_PORT = int(os.environ.get("AGENT_PORT", "8000"))
+DEFAULT_URL = f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"
+
+# Log dock limits.
+MAX_LOG_LINES = 2000
+HEALTH_REFRESH_MS = 10_000
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Access log filtering
+# ══════════════════════════════════════════════════════════════════════
+#
+#  The web UI polls /api/ollama/ps, /api/llama/runtime/status, and
+#  /api/health every few seconds. Without filtering, those requests
+#  flood the desktop log dock and the backend log file.
+#
+#  We filter out access-log lines whose status code is 2xx or 3xx.
+#  4xx and 5xx lines still pass through — those are real problems.
+
+_ACCESS_LOG_RE = re.compile(
+    r'^INFO:\s+\S+\s+-\s+"[A-Z]+\s+\S+\s+HTTP/[\d.]+"\s+(\d{3})\s',
+)
+
+
+def _is_routine_access_log(line: str) -> bool:
+    """True if the line is a successful HTTP access log entry."""
+    m = _ACCESS_LOG_RE.match(line)
+    if not m:
+        return False
+    try:
+        code = int(m.group(1))
+    except ValueError:
+        return False
+    return 200 <= code < 400
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Download handling
+# ══════════════════════════════════════════════════════════════════════
+
+def _handle_download(request) -> None:
+    """
+    Handle a download initiated by the embedded browser.
+
+    Shows a Save As dialog with a sensible default filename. If the
+    user cancels, the download is cancelled.
+    """
+    try:
+        suggested = request.downloadFileName() or "download"
+    except Exception:
+        suggested = "download"
+
+    target, _ = QFileDialog.getSaveFileName(
+        None,
+        "Save File",
+        str(DOWNLOAD_DIR / suggested),
+        "All Files (*.*)",
+    )
+    if not target:
+        request.cancel()
+        logger.info("Download cancelled by user: {}", suggested)
+        return
+
+    try:
+        request.setDownloadDirectory(str(Path(target).parent))
+        request.setDownloadFileName(Path(target).name)
+        request.accept()
+        logger.info("Download accepted: {} → {}", suggested, target)
+    except Exception as exc:
+        logger.warning("Could not accept download: {}", exc)
+        try:
+            request.cancel()
+        except Exception:
+            pass
+
+
+def _connect_download_handler() -> None:
+    """
+    Wire the download handler into QtWebEngine's default profile.
+
+    QtWebEngine has no "enable downloads" flag — downloads are
+    always enabled. The only requirement is connecting to the
+    profile's downloadRequested signal.
+    """
+    if not WEBENGINE_AVAILABLE:
+        return
+    try:
+        profile = QWebEngineProfile.defaultProfile()
+        profile.downloadRequested.connect(_handle_download)
+        logger.debug("Download handler connected")
+    except Exception as exc:
+        logger.warning("Could not connect download handler: {}", exc)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Loading screen
+# ══════════════════════════════════════════════════════════════════════
+
+LOADING_HTML = """
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;style&gt;
+  html, body {
+    margin: 0; padding: 0;
+    height: 100%;
+    background: #0f1116;
+    color: #e6e6e6;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  body { display: flex; align-items: center; justify-content: center; }
+  .box { text-align: center; }
+  .logo {
+    display: inline-block;
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border-radius: 14px;
+    font-weight: 700;
+    color: #fff;
+    font-size: 30px;
+    line-height: 56px;
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 22px; margin: 0 0 8px; font-weight: 600; }
+  p { color: #888; margin: 0; font-size: 14px; }
+  .spinner {
+    margin-top: 28px;
+    display: inline-block;
+    width: 24px; height: 24px;
+    border: 2px solid #333;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class="box"&gt;
+    &lt;div class="logo"&gt;3&lt;/div&gt;
+    &lt;h1&gt;Starting 3olution Agent Graph…&lt;/h1&gt;
+    &lt;p id="msg"&gt;Waiting for the backend to become ready.&lt;/p&gt;
+    &lt;div class="spinner"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"""
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Log viewer dialog
+# ══════════════════════════════════════════════════════════════════════
+
+class LogViewerDialog(QDialog):
+    """
+    Modal dialog showing the tail of the most recent log file.
+
+    Reads logs/backend-*.log and logs/desktop-*.log, letting the
+    user choose which source and how many lines. Refreshes on
+    demand — no live tailing, which keeps the implementation
+    simple.
+    """
+
+    def __init__(self, log_dir: Path, parent=None) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("3olution Agent Graph — Log Viewer")
+        self.resize(1000, 640)
+        self.log_dir = log_dir
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+
+        # ── Controls row ─────────────────────────────────────────────
+        top = QHBoxLayout()
+        top.addWidget(QLabel("Source:"))
+
+        self.source_combo = QComboBox()
+        self.source_combo.addItem("Backend + Desktop", "all")
+        self.source_combo.addItem("Backend only", "backend")
+        self.source_combo.addItem("Desktop only", "desktop")
+        self.source_combo.setStyleSheet(
+            "QComboBox { padding: 4px 8px; background: #1a1d24; "
+            "color: #e6e6e6; border: 1px solid #333; border-radius: 4px; }"
+        )
+        self.source_combo.currentIndexChanged.connect(self._reload)
+        top.addWidget(self.source_combo)
+
+        top.addSpacing(16)
+        top.addWidget(QLabel("Lines:"))
+
+        self.lines_spin = QSpinBox()
+        self.lines_spin.setRange(100, 10000)
+        self.lines_spin.setValue(1000)
+        self.lines_spin.setSingleStep(100)
+        self.lines_spin.setStyleSheet(
+            "QSpinBox { padding: 4px 8px; background: #1a1d24; "
+            "color: #e6e6e6; border: 1px solid #333; border-radius: 4px; }"
+        )
+        self.lines_spin.valueChanged.connect(self._reload)
+        top.addWidget(self.lines_spin)
+
+        top.addStretch(1)
+
+        refresh_btn = QPushButton("↻ Refresh")
+        refresh_btn.clicked.connect(self._reload)
+        refresh_btn.setStyleSheet(
+            "QPushButton { padding: 6px 14px; background: #1f2937; "
+            "color: #e6e6e6; border: 1px solid #333; border-radius: 4px; }"
+            "QPushButton:hover { background: #2a3542; }"
+        )
+        top.addWidget(refresh_btn)
+
+        open_folder_btn = QPushButton("Open Log Folder")
+        open_folder_btn.clicked.connect(self._open_folder)
+        open_folder_btn.setStyleSheet(
+            "QPushButton { padding: 6px 14px; background: #1f2937; "
+            "color: #e6e6e6; border: 1px solid #333; border-radius: 4px; }"
+            "QPushButton:hover { background: #2a3542; }"
+        )
+        top.addWidget(open_folder_btn)
+
+        layout.addLayout(top)
+
+        # ── Info label ───────────────────────────────────────────────
+        self.info_label = QLabel(f"Log directory: {self.log_dir}")
+        self.info_label.setStyleSheet(
+            "color: #6b7280; font-size: 11px; "
+            "font-family: ui-monospace, monospace;"
+        )
+        layout.addWidget(self.info_label)
+
+        # ── Text area ────────────────────────────────────────────────
+        self.text = QPlainTextEdit()
+        self.text.setReadOnly(True)
+        self.text.setStyleSheet(
+            "QPlainTextEdit {"
+            "  background: #0a0c10; color: #b8c2cc;"
+            "  border: 1px solid #222; border-radius: 6px;"
+            "  font-family: ui-monospace, 'Consolas', monospace;"
+            "  font-size: 11px; padding: 8px;"
+            "}"
+        )
+        layout.addWidget(self.text, stretch=1)
+
+        # ── Close button ─────────────────────────────────────────────
+        bottom = QHBoxLayout()
+        bottom.addStretch(1)
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(self.close)
+        close_btn.setStyleSheet(
+            "QPushButton { padding: 6px 20px; background: #1f2937; "
+            "color: #e6e6e6; border: 1px solid #333; border-radius: 4px; }"
+            "QPushButton:hover { background: #2a3542; }"
+        )
+        bottom.addWidget(close_btn)
+        layout.addLayout(bottom)
+
+        self._reload()
+
+    def _reload(self) -> None:
+        """Read the tail of the newest matching log file."""
+        source = self.source_combo.currentData()
+        n_lines = self.lines_spin.value()
+
+        if source == "backend":
+            patterns = ["backend-*.log"]
+        elif source == "desktop":
+            patterns = ["desktop-*.log"]
+        else:
+            patterns = ["backend-*.log", "desktop-*.log"]
+
+        files: list[Path] = []
+        for pat in patterns:
+            files.extend(self.log_dir.glob(pat))
+
+        if not files:
+            self.text.setPlainText(
+                f"(no log files found in {self.log_dir})"
+            )
+            return
+
+        files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+        latest = files[0]
+
+        try:
+            with latest.open("r", encoding="utf-8", errors="replace") as f:
+                all_lines = f.readlines()
+            tail = all_lines[-n_lines:]
+            self.text.setPlainText("".join(tail))
+            self.info_label.setText(
+                f"File: {latest.name}   |   "
+                f"showing last {len(tail)} of {len(all_lines)} lines   |   "
+                f"Log directory: {self.log_dir}"
+            )
+        except Exception as exc:
+            self.text.setPlainText(f"Error reading {latest}: {exc}")
+
+        sb = self.text.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+    def _open_folder(self) -> None:
+        """Open the logs folder in the system file manager."""
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.log_dir)))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Fallback widget when WebEngine is not available
+# ══════════════════════════════════════════════════════════════════════
+
+class NoWebEngineWidget(QWidget):
+    """
+    Widget shown when PyQt6-WebEngine is not installed.
+
+    Provides a clear explanation and a button to open the UI in
+    the system browser.
+    """
+
+    def __init__(self, url: str) -> None:
+        super().__init__()
+        self.url = url
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(40, 40, 40, 40)
+        layout.setSpacing(16)
+
+        title = QLabel("Embedded browser not available")
+        title.setStyleSheet(
+            "font-size: 18px; font-weight: 600; color: #e6e6e6;"
+        )
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        msg = QLabel(
+            "The desktop app normally embeds the web UI in a Chromium "
+            "view. That requires the &lt;code&gt;PyQt6-WebEngine&lt;/code&gt; "
+            "package.&lt;br&gt;&lt;br&gt;"
+            "Install it with:&lt;br&gt;"
+            "&lt;code style='background:#1a1d24;padding:2px 8px;"
+            "border-radius:4px;'&gt;pip install PyQt6-WebEngine&lt;/code&gt;"
+            "&lt;br&gt;&lt;br&gt;"
+            "Or click below to open in your system browser."
+        )
+        msg.setStyleSheet("color: #b8c2cc; font-size: 14px;")
+        msg.setWordWrap(True)
+        msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        open_btn = QPushButton("Open in browser")
+        open_btn.setStyleSheet(
+            "QPushButton {"
+            "  background: #2563eb; color: white; border: none;"
+            "  border-radius: 8px; padding: 10px 24px;"
+            "  font-size: 14px; font-weight: 500;"
+            "}"
+            "QPushButton:hover { background: #1d4ed8; }"
+        )
+        open_btn.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        )
+        open_btn.clicked.connect(self._open_in_browser)
+        open_btn.setMaximumWidth(240)
+
+        layout.addStretch(1)
+        layout.addWidget(title)
+        layout.addWidget(msg)
+        layout.addSpacing(12)
+
+        btn_row = QWidget()
+        btn_layout = QVBoxLayout(btn_row)
+        btn_layout.setContentsMargins(0, 0, 0, 0)
+        btn_layout.addWidget(
+            open_btn, alignment=Qt.AlignmentFlag.AlignCenter
+        )
+        layout.addWidget(btn_row)
+        layout.addStretch(2)
+
+    def _open_in_browser(self) -> None:
+        QDesktopServices.openUrl(QUrl(self.url))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Main window
+# ══════════════════════════════════════════════════════════════════════
+
+class DesktopApp(QMainWindow):
+    """The main PyQt6 window."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.settings = QSettings(SETTINGS_ORG, SETTINGS_APP)
+
+        # Backend launcher.
+        self.backend = BackendLauncher(
+            project_root=PROJECT_ROOT,
+            host=DEFAULT_HOST,
+            port=DEFAULT_PORT,
+        )
+        self.backend.started.connect(self._on_backend_started)
+        self.backend.stopped.connect(self._on_backend_stopped)
+        self.backend.failed.connect(self._on_backend_failed)
+        self.backend.log.connect(self._on_backend_log)
+
+        # UI state.
+        self._current_path = "/"
+        self._health_timer: QTimer | None = None
+        self._suppress_close_prompt = False
+        self._backend_lines: list[str] = []
+
+        self._setup_window()
+        self._setup_central()
+        self._setup_log_dock()
+        self._setup_actions()
+        self._setup_toolbar()
+        self._setup_menu()
+        self._setup_status_bar()
+
+        logger.info("Desktop app started")
+
+        # Start the backend after the event loop begins processing.
+        QTimer.singleShot(50, self.backend.start)
+
+    # ── Setup ────────────────────────────────────────────────────────
+
+    def _setup_window(self) -> None:
+        """Restore saved geometry or pick a reasonable default."""
+        self.setWindowTitle("3olution Agent Graph")
+        geometry = self.settings.value("window/geometry")
+        if geometry:
+            self.restoreGeometry(geometry)
+        else:
+            self.resize(1400, 900)
+
+    def _setup_central(self) -> None:
+        """
+        Create the central widget.
+
+        With WebEngine: a QWebEngineView showing the loading HTML.
+        Without WebEngine: a NoWebEngineWidget.
+        """
+        if WEBENGINE_AVAILABLE:
+            _connect_download_handler()
+
+            self.web_view = QWebEngineView()
+            s = self.web_view.settings()
+            s.setAttribute(
+                QWebEngineSettings.WebAttribute.JavascriptEnabled, True
+            )
+            s.setAttribute(
+                QWebEngineSettings.WebAttribute.LocalStorageEnabled, True
+            )
+            s.setAttribute(
+                QWebEngineSettings.WebAttribute.ScrollAnimatorEnabled, True
+            )
+            s.setAttribute(
+                QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard,
+                True,
+            )
+            s.setAttribute(
+                QWebEngineSettings.WebAttribute.PluginsEnabled, False
+            )
+            self.web_view.setHtml(LOADING_HTML)
+            self.setCentralWidget(self.web_view)
+        else:
+            self.web_view = None
+            self.setCentralWidget(NoWebEngineWidget(DEFAULT_URL))
+
+    def _setup_log_dock(self) -> None:
+        """Create the collapsible backend log dock at the bottom."""
+        self.log_view = QTextEdit()
+        self.log_view.setReadOnly(True)
+        self.log_view.setStyleSheet(
+            "QTextEdit {"
+            "  background: #0f1116;"
+            "  color: #b8c2cc;"
+            "  border: none;"
+            "  font-family: ui-monospace, 'Consolas', monospace;"
+            "  font-size: 11px;"
+            "  padding: 8px;"
+            "}"
+        )
+
+        self.log_dock = QDockWidget("Backend Log", self)
+        self.log_dock.setObjectName("backend_log_dock")
+        self.log_dock.setWidget(self.log_view)
+        self.log_dock.setAllowedAreas(
+            Qt.DockWidgetArea.BottomDockWidgetArea
+            | Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        self.addDockWidget(
+            Qt.DockWidgetArea.BottomDockWidgetArea, self.log_dock
+        )
+        self.log_dock.hide()
+
+    def _setup_actions(self) -> None:
+        """Create every QAction used by the toolbar and menus."""
+
+        self.act_home = QAction("Chat", self)
+        self.act_home.setShortcut(QKeySequence("Ctrl+1"))
+        self.act_home.triggered.connect(lambda: self._navigate("/"))
+
+        self.act_graph = QAction("Graph", self)
+        self.act_graph.setShortcut(QKeySequence("Ctrl+2"))
+        self.act_graph.triggered.connect(lambda: self._navigate("/graph"))
+
+        self.act_settings = QAction("Settings", self)
+        self.act_settings.setShortcut(QKeySequence("Ctrl+3"))
+        self.act_settings.triggered.connect(
+            lambda: self._navigate("/settings")
+        )
+
+        self.act_start_backend = QAction("Start Backend", self)
+        self.act_start_backend.triggered.connect(self._start_backend)
+
+        self.act_stop_backend = QAction("Stop Backend", self)
+        self.act_stop_backend.triggered.connect(self._stop_backend)
+        self.act_stop_backend.setEnabled(False)
+
+        self.act_stop_all = QAction("Stop All Processes…", self)
+        self.act_stop_all.setShortcut(QKeySequence("Ctrl+Shift+Q"))
+        self.act_stop_all.triggered.connect(self._stop_all)
+        self.act_stop_all.setEnabled(False)
+
+        self.act_install_runtime = QAction("Install LLM Runtime…", self)
+        self.act_install_runtime.triggered.connect(
+            self._open_install_dialog
+        )
+
+        self.act_view_logs = QAction("View Logs…", self)
+        self.act_view_logs.setShortcut(QKeySequence("Ctrl+L"))
+        self.act_view_logs.triggered.connect(self._open_log_viewer)
+
+        self.act_open_log_folder = QAction("Open Log Folder", self)
+        self.act_open_log_folder.triggered.connect(self._open_log_folder)
+
+        self.act_reload = QAction("Reload Page", self)
+        self.act_reload.setShortcut(QKeySequence("F5"))
+        self.act_reload.triggered.connect(self._reload)
+
+        self.act_open_browser = QAction("Open in Browser", self)
+        self.act_open_browser.setShortcut(QKeySequence("Ctrl+B"))
+        self.act_open_browser.triggered.connect(self._open_in_browser)
+
+        self.act_toggle_log = QAction("Show Backend Log", self)
+        self.act_toggle_log.setCheckable(True)
+        self.act_toggle_log.toggled.connect(self._toggle_log_dock)
+
+        self.act_about = QAction("About", self)
+        self.act_about.triggered.connect(self._show_about)
+
+        self.act_quit = QAction("Quit", self)
+        self.act_quit.setShortcut(QKeySequence("Ctrl+Q"))
+        self.act_quit.triggered.connect(self.close)
+
+    def _setup_toolbar(self) -> None:
+        """Create the top toolbar."""
+        tb = QToolBar("Main")
+        tb.setMovable(False)
+        tb.setStyleSheet(
+            "QToolBar {"
+            "  background: #14161b;"
+            "  border-bottom: 1px solid #222;"
+            "  padding: 6px;"
+            "  spacing: 4px;"
+            "}"
+            "QToolButton {"
+            "  color: #e6e6e6;"
+            "  background: #1f2937;"
+            "  border: 1px solid #333;"
+            "  border-radius: 6px;"
+            "  padding: 5px 12px;"
+            "  font-size: 13px;"
+            "}"
+            "QToolButton:hover { background: #2a3542; }"
+            "QToolButton:disabled { opacity: 0.5; color: #666; }"
+            "QToolButton:checked { background: #2563eb; "
+            "border-color: #2563eb; }"
+        )
+        tb.addAction(self.act_start_backend)
+        tb.addAction(self.act_stop_backend)
+        tb.addSeparator()
+        tb.addAction(self.act_home)
+        tb.addAction(self.act_graph)
+        tb.addAction(self.act_settings)
+        tb.addSeparator()
+        tb.addAction(self.act_reload)
+        tb.addAction(self.act_open_browser)
+        self.addToolBar(tb)
+
+    def _setup_menu(self) -> None:
+        """Create the menu bar."""
+        mb = self.menuBar()
+
+        file_menu = mb.addMenu("&amp;File")
+        file_menu.addAction(self.act_open_browser)
+        file_menu.addSeparator()
+        file_menu.addAction(self.act_quit)
+
+        view_menu = mb.addMenu("&amp;View")
+        view_menu.addAction(self.act_home)
+        view_menu.addAction(self.act_graph)
+        view_menu.addAction(self.act_settings)
+        view_menu.addSeparator()
+        view_menu.addAction(self.act_reload)
+        view_menu.addSeparator()
+        view_menu.addAction(self.act_toggle_log)
+
+        backend_menu = mb.addMenu("&amp;Backend")
+        backend_menu.addAction(self.act_start_backend)
+        backend_menu.addAction(self.act_stop_backend)
+        backend_menu.addSeparator()
+        backend_menu.addAction(self.act_stop_all)
+        backend_menu.addSeparator()
+        backend_menu.addAction(self.act_install_runtime)
+
+        logs_menu = mb.addMenu("&amp;Logs")
+        logs_menu.addAction(self.act_view_logs)
+        logs_menu.addAction(self.act_open_log_folder)
+
+        help_menu = mb.addMenu("&amp;Help")
+        help_menu.addAction(self.act_about)
+
+    def _setup_status_bar(self) -> None:
+        """Create the status bar with the health label and URL label."""
+        self.status_label = QLabel("Backend: starting…")
+        self.status_label.setStyleSheet(
+            "color: #b8c2cc; padding: 2px 8px;"
+        )
+        self.url_label = QLabel(DEFAULT_URL)
+        self.url_label.setStyleSheet(
+            "color: #888; padding: 2px 8px; "
+            "font-family: ui-monospace, monospace; font-size: 11px;"
+        )
+        self.statusBar().addWidget(self.status_label, 1)
+        self.statusBar().addPermanentWidget(self.url_label)
+        self.statusBar().setStyleSheet(
+            "QStatusBar { background: #14161b; color: #b8c2cc;"
+            " border-top: 1px solid #222; }"
+        )
+
+    # ── Backend callbacks ────────────────────────────────────────────
+
+    def _on_backend_started(self) -> None:
+        """Called when the backend answers /api/health."""
+        logger.info("Backend started at {}", DEFAULT_URL)
+        self.status_label.setText("Backend: running")
+        self.act_start_backend.setEnabled(False)
+        self.act_stop_backend.setEnabled(self.backend.spawned_by_us)
+        self.act_stop_all.setEnabled(True)
+
+        if self.web_view is not None:
+            self.web_view.setUrl(QUrl(f"{DEFAULT_URL}{self._current_path}"))
+
+        # Start the periodic health refresh.
+        if self._health_timer is None:
+            self._health_timer = QTimer(self)
+            self._health_timer.timeout.connect(self._refresh_health)
+            self._health_timer.start(HEALTH_REFRESH_MS)
+        QTimer.singleShot(300, self._refresh_health)
+
+    def _on_backend_stopped(self) -> None:
+        """Called when the backend subprocess has exited."""
+        logger.info("Backend stopped")
+        self.status_label.setText("Backend: stopped")
+        self.act_start_backend.setEnabled(True)
+        self.act_stop_backend.setEnabled(False)
+        self.act_stop_all.setEnabled(False)
+
+        if self._health_timer is not None:
+            self._health_timer.stop()
+            self._health_timer = None
+
+        if self.web_view is not None:
+            self.web_view.setHtml(LOADING_HTML)
+
+    def _on_backend_failed(self, message: str) -> None:
+        """Called when the backend fails to start or exits unexpectedly."""
+        logger.error("Backend failed: {}", message)
+        self.status_label.setText("Backend: failed")
+        self._on_backend_log(f"❌ {message}")
+
+        # Show the last 40 lines of backend output in a details box.
+        tail = self._backend_lines[-40:]
+        tail_text = (
+            "\n".join(tail) if tail else "(no backend output captured)"
+        )
+
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle("Backend failed")
+        box.setText(f"The backend did not start.\n\n{message}")
+        box.setDetailedText(tail_text)
+        box.setInformativeText(
+            "Open the Backend Log (View menu) for the full log, "
+            "or run:\n"
+            "    python run.py backend\n"
+            "in a terminal to see the full traceback."
+        )
+        box.exec()
+
+    def _on_backend_log(self, line: str) -> None:
+        """
+        Receive a line of backend stdout/stderr.
+
+        Filters routine access logs (successful HTTP requests to
+        status endpoints) so the log file does not flood, but still
+        appends them to the GUI dock so users can see live activity.
+        """
+        if _is_routine_access_log(line):
+            # GUI-only, no file write.
+            self._append_to_log_dock(line)
+            return
+
+        # Route to the appropriate loguru level.
+        upper = line.upper()
+        if (
+            "ERROR" in upper
+            or "TRACEBACK" in upper
+            or "EXCEPTION" in upper
+            or "CRITICAL" in upper
+        ):
+            logger.error("[backend] {}", line)
+        elif "WARNING" in upper or " WARN " in upper:
+            logger.warning("[backend] {}", line)
+        else:
+            logger.info("[backend] {}", line)
+
+        # Ring buffer for the failure dialog.
+        self._backend_lines.append(line)
+        if len(self._backend_lines) > 500:
+            self._backend_lines = self._backend_lines[-500:]
+
+        self._append_to_log_dock(line)
+
+    def _append_to_log_dock(self, line: str) -> None:
+        """Append a line to the log dock, trimming old lines."""
+        self.log_view.append(line)
+        doc = self.log_view.document()
+        if doc.blockCount() > MAX_LOG_LINES:
+            cursor = self.log_view.textCursor()
+            cursor.movePosition(cursor.MoveOperation.Start)
+            cursor.movePosition(
+                cursor.MoveOperation.Down,
+                cursor.MoveMode.KeepAnchor,
+                doc.blockCount() - MAX_LOG_LINES,
+            )
+            cursor.removeSelectedText()
+            cursor.deleteChar()
+        sb = self.log_view.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+    def _refresh_health(self) -> None:
+        """
+        Periodic /api/health probe to update the status bar.
+
+        Uses the top-level httpx import. The status text shows the
+        loaded model, MCP connection state, and whether tools are
+        disabled for this session.
+        """
+        try:
+            r = httpx.get(f"{DEFAULT_URL}/api/health", timeout=1.5)
+            if r.status_code != 200:
+                raise RuntimeError(f"HTTP {r.status_code}")
+            data = r.json()
+
+            model = data.get("primary_llm", {}).get("model", "?")
+            mcp = "connected" if data.get("mcp_connected") else "not connected"
+            version = data.get("version", "?")
+            disable_tools = data.get("disable_tools", False)
+            tools_str = " (no tools)" if disable_tools else ""
+
+            self.status_label.setText(
+                f"Backend: running (v{version}){tools_str}   "
+                f"Model: {model}   MCP: {mcp}"
+            )
+        except Exception:
+            self.status_label.setText("Backend: not responding")
+
+    # ── Navigation and actions ───────────────────────────────────────
+
+    def _navigate(self, path: str) -> None:
+        """Navigate the WebView (or note the path for browser open)."""
+        self._current_path = path
+        self.url_label.setText(f"{DEFAULT_URL}{path}")
+        if self.web_view is not None:
+            self.web_view.setUrl(QUrl(f"{DEFAULT_URL}{path}"))
+
+    def _reload(self) -> None:
+        """Reload the current page."""
+        if self.web_view is not None:
+            self.web_view.reload()
+
+    def _open_in_browser(self) -> None:
+        """Open the current page in the system browser."""
+        QDesktopServices.openUrl(QUrl(f"{DEFAULT_URL}{self._current_path}"))
+
+    def _start_backend(self) -> None:
+        """Manually start the backend."""
+        self.status_label.setText("Backend: starting…")
+        self.act_start_backend.setEnabled(False)
+        self.backend.start()
+
+    def _stop_backend(self) -> None:
+        """Stop only the subprocess (not the whole system)."""
+        if self.backend.spawned_by_us:
+            self.backend.stop()
+        else:
+            self.status_label.setText("Backend: external (not stopping)")
+            QMessageBox.information(
+                self,
+                "External backend",
+                "The backend was started outside the desktop app "
+                "(for example, from a terminal). It will not be "
+                "stopped when this window closes. Use Ctrl+C in "
+                "its terminal.",
+            )
+
+    def _stop_all(self) -> None:
+        """
+        Stop the backend, MCP, and llama-cpp via the backend's
+        /api/system/stop-all endpoint.
+        """
+        reply = QMessageBox.question(
+            self,
+            "Stop all processes",
+            "Stop the backend, the MCP server, and any llama-cpp "
+            "server?\n\n"
+            "The backend will terminate and you will need to restart "
+            "it with 'python run.py backend' (or via the Start "
+            "Backend menu action).",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        self.status_label.setText("Backend: stopping all…")
+        self.act_stop_all.setEnabled(False)
+        self.act_stop_backend.setEnabled(False)
+        logger.info("Stop-all requested")
+        self._on_backend_log("🛑 Stop-all requested. Terminating…")
+
+        try:
+            asyncio.run(self.backend.stop_all_async())
+            self._on_backend_log("🛑 All processes stopped.")
+        except Exception as exc:
+            logger.exception("Stop-all failed")
+            self._on_backend_log(f"Stop-all failed: {exc}")
+            try:
+                self.backend.stop()
+            except Exception:
+                pass
+
+    def _toggle_log_dock(self, checked: bool) -> None:
+        """Show or hide the log dock."""
+        self.log_dock.setVisible(checked)
+
+    def _open_install_dialog(self) -> None:
+        """Open the native llama-cpp install dialog."""
+        from .install_dialog import InstallDialog
+        dlg = InstallDialog(self)
+        dlg.exec()
+
+    def _open_log_viewer(self) -> None:
+        """Open the log viewer dialog."""
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        dlg = LogViewerDialog(LOG_DIR, self)
+        dlg.exec()
+
+    def _open_log_folder(self) -> None:
+        """Open the logs folder in the system file manager."""
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(LOG_DIR)))
+
+    def _show_about(self) -> None:
+        """Show the About dialog."""
+        QMessageBox.about(
+            self,
+            "About 3olution Agent Graph",
+            "&lt;h3&gt;3olution Agent Graph&lt;/h3&gt;"
+            "&lt;p&gt;Dynamic operating graph for AI agents.&lt;/p&gt;"
+            "&lt;p&gt;Web UI: "
+            f"&lt;a href='{DEFAULT_URL}'&gt;{DEFAULT_URL}&lt;/a&gt;&lt;br&gt;"
+            "Project: "
+            "&lt;a href='https://3olution.com'&gt;https://3olution.com&lt;/a&gt;&lt;/p&gt;"
+            f"&lt;p style='color:#888'&gt;Embedded browser: "
+            f"{'Chromium (QtWebEngine)' if WEBENGINE_AVAILABLE else 'not available'}&lt;br&gt;"
+            f"Logs: {LOG_DIR}&lt;/p&gt;",
+        )
+
+    # ── Close ────────────────────────────────────────────────────────
+
+    def closeEvent(self, event) -> None:
+        """
+        Save window state and stop the backend if we started it.
+
+        An externally-started backend is deliberately left running,
+        because the user started it in a terminal and expects it to
+        continue.
+        """
+        logger.info("Desktop app closing")
+        self.settings.setValue("window/geometry", self.saveGeometry())
+
+        if self.backend.spawned_by_us and self.backend.is_running():
+            if not self._suppress_close_prompt:
+                reply = QMessageBox.question(
+                    self,
+                    "Quit",
+                    "Stop the backend and quit?",
+                    QMessageBox.StandardButton.Yes
+                    | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if reply != QMessageBox.StandardButton.Yes:
+                    event.ignore()
+                    return
+            self.backend.stop()
+
+        event.accept()
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Entry point
+# ══════════════════════════════════════════════════════════════════════
+
+def main() -> None:
+    """Application entry point."""
+    setup_desktop_logging(
+        log_dir=LOG_DIR,
+        console_level="INFO",
+        file_level="DEBUG",
+        retention_days=14,
+    )
+
+    # QtWebEngine honors a handful of environment variables. These
+    # disable the translate prompt (annoying) and background
+    # networking (a minor privacy concern in some environments).
+    os.environ.setdefault(
+        "QTWEBENGINE_CHROMIUM_FLAGS",
+        "--disable-features=TranslateUI --disable-background-networking",
+    )
+
+    app = QApplication(sys.argv)
+    app.setApplicationName("3olution Agent Graph")
+    app.setOrganizationName(SETTINGS_ORG)
+    app.setApplicationDisplayName("3olution Agent Graph")
+    app.setStyle("Fusion")
+
+    # Apply the dark palette.
+    from PyQt6.QtGui import QPalette, QColor
+    palette = QPalette()
+    palette.setColor(QPalette.ColorRole.Window, QColor("#0f1116"))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor("#e6e6e6"))
+    palette.setColor(QPalette.ColorRole.Base, QColor("#1a1d24"))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#14161b"))
+    palette.setColor(QPalette.ColorRole.Text, QColor("#e6e6e6"))
+    palette.setColor(QPalette.ColorRole.Button, QColor("#1f2937"))
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor("#e6e6e6"))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor("#2563eb"))
+    palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
+    palette.setColor(QPalette.ColorRole.ToolTipBase, QColor("#14161b"))
+    palette.setColor(QPalette.ColorRole.ToolTipText, QColor("#e6e6e6"))
+    app.setPalette(palette)
+
+    try:
+        window = DesktopApp()
+        window.show()
+        sys.exit(app.exec())
+    except Exception:
+        logger.exception("Fatal desktop error")
+        raise
+
+
+if __name__ == "__main__":
+    main()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — backend_launcher.py
+       ============================================================= -->
+  <section class="file-section" id="f-backend-launcher" data-name="backend launcher spawn attach monitor subprocess health poll">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>backend_launcher.py <span class="file-badge">python</span></h2>
+        <span class="file-path">desktop/backend_launcher.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Backend process launcher for the desktop client.
+https://3olution.com
+
+Responsibilities:
+
+  1. Detect whether a backend is already running at the configured
+     address. If one is found, attach to it instead of spawning a
+     duplicate.
+
+  2. Otherwise, spawn `scripts/serve.py` as a subprocess using the
+     correct interpreter (the .venv or portable runtime), and
+     monitor it for readiness.
+
+  3. Stream the subprocess's stdout and stderr to the desktop
+     client's log dock and to logs/backend-*.log.
+
+  4. Handle graceful shutdown: on close, terminate the subprocess
+     tree (taskkill /T on Windows, SIGTERM + SIGKILL on Unix).
+
+================================================================
+  SIGNALS
+================================================================
+
+  The launcher emits Qt signals:
+
+      started()      — the backend is ready to serve requests
+      stopped()      — the subprocess has exited cleanly
+      failed(str)    — startup failed with the given message
+      log(str)       — one line of subprocess output
+
+  The main window connects to these to update its status bar and
+  log dock.
+
+================================================================
+  THREADING MODEL
+================================================================
+
+  The launcher runs on the Qt event loop's thread (the main GUI
+  thread), because it uses Qt's QTimer for polling readiness.
+
+  Subprocess output is read on a background threading.Thread, and
+  that thread emits `log` signals. Qt signals are safe to emit
+  from any thread — the receiving slot runs on the thread that the
+  QObject lives on.
+
+================================================================
+  INTERPRETER RESOLUTION
+================================================================
+
+  The subprocess must run with an interpreter that has the backend
+  dependencies installed. The resolution order is:
+
+    1. .venv/Scripts/python.exe   (Windows)
+       .venv/bin/python            (Unix)
+
+    2. sys.executable — the interpreter running the desktop client.
+
+  The first path exists when the developer ran `python run.py setup`.
+  The second is a fallback that works in packaged builds where the
+  interpreter is bundled inside the PyInstaller archive.
+"""
+
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+import threading
+import time
+from pathlib import Path
+
+import httpx
+from PyQt6.QtCore import QObject, QTimer, pyqtSignal
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Constants
+# ══════════════════════════════════════════════════════════════════════
+
+# How long the launcher waits for the backend to answer /api/health.
+# Large cold-load models can take a while to warm up, but the health
+# endpoint responds as soon as uvicorn is up — long before the LLM
+# is warm. 60 s is generous.
+STARTUP_TIMEOUT_SECONDS = 60.0
+
+# How often the readiness poll fires.
+HEALTH_POLL_INTERVAL_MS = 500
+
+# Timeout for individual health probes. Kept short so a hung probe
+# does not delay the whole startup.
+HEALTH_REQUEST_TIMEOUT = 1.5
+
+# Timeout for the graceful stop-all API call.
+STOP_ALL_REQUEST_TIMEOUT = 5.0
+
+# How long to wait between terminating the subprocess and force-
+# killing it if it does not exit on its own.
+GRACEFUL_STOP_TIMEOUT = 5.0
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Helpers
+# ══════════════════════════════════════════════════════════════════════
+
+def _venv_python(project_root: Path) -> Path | None:
+    """
+    Return the path to the venv Python if a venv exists, else None.
+    """
+    if sys.platform == "win32":
+        candidate = project_root / ".venv" / "Scripts" / "python.exe"
+    else:
+        candidate = project_root / ".venv" / "bin" / "python"
+    return candidate if candidate.exists() else None
+
+
+def _resolve_interpreter(project_root: Path) -> str:
+    """
+    Return the interpreter to run the backend with.
+
+    Prefers the venv Python; falls back to the interpreter running
+    this process.
+    """
+    venv = _venv_python(project_root)
+    if venv is not None:
+        return str(venv)
+    return sys.executable
+
+
+def _check_health(url: str) -> bool:
+    """
+    Return True if the backend at `url` answers /api/health with 200.
+
+    Never raises — any failure mode is reported as False.
+    """
+    try:
+        r = httpx.get(f"{url}/api/health", timeout=HEALTH_REQUEST_TIMEOUT)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+def _terminate_tree(proc: subprocess.Popen) -> None:
+    """
+    Terminate a subprocess and all of its children.
+
+    On Windows, uses taskkill /T because uvicorn spawns child
+    processes for reload mode and for the MCP server. Plain
+    terminate() leaves orphans.
+
+    On Unix, uses SIGTERM first, escalates to SIGKILL after the
+    graceful timeout.
+    """
+    if proc.poll() is not None:
+        return
+
+    if sys.platform == "win32":
+        subprocess.run(
+            ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+            capture_output=True,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+    else:
+        proc.terminate()
+        try:
+            proc.wait(timeout=GRACEFUL_STOP_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            try:
+                proc.wait(timeout=2.0)
+            except subprocess.TimeoutExpired:
+                pass
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  BackendLauncher
+# ══════════════════════════════════════════════════════════════════════
+
+class BackendLauncher(QObject):
+    """
+    Spawns and monitors the backend.
+
+    Usage:
+
+        launcher = BackendLauncher(project_root=Path("."))
+        launcher.started.connect(on_started)
+        launcher.failed.connect(on_failed)
+        launcher.log.connect(on_log)
+        launcher.start()
+    """
+
+    # ── Signals ──────────────────────────────────────────────────────
+    started = pyqtSignal()
+    stopped = pyqtSignal()
+    failed = pyqtSignal(str)
+    log = pyqtSignal(str)
+
+    # ── Lifecycle ────────────────────────────────────────────────────
+
+    def __init__(
+        self,
+        project_root: Path,
+        host: str = "127.0.0.1",
+        port: int = 8000,
+    ) -> None:
+        super().__init__()
+        self.project_root = project_root.resolve()
+        self.host = host
+        self.port = port
+        self.url = f"http://{host}:{port}"
+
+        self._proc: subprocess.Popen | None = None
+        self._reader_thread: threading.Thread | None = None
+        self._ready_timer: QTimer | None = None
+        self._health_deadline: float = 0.0
+        self._stopping = False
+
+        # True if WE started the process. False if we attached to one
+        # that was already running. Used to decide whether to stop the
+        # backend on close.
+        self.spawned_by_us = False
+
+    def is_running(self) -> bool:
+        """True if the subprocess we started is still alive."""
+        return self._proc is not None and self._proc.poll() is None
+
+    # ── Start ────────────────────────────────────────────────────────
+
+    def start(self) -> None:
+        """
+        Attach to an existing backend, or spawn a new one.
+
+        The attach path is important during development: the user
+        usually has `uvicorn --reload` running in a terminal and
+        launches the desktop client to check the UI. Detecting the
+        running backend avoids a port conflict and avoids the
+        confusion of two backends fighting over the same SQLite
+        file.
+        """
+        # Already running? Emit started and return.
+        if self.is_running():
+            self.started.emit()
+            return
+
+        # Health probe — attach if a backend is up.
+        if _check_health(self.url):
+            self.log.emit(
+                f"Backend already running at {self.url} — attaching."
+            )
+            self.spawned_by_us = False
+            self.started.emit()
+            return
+
+        # Otherwise spawn.
+        self._spawn()
+
+    # ── Stop ─────────────────────────────────────────────────────────
+
+    def stop(self) -> None:
+        """
+        Terminate the subprocess (if we started it).
+
+        Called on application close. If we attached to an external
+        backend, does nothing to it — the user manages that backend
+        themselves.
+        """
+        self._stopping = True
+
+        if self._ready_timer is not None:
+            self._ready_timer.stop()
+            self._ready_timer = None
+
+        if self._proc is None:
+            return
+
+        if not self.spawned_by_us:
+            self._proc = None
+            self.stopped.emit()
+            return
+
+        self.log.emit("Stopping backend…")
+        _terminate_tree(self._proc)
+
+        if (
+            self._reader_thread is not None
+            and self._reader_thread.is_alive()
+        ):
+            self._reader_thread.join(timeout=2.0)
+
+        self._proc = None
+        self.spawned_by_us = False
+        self.stopped.emit()
+
+    async def stop_all_async(self) -> None:
+        """
+        Call the backend's /api/system/stop-all endpoint, then
+        ensure the process is gone.
+
+        The desktop client's Stop All menu action uses this instead
+        of `stop()`, because it triggers a coordinated shutdown of
+        the MCP subprocess and the llama-cpp server as well.
+        """
+        self._stopping = True
+
+        # Ask the backend to shut down cleanly.
+        try:
+            async with httpx.AsyncClient(
+                timeout=STOP_ALL_REQUEST_TIMEOUT,
+            ) as client:
+                await client.post(f"{self.url}/api/system/stop-all")
+            self.log.emit("Backend acknowledged stop-all request.")
+        except Exception as exc:
+            self.log.emit(
+                f"Stop-all API call failed ({exc}); "
+                f"falling back to kill."
+            )
+
+        # Give the backend a moment to run its shutdown hook.
+        import asyncio
+        await asyncio.sleep(1.2)
+
+        # If it is still alive, kill the tree.
+        if self._proc is not None and self._proc.poll() is None:
+            self.log.emit("Backend still alive — killing process tree.")
+            _terminate_tree(self._proc)
+
+        if self._ready_timer is not None:
+            self._ready_timer.stop()
+            self._ready_timer = None
+
+        self._proc = None
+        self.spawned_by_us = False
+        self.stopped.emit()
+
+    # ── Spawn ────────────────────────────────────────────────────────
+
+    def _spawn(self) -> None:
+        """
+        Launch the backend subprocess.
+
+        Prefers scripts/serve.py (which handles the Windows event
+        loop policy and sys.path fixes) but falls back to a direct
+        uvicorn invocation if serve.py is missing.
+        """
+        serve_py = self.project_root / "scripts" / "serve.py"
+        interpreter = _resolve_interpreter(self.project_root)
+
+        if serve_py.exists():
+            cmd = [interpreter, str(serve_py)]
+        else:
+            cmd = [
+                interpreter, "-m", "uvicorn",
+                "backend.main:app",
+                "--host", self.host,
+                "--port", str(self.port),
+            ]
+
+        # Environment for the subprocess.
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        env["PYTHONUTF8"] = "1"
+        env["PYTHONUNBUFFERED"] = "1"
+        env["AGENT_HOST"] = self.host
+        env["AGENT_PORT"] = str(self.port)
+        env["AGENT_RELOAD"] = "0"  # no reload in a bundled desktop app
+
+        # Make `backend` importable from any working directory.
+        root_str = str(self.project_root)
+        existing = env.get("PYTHONPATH", "")
+        if root_str not in existing.split(os.pathsep):
+            env["PYTHONPATH"] = (
+                root_str + (os.pathsep + existing if existing else "")
+            )
+
+        self.log.emit(f"Launching backend: {' '.join(cmd)}")
+
+        creationflags = 0
+        if sys.platform == "win32":
+            creationflags = subprocess.CREATE_NO_WINDOW
+
+        try:
+            self._proc = subprocess.Popen(
+                cmd,
+                cwd=str(self.project_root),
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                creationflags=creationflags,
+            )
+        except FileNotFoundError as exc:
+            self.failed.emit(f"Could not launch backend: {exc}")
+            return
+        except Exception as exc:
+            self.failed.emit(f"Could not launch backend: {exc}")
+            return
+
+        self.spawned_by_us = True
+        self._stopping = False
+
+        # Start the log reader thread.
+        self._reader_thread = threading.Thread(
+            target=self._read_output,
+            args=(self._proc,),
+            daemon=True,
+            name="backend-log-reader",
+        )
+        self._reader_thread.start()
+
+        # Start the readiness poll.
+        self._health_deadline = time.monotonic() + STARTUP_TIMEOUT_SECONDS
+        self._ready_timer = QTimer(self)
+        self._ready_timer.timeout.connect(self._poll_health)
+        self._ready_timer.start(HEALTH_POLL_INTERVAL_MS)
+
+    # ── Output reading ───────────────────────────────────────────────
+
+    def _read_output(self, proc: subprocess.Popen) -> None:
+        """
+        Read the subprocess's stdout and emit each line as a signal.
+
+        Runs in a daemon thread. When the process exits, emits
+        `failed` if the exit was unexpected.
+        """
+        try:
+            if proc.stdout is None:
+                return
+            for line in proc.stdout:
+                line = line.rstrip("\r\n")
+                if line:
+                    self.log.emit(line)
+        except Exception:
+            pass
+        finally:
+            try:
+                rc = proc.wait(timeout=5)
+            except Exception:
+                rc = -1
+            if not self._stopping and self.spawned_by_us:
+                self.failed.emit(
+                    f"Backend exited unexpectedly (exit code {rc})"
+                )
+
+    # ── Readiness poll ───────────────────────────────────────────────
+
+    def _poll_health(self) -> None:
+        """
+        Poll /api/health until the backend responds or the timeout
+        expires.
+        """
+        # If the process died, stop polling — the reader thread will
+        # emit a `failed` signal.
+        if self._proc is not None and self._proc.poll() is not None:
+            if self._ready_timer is not None:
+                self._ready_timer.stop()
+                self._ready_timer = None
+            return
+
+        if _check_health(self.url):
+            if self._ready_timer is not None:
+                self._ready_timer.stop()
+                self._ready_timer = None
+            self.log.emit(f"Backend is ready at {self.url}")
+            self.started.emit()
+            return
+
+        if time.monotonic() > self._health_deadline:
+            if self._ready_timer is not None:
+                self._ready_timer.stop()
+                self._ready_timer = None
+            self.failed.emit(
+                f"Backend did not become ready within "
+                f"{int(STARTUP_TIMEOUT_SECONDS)} seconds. "
+                f"Check the backend log for details."
+            )
+            self.stop()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — install_dialog.py
+       ============================================================= -->
+  <section class="file-section" id="f-install-dialog" data-name="install dialog pyqt6 llama cpp sse pip wheel">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>install_dialog.py <span class="file-badge">python</span></h2>
+        <span class="file-path">desktop/install_dialog.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Native PyQt6 dialog for installing llama-cpp-python[server].
+https://3olution.com
+
+The web settings page has its own installer UI. This dialog exists
+for two cases:
+
+    1. Users of desktop.native_chat, who never load the web UI.
+
+    2. Users who prefer a native file dialog for pip's wheel choice.
+
+The dialog detects the local GPU, recommends a wheel index, and
+streams pip's output into a read-only text area. It talks to the
+same /api/llama/install/* endpoints the web settings page uses, so
+there is no duplicated backend logic — only duplicated presentation.
+
+================================================================
+  SSE STREAMING WITHOUT A BROWSER
+================================================================
+
+  The install endpoint streams Server-Sent Events. Python's httpx
+  can consume the same stream via `client.stream(...)` and
+  `iter_text()`. That is what the QProcess-like worker below does;
+  the wording "QProcess" in the docstring is a holdover from an
+  earlier implementation that has been replaced with httpx for
+  cross-platform reliability.
+
+================================================================
+  WINDOWS RESTART CAVEAT
+================================================================
+
+  On Windows, pip cannot replace llama-cpp-python while the backend
+  process has the native DLLs mapped. If the user is upgrading or
+  switching wheels, they must stop the backend first. The dialog
+  shows a prominent warning when the install is starting and
+  another when it completes.
+"""
+
+from __future__ import annotations
+
+import json
+import threading
+
+import httpx
+from PyQt6.QtCore import QThread, pyqtSignal, QUrl
+from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPlainTextEdit,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
+)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Constants
+# ══════════════════════════════════════════════════════════════════════
+
+BACKEND = "http://127.0.0.1:8000"
+
+WHEEL_LABELS = [
+    ("cpu",   "CPU only (no GPU acceleration)"),
+    ("cu124", "CUDA 12.4 (RTX 30/40, Ada/Hopper)"),
+    ("cu121", "CUDA 12.1 (older 12.x drivers)"),
+    ("cu118", "CUDA 11.8 (GTX 10/16, RTX 20)"),
+]
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  SSE consumer thread
+# ══════════════════════════════════════════════════════════════════════
+
+class SSEWorker(QThread):
+    """
+    Reads a Server-Sent Events stream from the backend and emits each
+    parsed JSON event as a Qt signal.
+
+    Used for both install and uninstall streaming.
+    """
+
+    event = pyqtSignal(dict)
+
+    def __init__(
+        self,
+        url: str,
+        payload: dict | None,
+        label: str = "operation",
+    ) -> None:
+        super().__init__()
+        self.url = url
+        self.payload = payload
+        self.label = label
+
+    def run(self) -> None:
+        try:
+            with httpx.Client(timeout=None) as client:
+                method = "POST" if self.payload is not None else "POST"
+                with client.stream(
+                    method,
+                    self.url,
+                    json=self.payload if self.payload is not None else None,
+                    headers={"Accept": "text/event-stream"},
+                ) as response:
+                    if response.status_code != 200:
+                        response.read()
+                        self.event.emit({
+                            "type": "error",
+                            "message": f"HTTP {response.status_code}",
+                        })
+                        return
+
+                    buffer = ""
+                    for chunk in response.iter_text():
+                        if not chunk:
+                            continue
+                        buffer += chunk
+                        while "\n\n" in buffer:
+                            frame, buffer = buffer.split("\n\n", 1)
+                            for line in frame.split("\n"):
+                                if not line.startswith("data: "):
+                                    continue
+                                data = line[6:]
+                                if data == "[DONE]":
+                                    return
+                                try:
+                                    self.event.emit(json.loads(data))
+                                except json.JSONDecodeError:
+                                    continue
+        except Exception as exc:
+            self.event.emit({
+                "type": "error",
+                "message": f"{self.label} stream failed: {exc}",
+            })
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Main dialog
+# ══════════════════════════════════════════════════════════════════════
+
+class InstallDialog(QDialog):
+    """Native installer for llama-cpp-python[server]."""
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(
+            "Install LLM Runtime — llama-cpp-python[server]"
+        )
+        self.resize(720, 620)
+        self.setModal(True)
+
+        self.worker: SSEWorker | None = None
+        self._is_uninstall = False
+
+        self._build_ui()
+        self._load_status()
+
+    # ── UI construction ──────────────────────────────────────────────
+
+    def _build_ui(self) -> None:
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+
+        # Status header.
+        self.status_label = QLabel("Checking…")
+        self.status_label.setStyleSheet(
+            "font-size: 14px; font-weight: 600; color: #e6e6e6;"
+        )
+        layout.addWidget(self.status_label)
+
+        # Meta info.
+        self.meta_label = QLabel("")
+        self.meta_label.setStyleSheet(
+            "font-size: 11px; color: #888; "
+            "font-family: ui-monospace, 'Consolas', monospace;"
+        )
+        self.meta_label.setWordWrap(True)
+        layout.addWidget(self.meta_label)
+
+        # Recommendation banner.
+        self.recommendation_label = QLabel("")
+        self.recommendation_label.setStyleSheet(
+            "font-size: 12px; color: #6cffdb; padding: 8px 12px; "
+            "background: rgba(108, 255, 219, 0.06); "
+            "border-left: 3px solid #6cffdb; border-radius: 4px;"
+        )
+        self.recommendation_label.setWordWrap(True)
+        layout.addWidget(self.recommendation_label)
+
+        # Wheel selector row.
+        row = QHBoxLayout()
+        row.addWidget(QLabel("Wheel:"))
+
+        self.wheel_combo = QComboBox()
+        for value, label in WHEEL_LABELS:
+            self.wheel_combo.addItem(label, value)
+        self.wheel_combo.setStyleSheet(
+            "QComboBox { padding: 6px 10px; font-size: 13px; "
+            "background: #1a1d24; color: #e6e6e6; "
+            "border: 1px solid #333; border-radius: 6px; "
+            "min-width: 320px; }"
+            "QComboBox::drop-down { border: none; }"
+        )
+        row.addWidget(self.wheel_combo, stretch=1)
+
+        self.btn_install = QPushButton("Install")
+        self.btn_install.setStyleSheet(
+            "QPushButton { padding: 8px 20px; background: #2563eb; "
+            "color: white; border: none; border-radius: 6px; "
+            "font-size: 13px; font-weight: 500; }"
+            "QPushButton:hover { background: #1d4ed8; }"
+            "QPushButton:disabled { opacity: 0.5; }"
+        )
+        self.btn_install.clicked.connect(self._on_install)
+        row.addWidget(self.btn_install)
+
+        self.btn_uninstall = QPushButton("Uninstall")
+        self.btn_uninstall.setStyleSheet(
+            "QPushButton { padding: 8px 20px; background: #1f2937; "
+            "color: #e6e6e6; border: 1px solid #333; border-radius: 6px; "
+            "font-size: 13px; }"
+            "QPushButton:hover { background: #2a3542; }"
+            "QPushButton:disabled { opacity: 0.5; }"
+        )
+        self.btn_uninstall.clicked.connect(self._on_uninstall)
+        row.addWidget(self.btn_uninstall)
+        layout.addLayout(row)
+
+        # Upgrade checkbox.
+        self.chk_upgrade = QCheckBox(
+            "Upgrade to the latest version "
+            "(Windows: stop the backend first so DLLs are not locked)"
+        )
+        self.chk_upgrade.setStyleSheet("color: #888; font-size: 12px;")
+        layout.addWidget(self.chk_upgrade)
+
+        # Progress bar (indeterminate).
+        self.progress = QProgressBar()
+        self.progress.setRange(0, 0)
+        self.progress.setTextVisible(False)
+        self.progress.setStyleSheet(
+            "QProgressBar { background: #1a1d24; border: 1px solid #222; "
+            "border-radius: 4px; height: 6px; }"
+            "QProgressBar::chunk { background: #2563eb; }"
+        )
+        self.progress.setVisible(False)
+        layout.addWidget(self.progress)
+
+        # Log output area.
+        self.log = QPlainTextEdit()
+        self.log.setReadOnly(True)
+        self.log.setStyleSheet(
+            "QPlainTextEdit {"
+            "  background: #0a0c10; color: #b8c2cc;"
+            "  border: 1px solid #222; border-radius: 6px;"
+            "  font-family: ui-monospace, 'Consolas', monospace;"
+            "  font-size: 11px; padding: 8px;"
+            "}"
+        )
+        layout.addWidget(self.log, stretch=1)
+
+        # Notice banner (success / error).
+        self.notice = QLabel("")
+        self.notice.setWordWrap(True)
+        self.notice.setVisible(False)
+        self.notice.setStyleSheet("font-size: 12px; padding: 8px 12px;")
+        layout.addWidget(self.notice)
+
+        # Bottom buttons.
+        bottom = QHBoxLayout()
+        bottom.addStretch(1)
+
+        self.btn_open_browser = QPushButton("Open in browser")
+        self.btn_open_browser.setStyleSheet(
+            "QPushButton { padding: 6px 14px; background: transparent; "
+            "color: #888; border: 1px solid #333; border-radius: 6px; "
+            "font-size: 12px; }"
+            "QPushButton:hover { color: #e6e6e6; border-color: #555; }"
+        )
+        self.btn_open_browser.clicked.connect(self._open_in_browser)
+        bottom.addWidget(self.btn_open_browser)
+
+        self.btn_close = QPushButton("Close")
+        self.btn_close.setStyleSheet(
+            "QPushButton { padding: 6px 20px; background: #1f2937; "
+            "color: #e6e6e6; border: 1px solid #333; border-radius: 6px; "
+            "font-size: 13px; }"
+            "QPushButton:hover { background: #2a3542; }"
+        )
+        self.btn_close.clicked.connect(self.close)
+        bottom.addWidget(self.btn_close)
+
+        layout.addLayout(bottom)
+
+    # ── Status detection ─────────────────────────────────────────────
+
+    def _load_status(self) -> None:
+        """Query /api/llama/install/status and update the UI."""
+        try:
+            r = httpx.get(
+                f"{BACKEND}/api/llama/install/status",
+                timeout=5.0,
+            )
+            r.raise_for_status()
+            data = r.json()
+        except Exception as exc:
+            self.status_label.setText("Backend not reachable")
+            self.status_label.setStyleSheet(
+                "font-size: 14px; font-weight: 600; color: #ff6c6c;"
+            )
+            self.meta_label.setText(str(exc))
+            self.btn_install.setEnabled(False)
+            self.btn_uninstall.setEnabled(False)
+            return
+
+        # Status line.
+        if data.get("installed"):
+            version = data.get("version") or "unknown"
+            gpu = data.get("gpu_offload")
+            gpu_str = (
+                "GPU" if gpu is True
+                else "CPU" if gpu is False
+                else "unknown"
+            )
+            self.status_label.setText(
+                f"✓ Installed — llama-cpp-python {version} ({gpu_str})"
+            )
+            self.status_label.setStyleSheet(
+                "font-size: 14px; font-weight: 600; color: #6cff9b;"
+            )
+        else:
+            self.status_label.setText("Not installed")
+            self.status_label.setStyleSheet(
+                "font-size: 14px; font-weight: 600; color: #ff6c6c;"
+            )
+
+        # Meta line.
+        parts = [f"Python: {data.get('python', '?')}"]
+        if data.get("in_venv"):
+            parts.append(f"Venv: {data.get('venv_path')}")
+        else:
+            parts.append("⚠ Not running in a virtualenv")
+        if data.get("cuda_version"):
+            parts.append(f"CUDA: {data['cuda_version']}")
+        else:
+            parts.append("CUDA: not detected")
+        self.meta_label.setText("   ·   ".join(parts))
+
+        # Recommendation.
+        rec = data.get("recommended_wheel", "cpu")
+        reason = data.get("recommended_reason", "")
+        self.recommendation_label.setText(
+            f"Recommended: {rec} — {reason}"
+        )
+
+        # Preselect the recommended wheel.
+        idx = self.wheel_combo.findData(rec)
+        if idx >= 0:
+            self.wheel_combo.setCurrentIndex(idx)
+
+        # Button states.
+        self.btn_install.setEnabled(True)
+        self.btn_install.setText(
+            "Install" if not data.get("installed") else "Reinstall"
+        )
+        self.btn_uninstall.setEnabled(bool(data.get("installed")))
+
+    # ── Install / uninstall ──────────────────────────────────────────
+
+    def _on_install(self) -> None:
+        if self.worker is not None and self.worker.isRunning():
+            return
+
+        wheel = self.wheel_combo.currentData()
+        upgrade = self.chk_upgrade.isChecked()
+
+        self.log.clear()
+        self._append_log(
+            f"▶ Installing llama-cpp-python[server] with wheel '{wheel}'…"
+        )
+        self._append_log(f"  Upgrade: {upgrade}")
+        self._append_log("")
+        self._set_running(True)
+        self._hide_notice()
+        self._is_uninstall = False
+
+        self.worker = SSEWorker(
+            f"{BACKEND}/api/llama/install/install",
+            {"wheel_index": wheel, "upgrade": upgrade},
+            label="install",
+        )
+        self.worker.event.connect(self._on_sse_event)
+        self.worker.start()
+
+    def _on_uninstall(self) -> None:
+        if self.worker is not None and self.worker.isRunning():
+            return
+
+        reply = QMessageBox.question(
+            self,
+            "Uninstall llama-cpp-python",
+            "Remove llama-cpp-python from the virtual environment?\n\n"
+            "On Windows, the backend may need to be stopped first "
+            "so the native DLLs are released.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        self.log.clear()
+        self._append_log("▶ Uninstalling llama-cpp-python…")
+        self._append_log("")
+        self._set_running(True)
+        self._hide_notice()
+        self._is_uninstall = True
+
+        self.worker = SSEWorker(
+            f"{BACKEND}/api/llama/install/uninstall",
+            None,
+            label="uninstall",
+        )
+        self.worker.event.connect(self._on_sse_event)
+        self.worker.start()
+
+    # ── SSE event handling ───────────────────────────────────────────
+
+    def _on_sse_event(self, ev: dict) -> None:
+        t = ev.get("type")
+
+        if t == "start":
+            self._append_log(f"▶ {ev.get('command', '')}")
+            if ev.get("venv"):
+                self._append_log(f"  venv: {ev['venv']}")
+            self._append_log("")
+
+        elif t == "line":
+            self._append_log(ev.get("text", ""))
+
+        elif t == "success":
+            if self._is_uninstall:
+                self._show_notice(
+                    "success",
+                    "✓ Uninstalled llama-cpp-python. Restart the "
+                    "backend to fully release the library.",
+                )
+            else:
+                version = ev.get("version") or ""
+                gpu = ev.get("gpu_offload")
+                gpu_str = (
+                    "GPU" if gpu is True
+                    else "CPU" if gpu is False
+                    else "unknown"
+                )
+                self._show_notice(
+                    "success",
+                    f"✓ Installed llama-cpp-python {version} ({gpu_str}). "
+                    f"Restart the backend to use it.",
+                )
+            self._set_running(False)
+            self._load_status()
+
+        elif t == "error":
+            self._show_notice("error", f"✗ {ev.get('message', '')}")
+            self._set_running(False)
+
+        elif t == "done":
+            self._set_running(False)
+
+    # ── UI helpers ───────────────────────────────────────────────────
+
+    def _append_log(self, line: str) -> None:
+        self.log.appendPlainText(line)
+        sb = self.log.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+    def _set_running(self, running: bool) -> None:
+        self.btn_install.setEnabled(not running)
+        self.btn_uninstall.setEnabled(not running)
+        self.wheel_combo.setEnabled(not running)
+        self.chk_upgrade.setEnabled(not running)
+        self.progress.setVisible(running)
+
+    def _show_notice(self, kind: str, message: str) -> None:
+        colors = {
+            "success": ("#6cff9b", "rgba(108, 255, 155, 0.08)"),
+            "error": ("#ff9494", "rgba(239, 68, 68, 0.08)"),
+            "warn": ("#ffcb6c", "rgba(255, 203, 108, 0.08)"),
+        }
+        fg, bg = colors.get(kind, colors["warn"])
+        self.notice.setStyleSheet(
+            f"font-size: 12px; padding: 8px 12px; "
+            f"color: {fg}; background: {bg}; "
+            f"border-left: 3px solid {fg}; border-radius: 4px;"
+        )
+        self.notice.setText(message)
+        self.notice.setVisible(True)
+
+    def _hide_notice(self) -> None:
+        self.notice.setVisible(False)
+        self.notice.setText("")
+
+    def _open_in_browser(self) -> None:
+        QDesktopServices.openUrl(QUrl(f"{BACKEND}/settings"))
+
+    # ── Close event ──────────────────────────────────────────────────
+
+    def closeEvent(self, event) -> None:
+        if self.worker is not None and self.worker.isRunning():
+            reply = QMessageBox.question(
+                self,
+                "Installation in progress",
+                "An installation is still running. Close anyway?",
+                QMessageBox.StandardButton.Yes
+                | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                event.ignore()
+                return
+            # Do not kill the SSE reader thread — let it finish.
+            # The QThread will outlive the dialog briefly, which is
+            # acceptable; the pip subprocess on the backend will
+            # continue to completion regardless.
+        event.accept()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — logging_config.py
+       ============================================================= -->
+  <section class="file-section" id="f-logging" data-name="logging config desktop loguru sinks rotation retention">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>logging_config.py <span class="file-badge">python</span></h2>
+        <span class="file-path">desktop/logging_config.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+Logging setup for the desktop application.
+https://3olution.com
+
+Mirrors the backend's logging setup:
+
+    - A console sink at INFO level for the terminal
+    - A rotating file sink at DEBUG level for diagnostics
+    - Files written to the same `logs/` folder as the backend,
+      with a `desktop-` prefix instead of `backend-`
+
+================================================================
+  WHY A SEPARATE FILE FROM backend/logging_config.py
+================================================================
+
+  The backend's logging_config imports backend.config, which in
+  turn imports pydantic-settings. The desktop client does NOT need
+  to pull in the whole backend config chain just to write logs —
+  the values it needs (logs dir, retention days) are small and can
+  be passed in as arguments.
+
+  Keeping the two files separate also means the desktop client can
+  be packaged (PyInstaller) without including the backend config
+  module, shaving a small amount off the bundle.
+
+================================================================
+  ROTATION AND RETENTION
+================================================================
+
+  Files rotate at midnight UTC and are named:
+
+      logs/desktop-YYYY-MM-DD.log
+
+  Retention is 14 days, matching the backend. The retention policy
+  is enforced per loguru sink, so the desktop log and backend log
+  are pruned independently.
+
+================================================================
+  SAFE ON MULTIPLE LAUNCHES
+================================================================
+
+  The desktop client is single-instance by design — the Qt
+  application model does not support multiple GUI processes
+  sharing the same window state. But if a user does launch two
+  copies, loguru's `enqueue=True` and Python's append mode make
+  both writers cooperate without corrupting the file. Lines may
+  interleave, but no data is lost.
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+from loguru import logger
+
+
+def setup_desktop_logging(
+    log_dir: Path,
+    console_level: str = "INFO",
+    file_level: str = "DEBUG",
+    retention_days: int = 14,
+) -> None:
+    """
+    Configure loguru for the desktop application.
+
+    Removes any existing handlers (including the default stderr
+    sink that loguru installs at import time) so the desktop
+    client's logging is self-contained.
+
+    Parameters
+    ----------
+    log_dir
+        Directory for log files. Created if missing.
+    console_level
+        Minimum level written to stderr. The desktop client runs
+        with a visible terminal during development; users who
+        launch the packaged executable see nothing on stderr
+        (console=False in the PyInstaller spec), which is fine.
+    file_level
+        Minimum level written to the log file. Defaults to DEBUG
+        so that user bug reports contain full diagnostics.
+    retention_days
+        Number of daily log files to keep before pruning.
+    """
+    # Remove every existing handler (there is exactly one by default).
+    logger.remove()
+
+    # ── Console sink ─────────────────────────────────────────────────
+    console_format = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{line}</cyan> — "
+        "<level>{message}</level>"
+    )
+    logger.add(
+        sys.stderr,
+        level=console_level.upper(),
+        format=console_format,
+        colorize=True,
+        backtrace=True,
+        diagnose=False,
+    )
+
+    # ── File sink ────────────────────────────────────────────────────
+    try:
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "desktop-{time:YYYY-MM-DD}.log"
+
+        file_format = (
+            "{time:YYYY-MM-DD HH:mm:ss.SSS} | "
+            "{level: <8} | "
+            "{name}:{line} — {message}"
+        )
+        logger.add(
+            str(log_file),
+            rotation="00:00",
+            retention=f"{retention_days} days",
+            level=file_level.upper(),
+            format=file_format,
+            encoding="utf-8",
+            enqueue=True,
+            backtrace=True,
+            diagnose=False,
+        )
+        logger.info("Desktop logging enabled at {}", log_dir)
+    except Exception as exc:
+        # A read-only filesystem or permission error should not
+        # prevent the desktop client from running — it degrades to
+        # console-only logging.
+        logger.warning(
+            "Could not enable desktop file logging at {}: {}",
+            log_dir,
+            exc,
+        )</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — native_chat.py
+       ============================================================= -->
+  <section class="file-section" id="f-native-chat" data-name="native chat pyqt6 qtwidgets sse streaming fallback">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>native_chat.py <span class="file-badge">python</span></h2>
+        <span class="file-path">desktop/native_chat.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+3olution Agent Graph — native PyQt6 chat client.
+https://3olution.com
+
+A pure QtWidgets chat client that does not depend on
+PyQt6-WebEngine. It talks to the same backend HTTP API the web UI
+uses, including the SSE token streaming endpoint.
+
+================================================================
+  WHEN TO USE THIS
+================================================================
+
+  This module exists for three situations:
+
+    1. PyQt6-WebEngine could not be installed (minimal Linux
+       distributions, some CI environments, older macOS).
+
+    2. The user prefers native widgets over the embedded Chromium
+       view (subjective, but some do).
+
+    3. Debugging: the native client surfaces every event as text,
+       which makes it easy to see exactly what the backend is
+       emitting.
+
+================================================================
+  FEATURE PARITY
+================================================================
+
+  Supported:
+    - Streaming token display
+    - Reasoning (thinking) display
+    - Tool call and tool result display
+    - Retry and fallback notices
+    - Save conversation as Markdown
+    - Stop all processes
+
+  Not supported (relative to the web UI):
+    - Graph editor
+    - Settings page
+    - Ollama model management
+    - Model picker (uses AGENT_LLM_MODEL)
+
+  For the missing features, launch the main desktop app or open the
+  web UI in a browser.
+
+================================================================
+  THREADING
+================================================================
+
+  The backend call runs on a QThread worker. Events are delivered
+  to the main thread via Qt signals. This keeps the UI responsive
+  even during a long multi-tool turn.
+"""
+
+from __future__ import annotations
+
+import datetime
+import json
+import os
+import sys
+
+import httpx
+from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QHBoxLayout,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Configuration
+# ══════════════════════════════════════════════════════════════════════
+
+BACKEND = os.environ.get("AGENT_DESKTOP_BACKEND", "http://127.0.0.1:8000")
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Worker thread
+# ══════════════════════════════════════════════════════════════════════
+
+class AgentWorker(QThread):
+    """
+    Runs one agent turn off the UI thread.
+
+    Emits each event as a dict via the `event` signal. Prefers the
+    SSE streaming endpoint so tokens arrive live; falls back to the
+    non-streaming /api/chat endpoint if SSE is unavailable.
+    """
+
+    event = pyqtSignal(dict)
+
+    def __init__(
+        self,
+        message: str,
+        history: list[dict],
+        session_id: str | None = None,
+    ) -> None:
+        super().__init__()
+        self.message = message
+        self.history = history
+        self.session_id = session_id
+
+    def run(self) -> None:
+        payload = {
+            "message": self.message,
+            "history": self.history,
+            "session_id": self.session_id,
+        }
+
+        # ── Primary path: SSE streaming ─────────────────────────────
+        try:
+            with httpx.Client(timeout=None) as client:
+                with client.stream(
+                    "POST",
+                    f"{BACKEND}/api/chat/stream",
+                    json=payload,
+                    headers={"Accept": "text/event-stream"},
+                ) as response:
+                    if response.status_code != 200:
+                        response.read()
+                        raise RuntimeError(f"HTTP {response.status_code}")
+
+                    buffer = ""
+                    for chunk in response.iter_text():
+                        if not chunk:
+                            continue
+                        buffer += chunk
+
+                        # SSE frames are separated by a blank line.
+                        while "\n\n" in buffer:
+                            frame, buffer = buffer.split("\n\n", 1)
+                            for line in frame.split("\n"):
+                                if not line.startswith("data: "):
+                                    continue
+                                data = line[6:]
+                                if data == "[DONE]":
+                                    return
+                                try:
+                                    self.event.emit(json.loads(data))
+                                except json.JSONDecodeError:
+                                    continue
+                    return
+        except Exception:
+            pass
+
+        # ── Fallback path: non-streaming POST ───────────────────────
+        try:
+            with httpx.Client(timeout=300.0) as client:
+                resp = client.post(f"{BACKEND}/api/chat", json=payload)
+                resp.raise_for_status()
+                for ev in resp.json():
+                    self.event.emit(ev)
+        except Exception as exc2:
+            self.event.emit({
+                "type": "final",
+                "content": f"Connection error: {exc2}",
+                "messages": self.history,
+            })
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Main window
+# ══════════════════════════════════════════════════════════════════════
+
+class ChatWindow(QMainWindow):
+    """Native PyQt6 chat window."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setWindowTitle("3olution Agent Graph — Native Chat")
+        self.resize(820, 620)
+
+        self.history: list[dict] = []
+        self.session_id: str | None = None
+        self._streaming_started = False
+        self._thinking_started = False
+        self.worker: AgentWorker | None = None
+        self.message_log: list[dict] = []
+
+        # ── Layout ───────────────────────────────────────────────────
+        central = QWidget()
+        layout = QVBoxLayout(central)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
+
+        # Header with buttons.
+        header = QHBoxLayout()
+        header.addStretch(1)
+
+        self.btn_save = QPushButton("Save Chat")
+        self.btn_save.setStyleSheet(
+            "QPushButton { padding: 6px 12px; background: #1f2937; "
+            "color: #e6e6e6; border: 1px solid #333; border-radius: 6px; }"
+            "QPushButton:hover { background: #2a3542; }"
+        )
+        self.btn_save.clicked.connect(self._save_chat)
+        header.addWidget(self.btn_save)
+
+        self.btn_stop_all = QPushButton("Stop All")
+        self.btn_stop_all.setStyleSheet(
+            "QPushButton { padding: 6px 12px; background: transparent; "
+            "color: #ffb1b1; border: 1px solid rgba(239, 68, 68, 0.4); "
+            "border-radius: 6px; }"
+            "QPushButton:hover { background: rgba(239, 68, 68, 0.15); }"
+        )
+        self.btn_stop_all.clicked.connect(self._stop_all)
+        header.addWidget(self.btn_stop_all)
+        layout.addLayout(header)
+
+        # Transcript.
+        self.transcript = QTextEdit()
+        self.transcript.setReadOnly(True)
+        self.transcript.setStyleSheet(
+            "QTextEdit { background: #0f1116; color: #e6e6e6; "
+            "border: 1px solid #222; border-radius: 8px; padding: 10px; "
+            "font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; "
+            "font-size: 13px; }"
+        )
+        layout.addWidget(self.transcript, stretch=1)
+
+        # Input row.
+        row = QHBoxLayout()
+        self.input = QLineEdit()
+        self.input.setPlaceholderText("Ask the agent…")
+        self.input.setStyleSheet(
+            "QLineEdit { background: #1a1d24; color: #e6e6e6; "
+            "border: 1px solid #333; border-radius: 6px; "
+            "padding: 8px 12px; font-size: 13px; }"
+            "QLineEdit:focus { border-color: #2563eb; }"
+        )
+        self.input.returnPressed.connect(self.send)
+
+        self.send_btn = QPushButton("Send")
+        self.send_btn.setStyleSheet(
+            "QPushButton { background: #2563eb; color: #fff; "
+            "border: none; border-radius: 6px; "
+            "padding: 8px 18px; font-size: 13px; font-weight: 500; }"
+            "QPushButton:hover { background: #1d4ed8; }"
+            "QPushButton:disabled { opacity: 0.5; }"
+        )
+        self.send_btn.clicked.connect(self.send)
+
+        row.addWidget(self.input, stretch=1)
+        row.addWidget(self.send_btn)
+        layout.addLayout(row)
+
+        self.setCentralWidget(central)
+
+    # ── Transcript helpers ───────────────────────────────────────────
+
+    def _append(self, text: str) -> None:
+        """Append text and scroll to bottom."""
+        self.transcript.append(text)
+        sb = self.transcript.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+    def _append_inline(self, text: str) -> None:
+        """Insert text at the end without a newline."""
+        cursor = self.transcript.textCursor()
+        cursor.movePosition(cursor.MoveOperation.End)
+        cursor.insertText(text)
+        self.transcript.setTextCursor(cursor)
+        sb = self.transcript.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+    # ── Send ─────────────────────────────────────────────────────────
+
+    def send(self) -> None:
+        message = self.input.text().strip()
+        if not message or (self.worker and self.worker.isRunning()):
+            return
+
+        self.input.clear()
+        self._append(f"\n🧑  You: {message}")
+        self.message_log.append({"role": "user", "content": message})
+
+        self.send_btn.setEnabled(False)
+        self.input.setEnabled(False)
+        self._streaming_started = False
+        self._thinking_started = False
+
+        self.worker = AgentWorker(message, self.history, self.session_id)
+        self.worker.event.connect(self.on_event)
+        self.worker.finished.connect(self._on_finished)
+        self.worker.start()
+
+    def _on_finished(self) -> None:
+        self.send_btn.setEnabled(True)
+        self.input.setEnabled(True)
+        self.input.focusWidget()
+        self.input.setFocus()
+
+    # ── Event handling ───────────────────────────────────────────────
+
+    def on_event(self, ev: dict) -> None:
+        t = ev.get("type")
+
+        if t == "thinking":
+            if not self._thinking_started:
+                self._append("\n💭  Thinking:")
+                self._thinking_started = True
+            self._append_inline(ev.get("content", ""))
+
+        elif t == "token":
+            if not self._streaming_started:
+                self._append("\n🤖  Agent: ")
+                self._streaming_started = True
+            self._append_inline(ev.get("content", ""))
+
+        elif t == "retry":
+            self._append(f"\n↻  {ev.get('message', 'Retrying…')}")
+            self._streaming_started = False
+            self._thinking_started = False
+
+        elif t == "fallback":
+            self._append(
+                f"\n⚡  {ev.get('message', 'Using fallback LLM')}"
+            )
+            self._streaming_started = False
+
+        elif t == "info":
+            self._append(f"\nℹ  {ev.get('message', '')}")
+
+        elif t == "tool_call":
+            self._append(
+                f"\n🔧  Tool call: {ev['name']}({ev['args']})"
+            )
+
+        elif t == "tool_result":
+            self._append(f"\n📊  Result: {ev['result']}")
+
+        elif t == "final":
+            if not self._streaming_started:
+                self._append(f"\n🤖  Agent: {ev['content']}\n")
+            else:
+                self._append("")
+            self.history = ev.get("messages", [])
+            if ev.get("content"):
+                self.message_log.append({
+                    "role": "assistant",
+                    "content": ev["content"],
+                })
+
+    # ── Save conversation ────────────────────────────────────────────
+
+    def _save_chat(self) -> None:
+        """Save the transcript as Markdown."""
+        if not self.message_log:
+            QMessageBox.information(self, "Save", "Nothing to save yet.")
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Conversation",
+            f"3olution-chat-{self.session_id or 'session'}.md",
+            "Markdown (*.md);;All files (*)",
+        )
+        if not path:
+            return
+
+        lines = [
+            "# 3olution Agent Graph — Conversation",
+            "",
+            f"Session: {self.session_id or '(none)'}",
+            f"Saved: {datetime.datetime.now().isoformat()}",
+            "",
+            "---",
+            "",
+        ]
+        for m in self.message_log:
+            role = "🧑 You" if m["role"] == "user" else "🤖 Agent"
+            lines.append(f"## {role}")
+            lines.append("")
+            lines.append(m["content"])
+            lines.append("")
+
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines))
+            self._append(f"\n💾 Saved to {path}")
+        except Exception as exc:
+            QMessageBox.warning(self, "Save failed", str(exc))
+
+    # ── Stop all ─────────────────────────────────────────────────────
+
+    def _stop_all(self) -> None:
+        """Call the backend's stop-all endpoint."""
+        reply = QMessageBox.question(
+            self,
+            "Stop all processes",
+            "Stop the backend and all subprocesses?\n\n"
+            "Restart with:  python run.py backend",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        try:
+            httpx.post(f"{BACKEND}/api/system/stop-all", timeout=3.0)
+        except Exception:
+            pass
+        self._append(
+            "\n🛑 Stop-all requested. Backend is shutting down."
+        )
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Entry point
+# ══════════════════════════════════════════════════════════════════════
+
+def main() -> None:
+    """Application entry point."""
+    app = QApplication(sys.argv)
+    app.setApplicationName("3olution Agent Graph — Native Chat")
+    app.setOrganizationName("3olution")
+    app.setStyle("Fusion")
+
+    # Dark palette (same as desktop.app).
+    from PyQt6.QtGui import QPalette, QColor
+    palette = QPalette()
+    palette.setColor(QPalette.ColorRole.Window, QColor("#0f1116"))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor("#e6e6e6"))
+    palette.setColor(QPalette.ColorRole.Base, QColor("#1a1d24"))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#14161b"))
+    palette.setColor(QPalette.ColorRole.Text, QColor("#e6e6e6"))
+    palette.setColor(QPalette.ColorRole.Button, QColor("#1f2937"))
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor("#e6e6e6"))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor("#2563eb"))
+    palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
+    app.setPalette(palette)
+
+    window = ChatWindow()
+    window.show()
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()</code></pre></div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — Extensive_Documentation.md
+       ============================================================= -->
+  <section class="file-section" id="f-docs" data-name="documentation desktop extensive md architecture reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Extensive_Documentation.md <span class="file-badge">markdown</span></h2>
+        <span class="file-path">desktop/Extensive_Documentation.md</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Desktop architecture</h1>
+      <pre>┌─────────────────────────────────────────────────────────────────┐
+│  desktop.app  (primary client)                                  │
+│                                                                 │
+│  ┌──────────────────────┐    ┌──────────────────────────────┐   │
+│  │  QtWidgets           │    │  BackendLauncher             │   │
+│  │  menu, toolbar,      │    │  spawns + monitors the       │   │
+│  │  status bar, log     │    │  backend subprocess          │   │
+│  │  dock                │    │                              │   │
+│  └──────────────────────┘    └──────────────┬───────────────┘   │
+│  ┌──────────────────────┐                   │                   │
+│  │  QWebEngineView      │                   │ HTTP + WS         │
+│  │  → chat UI           │◄──────────────────┘                   │
+│  │  → graph editor      │                                       │
+│  │  → settings page     │                                       │
+│  └──────────────────────┘                                       │
+│  ┌──────────────────────┐                                       │
+│  │  LogViewerDialog     │  reads logs/*.log                     │
+│  └──────────────────────┘                                       │
+│  ┌──────────────────────┐                                       │
+│  │  InstallDialog       │  talks to /api/llama/install/*        │
+│  └──────────────────────┘                                       │
+└─────────────────────────────────────────────────────────────────┘
+                │
+                │  (backend subprocess)
+                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  backend.main:app  (uvicorn)                                    │
+│  ├─ chat / graph / ollama / llama / system / php                │
+│  └─ MCP subprocess, llama-cpp subprocess, PHP-CGI               │
+└─────────────────────────────────────────────────────────────────┘
+                ▲
+                │  (same HTTP API, no subprocess spawn)
+                │
+┌─────────────────────────────────────────────────────────────────┐
+│  desktop.native_chat  (fallback client)                         │
+│  QtWidgets only — no WebEngine                                  │
+└─────────────────────────────────────────────────────────────────┘</pre>
+
+      <p>
+        The two desktop frontends compared:
+      </p>
+
+      <table>
+        <thead><tr><th>Feature</th><th>desktop.app</th><th>desktop.native_chat</th></tr></thead>
+        <tbody>
+          <tr><td>Embedded Chromium</td><td>✔</td><td>✘</td></tr>
+          <tr><td>Chat with streaming tokens</td><td>✔ (via WebEngine)</td><td>✔ (via SSE)</td></tr>
+          <tr><td>Tool call / result display</td><td>✔ (via WebUI)</td><td>✔</td></tr>
+          <tr><td>Graph editor</td><td>✔ (via WebEngine)</td><td>✘</td></tr>
+          <tr><td>Settings page</td><td>✔ (via WebEngine)</td><td>✘</td></tr>
+          <tr><td>Ollama model management</td><td>✔ (via WebEngine)</td><td>✘</td></tr>
+          <tr><td>Native llama-cpp install UI</td><td>✔ (via InstallDialog)</td><td>✘</td></tr>
+          <tr><td>Save conversation</td><td>✔ (Web UI button)</td><td>✔ (native button)</td></tr>
+          <tr><td>Log viewer dialog</td><td>✔</td><td>✘</td></tr>
+          <tr><td>Stop all action</td><td>✔</td><td>✔</td></tr>
+          <tr><td>Needs PyQt6-WebEngine</td><td>✔</td><td>✘</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        The native client is a reduced feature set aimed at environments
+        where the WebEngine wheel is not available or not wanted.
+      </p>
+
+      <h2>backend_launcher.py — the subprocess lifecycle</h2>
+      <pre>    BackendLauncher.start()
+            │
+            ├── is_running()?        → emit started(), return
+            │
+            ├── _check_health(url)?  → attach, emit started(), return
+            │
+            └── _spawn()
+                    │
+                    ├── build cmd (scripts/serve.py or uvicorn)
+                    ├── build env (PYTHONPATH, AGENT_PORT, UTF-8)
+                    ├── Popen(..., stdout=PIPE, stderr=STDOUT)
+                    ├── spawn reader thread → emit log(line)
+                    └── start QTimer → _poll_health() every 500 ms
+                            │
+                            ├── /api/health returns 200  → started()
+                            ├── process died             → stop, failed()
+                            └── 60 s timeout             → stop, failed()</pre>
+      <p>Two design decisions worth highlighting:</p>
+      <p>
+        <strong>Attach-first semantics.</strong> The launcher first
+        checks whether a backend is already running at the configured
+        URL. This makes it possible to develop against
+        <code>uvicorn --reload</code> in a terminal and launch the
+        desktop client separately without a port conflict.
+      </p>
+      <p>
+        <strong>spawned_by_us flag.</strong> Only processes the launcher
+        itself started are terminated on close. An externally-started
+        backend is left running, because the user's terminal session
+        controls its lifecycle.
+      </p>
+
+      <h2>install_dialog.py — pip streaming without a browser</h2>
+      <p>
+        The dialog consumes the same
+        <code>/api/llama/install/install</code> and
+        <code>/api/llama/install/uninstall</code> SSE endpoints the web
+        settings page uses. The <code>SSEWorker</code> QThread wraps
+        <code>httpx.Client.stream(...)</code> and parses each
+        <code>data:</code> frame into a Python dict, emitting it as a Qt
+        signal.
+      </p>
+      <p>
+        The wheel recommendation comes from
+        <code>/api/llama/install/status</code>, which in turn calls
+        <code>backend.llama_installer.recommend_wheel_index()</code> —
+        the same CUDA detection logic the web UI uses. So switching
+        between the native dialog and the web page produces identical
+        recommendations.
+      </p>
+
+      <h2>logging_config.py — desktop log location</h2>
+      <table>
+        <thead><tr><th>Path</th><th>Rotation</th><th>Retention</th></tr></thead>
+        <tbody>
+          <tr><td><code>logs/desktop-YYYY-MM-DD.log</code></td><td>Midnight UTC</td><td>14 days</td></tr>
+        </tbody>
+      </table>
+      <p>
+        The desktop log directory is the same as the backend's
+        (<code>logs/</code>), so the <code>LogViewerDialog</code> can
+        show both sources side by side. Filtering by name prefix
+        (<code>backend-*.log</code> vs <code>desktop-*.log</code>)
+        separates them.
+      </p>
+      <p>
+        The desktop sink uses the same <code>enqueue=True</code> setting
+        as the backend — writes go through a background thread, so
+        logging never blocks the Qt event loop.
+      </p>
+
+      <h2>Access log filtering</h2>
+      <p>
+        Both <code>desktop.app</code> and
+        <code>backend.logging_config</code> filter HTTP access log
+        entries whose status is 2xx or 3xx. This is critical because the
+        desktop client's status bar polls <code>/api/health</code> every
+        10 seconds, the chat UI polls <code>/api/ollama/ps</code> every
+        5 seconds, and the graph editor polls
+        <code>/api/graph/runs</code> on page load. Without filtering, a
+        4-hour session would produce thousands of identical log lines.
+      </p>
+      <p>
+        The filter preserves 4xx and 5xx entries — those are real
+        problems worth keeping.
+      </p>
+
+      <h2>Closing behavior</h2>
+      <p>
+        The main window's <code>closeEvent</code> differs based on how
+        the backend was started:
+      </p>
+      <table>
+        <thead><tr><th>Scenario</th><th>On close</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>desktop.app</code> spawned the backend</td>
+            <td>Prompt: "Stop the backend and quit?" — stops on Yes</td>
+          </tr>
+          <tr>
+            <td><code>desktop.app</code> attached to an external backend</td>
+            <td>No prompt — external backend untouched</td>
+          </tr>
+          <tr>
+            <td><code>desktop.native_chat</code> window closes</td>
+            <td>Nothing — native client never spawns a backend</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        For <code>desktop.app</code>, a <kbd>Ctrl+Shift+Q</kbd>
+        accelerator triggers the "Stop All" action, which sends
+        <code>/api/system/stop-all</code> and then force-kills the tree
+        if the graceful shutdown does not complete in time.
+      </p>
+
+      <h2>Platform notes</h2>
+      <table>
+        <thead><tr><th>Platform</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Windows 10/11</td>
+            <td><code>CREATE_NO_WINDOW</code> hides the subprocess
+              console. <code>taskkill /F /T</code> terminates the
+              entire process tree, including the MCP and llama-cpp
+              children.</td>
+          </tr>
+          <tr>
+            <td>Linux</td>
+            <td>Requires <code>libxcb-cursor0</code> and friends for Qt;
+              PyQt6-WebEngine requires <code>libnss3</code>,
+              <code>libxcomposite1</code>, <code>libxdamage1</code>,
+              and others. See the README for the full apt/dnf list.</td>
+          </tr>
+          <tr>
+            <td>macOS</td>
+            <td>First launch of a PyInstaller bundle is blocked by
+              Gatekeeper. Run
+              <code>xattr -dr com.apple.quarantine dist/3olutionAgentGraph.app</code>
+              once. QtWebEngine on Apple Silicon requires the arm64
+              wheel of PyQt6-WebEngine.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<button class="to-top" id="toTop" title="Back to top">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/python.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Highlight all code blocks ----------
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      try { hljs.highlightElement(el); } catch (e) {}
+    });
+  }
+
+  // ---------- Line count for each file ----------
+  document.querySelectorAll('.file-section').forEach(function (sec) {
+    var code = sec.querySelector('pre code');
+    var badge = sec.querySelector('[data-lines]');
+    if (!badge) return;
+    if (code) {
+      var text = code.textContent || '';
+      var lines = text.split('\n').length;
+      badge.textContent = lines + ' lines';
+    } else {
+      badge.textContent = 'doc';
+    }
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.file-section');
+      if (!sec) return;
+      var code = sec.querySelector('pre code');
+      var md = sec.querySelector('.md-content');
+      var text = code ? code.textContent : (md ? md.innerText : '');
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = '✗ Failed';
+        setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600);
+      });
+    });
+  });
+
+  // ---------- Active nav tracking ----------
+  var navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+  var sections = Array.from(document.querySelectorAll('.file-section'));
+  var crumbs = document.getElementById('crumbs');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s.offsetTop <= scrollY) current = s;
+      else break;
+    }
+    navLinks.forEach(function (a) { a.classList.remove('active'); });
+    if (current) {
+      var link = document.querySelector('.nav-list a[href="#' + current.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        var path = current.querySelector('.file-path');
+        if (path && crumbs) {
+          crumbs.textContent = path.textContent;
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ---------- Search filter ----------
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+  var navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var q = searchInput.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      document.querySelectorAll('.nav-list li').forEach(function (li) {
+        var text = li.textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        li.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+      });
+
+      navGroups.forEach(function (g) {
+        var list = g.nextElementSibling;
+        if (!list || !list.classList.contains('nav-list')) return;
+        var hasVisible = list.querySelector('li:not(.hidden)');
+        g.style.display = hasVisible ? '' : 'none';
+      });
+
+      sections.forEach(function (sec) {
+        var name = (sec.getAttribute('data-name') || '') + ' ' +
+                   (sec.querySelector('.file-path')?.textContent || '') + ' ' +
+                   (sec.querySelector('h2')?.textContent || '');
+        name = name.toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        sec.classList.toggle('hidden', !match);
+      });
+
+      if (noResults) noResults.classList.toggle('visible', visibleCount === 0);
+    });
+  }
+
+  // ---------- Back to top ----------
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('visible', window.scrollY > 500);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---------- Mobile sidebar toggle ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (window.innerWidth <= 700) sidebar.classList.remove('open');
+      });
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
