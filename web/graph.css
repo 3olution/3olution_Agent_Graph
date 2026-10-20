@@ -1,0 +1,390 @@
+/* ══════════════════════════════════════════════════════════════════════
+   3olution Agent Graph — Graph Editor
+   https://3olution.com
+   ══════════════════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    height: 100%;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #0f1116;
+    color: #e6e6e6;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #0f1116;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid #222;
+    background: #14161b;
+    flex-shrink: 0;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+
+/* Project logo as an <img>. 3x the original 26px size. */
+.logo {
+    display: inline-block;
+    width: 78px;
+    height: 78px;
+    object-fit: contain;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+
+.toolbar { display: flex; gap: 8px; align-items: center; }
+
+.toolbar button {
+    background: #1f2937;
+    color: #e6e6e6;
+    border: 1px solid #333;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+}
+.toolbar button:hover { background: #2a3542; }
+.toolbar button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.toolbar button.danger {
+    color: #ffb1b1;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+.toolbar button.danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+}
+
+.nav-link {
+    color: #888;
+    text-decoration: none;
+    font-size: 13px;
+    margin-right: 4px;
+}
+.nav-link:hover { color: #e6e6e6; }
+
+.status {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #333;
+    margin-left: 8px;
+}
+.status.running { background: #1e5e2e; }
+.status.error   { background: #5e1e1e; }
+.status.done    { background: #1e5e2e; }
+
+/* ── Main layout ──────────────────────────────────────────────────── */
+
+main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    background: #0f1116;
+}
+
+#graph-canvas {
+    flex: 1;
+    display: block;
+    outline: none;
+    background: #0f1116;
+    background-image:
+        radial-gradient(circle, #1b1e26 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: 0 0;
+}
+
+aside#inspector {
+    width: 380px;
+    background: #14161b;
+    border-left: 1px solid #222;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 12px;
+}
+.panel-section:first-child {
+    flex: 1;
+    border-bottom: 1px solid #222;
+}
+.panel-section:last-child {
+    flex: 1;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+aside h2 {
+    font-size: 12px;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+.panel-header h2 { margin: 0; }
+
+.btn-mini {
+    background: transparent;
+    color: #888;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+}
+.btn-mini:hover { color: #ff6c6c; border-color: #ff6c6c; }
+
+/* ── Current Run log panel ────────────────────────────────────────── */
+
+#log {
+    flex: 1;
+    overflow-y: auto;
+    font-family: ui-monospace, "Consolas", monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #b8c2cc;
+    margin: 0;
+    line-height: 1.5;
+    background: #0f1116;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 10px;
+    min-height: 100px;
+}
+
+.log-ok       { color: #6cff9b; }
+.log-dim      { color: #b8c2cc; }
+.log-err      { color: #ff6c6c; }
+.log-retry    { color: #ffcb6c; }
+.log-fallback { color: #6cffdb; }
+.log-result   { color: #ffcb6c; font-weight: 700; }
+.log-meta     { color: #6b7280; font-style: italic; }
+.log-info     { color: #b8c2cc; padding-left: 8px;
+                border-left: 2px solid #6b7280; }
+.log-thinking { color: #a5b4fc; font-style: italic;
+                padding-left: 8px;
+                border-left: 2px solid #6366f1;
+                margin: 2px 0; }
+
+/* ── History list ─────────────────────────────────────────────────── */
+
+#history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.history-empty {
+    color: #6b7280;
+    font-size: 12px;
+    font-style: italic;
+    padding: 10px 0;
+}
+
+.history-item {
+    background: #1a1d24;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.history-item:hover { background: #1f2937; }
+.history-item.selected {
+    border-color: #2563eb;
+    background: #1f2937;
+}
+
+.history-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.history-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.history-dot.ok  { background: #6cff9b;
+                   box-shadow: 0 0 6px rgba(108, 255, 155, 0.4); }
+.history-dot.err { background: #ff6c6c;
+                   box-shadow: 0 0 6px rgba(255, 108, 108, 0.4); }
+
+.history-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: #e6e6e6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-time {
+    font-size: 10px;
+    color: #6b7280;
+    font-family: ui-monospace, monospace;
+    flex-shrink: 0;
+}
+
+.history-meta {
+    font-size: 10px;
+    color: #888;
+    font-family: ui-monospace, monospace;
+    margin-bottom: 4px;
+}
+
+.history-preview {
+    font-size: 11px;
+    color: #b8c2cc;
+    font-family: ui-monospace, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 4px;
+    opacity: 0.75;
+}
+
+.history-delete {
+    flex-shrink: 0;
+    background: transparent;
+    color: #6b7280;
+    border: none;
+    padding: 0 2px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 3px;
+}
+.history-delete:hover { color: #ff6c6c; }
+
+/* ── Result bar ───────────────────────────────────────────────────── */
+
+.result-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, #14161b 0%, #1a1d24 100%);
+    border-top: 2px solid #6cff9b;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.result-bar.hidden { display: none; }
+
+.result-label {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6cff9b;
+    padding-top: 3px;
+    min-width: 60px;
+}
+
+.result-text {
+    flex: 1;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #e6e6e6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.btn-copy,
+.btn-close {
+    flex-shrink: 0;
+    background: transparent;
+    color: #888;
+    border: 1px solid #333;
+    border-radius: 5px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-copy:hover  { color: #6cff9b; border-color: #6cff9b; }
+.btn-close:hover { color: #ff6c6c; border-color: #ff6c6c; }
+
+.btn-copy.copied {
+    color: #6cff9b;
+    border-color: #6cff9b;
+}
+
+/* ── LiteGraph dark theme overrides ─────────────────────────────── */
+
+.litegraph.litegraph-canvas {
+    background: #0f1116 !important;
+    background-image:
+        radial-gradient(circle, #1b1e26 1px, transparent 1px) !important;
+    background-size: 24px 24px !important;
+    background-position: 0 0 !important;
+}
+
+.litegraph .litegraph-menu,
+.litegraph .litegraph-searchbox {
+    background: #14161b !important;
+    color: #e6e6e6 !important;
+    border: 1px solid #333 !important;
+}
+
+.litegraph .litegraph-searchbox input {
+    background: #1a1d24 !important;
+    color: #e6e6e6 !important;
+    border: 1px solid #333 !important;
+}
+
+.litegraph .litegraph-menu .litemenu-entry:hover {
+    background: #2a3542 !important;
+}
+
+.litegraph .litemenu-entry {
+    color: #e6e6e6 !important;
+}
+
+canvas.litegraph-canvas,
+canvas.litegraph {
+    background: #0f1116 !important;
+}

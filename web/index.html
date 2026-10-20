@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3olution Agent Graph — Chat</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div class="app">
+        <header>
+            <div class="brand">
+                <img src="logo.png" class="logo" alt="3olution" />
+                <h1>3olution Agent Graph</h1>
+            </div>
+            <nav>
+                <a href="/graph">Graph Editor</a>
+                <a href="/settings">Settings</a>
+                <a href="/php/" title="PHP notes app">Notes</a>
+
+                <div class="model-picker">
+                    <label for="model-select">Model:</label>
+                    <select id="model-select">
+                        <option value="">(default)</option>
+                    </select>
+                    <span
+                        id="model-busy"
+                        class="model-busy idle"
+                        title="Loading state"
+                    ></span>
+                </div>
+
+                <button
+                    id="btn-load-gguf"
+                    class="session-btn"
+                    title="Load a GGUF model into the local server"
+                >
+                    📥 Load GGUF
+                </button>
+
+                <label class="tools-toggle" title="Disable tools for this session">
+                    <input type="checkbox" id="chk-disable-tools" />
+                    No&nbsp;tools
+                </label>
+
+                <button
+                    id="btn-new-session"
+                    class="session-btn"
+                    title="Start a new session"
+                >
+                    + New
+                </button>
+
+                <button
+                    id="btn-save-chat"
+                    class="session-btn"
+                    title="Save conversation as Markdown"
+                >
+                    Save
+                </button>
+
+                <button
+                    id="btn-stop-all"
+                    class="session-btn danger"
+                    title="Stop backend and all subprocesses"
+                >
+                    ⏹ Stop
+                </button>
+
+                <span id="session-label" class="session-label"></span>
+                <span id="status" class="status offline">disconnected</span>
+            </nav>
+        </header>
+
+        <main id="transcript"></main>
+
+        <form id="form" autocomplete="off">
+            <input
+                id="input"
+                type="text"
+                placeholder="Ask the agent…"
+                autocomplete="off"
+            />
+            <button id="send" type="submit">Send</button>
+        </form>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

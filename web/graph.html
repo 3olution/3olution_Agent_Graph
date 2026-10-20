@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3olution Agent Graph — Graph Editor</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <!--
+      LiteGraph CSS: prefer the local vendored file. If it is missing
+      (vendor files not yet downloaded), onerror swaps the href to
+      jsDelivr so the editor still looks correct.
+    -->
+    <link
+        rel="stylesheet"
+        href="vendor/litegraph.css"
+        onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/css/litegraph.css';"
+    />
+    <link rel="stylesheet" href="graph.css" />
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" class="logo" alt="3olution" />
+            <h1>3olution Graph</h1>
+        </div>
+        <div class="toolbar">
+            <a href="/" class="nav-link">Chat</a>
+            <a href="/settings" class="nav-link">Settings</a>
+            <button id="btn-run">▶ Run</button>
+            <button id="btn-save">Save</button>
+            <button id="btn-load">Load</button>
+            <button id="btn-clear">Clear</button>
+            <button
+                id="btn-stop-all"
+                class="danger"
+                title="Stop backend and all subprocesses"
+            >
+                ⏹ Stop All
+            </button>
+            <span id="status" class="status">idle</span>
+        </div>
+    </header>
+
+    <main>
+        <canvas id="graph-canvas" tabindex="1"></canvas>
+
+        <aside id="inspector">
+            <div class="panel-section">
+                <h2>Current Run</h2>
+                <pre id="log"></pre>
+            </div>
+            <div class="panel-section">
+                <div class="panel-header">
+                    <h2>History</h2>
+                    <button
+                        id="btn-clear-history"
+                        class="btn-mini"
+                        title="Delete all stored runs"
+                    >
+                        Clear all
+                    </button>
+                </div>
+                <div id="history-list">
+                    <div class="history-empty">No runs yet.</div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <div id="result-bar" class="result-bar hidden" role="status" aria-live="polite">
+        <span class="result-label">Result</span>
+        <span id="result-text" class="result-text"></span>
+        <button id="btn-copy-result" class="btn-copy" title="Copy result">
+            Copy
+        </button>
+        <button id="btn-close-result" class="btn-close" title="Hide">✕</button>
+    </div>
+
+    <!--
+      LiteGraph JS: local vendored file, with CDN fallback via
+      document.write if the local file is missing.
+    -->
+    <script src="vendor/litegraph.min.js"></script>
+    <script>
+        if (typeof LiteGraph === "undefined") {
+            console.warn(
+                "Local LiteGraph not found. Falling back to jsDelivr."
+            );
+            document.write(
+                '<script src="https://cdn.jsdelivr.net/gh/jagenjo/litegraph.js@master/build/litegraph.min.js"><\/script>'
+            );
+        }
+    </script>
+
+    <script src="graph.js"></script>
+</body>
+</html>

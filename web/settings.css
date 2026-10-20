@@ -1,0 +1,386 @@
+/* ══════════════════════════════════════════════════════════════════════
+   3olution Agent Graph — Settings UI
+   https://3olution.com
+   ══════════════════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; }
+
+:root {
+    --bg: #0f1116;
+    --bg-panel: #14161b;
+    --bg-input: #1a1d24;
+    --border: #222;
+    --text: #e6e6e6;
+    --text-dim: #888;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --green: #6cff9b;
+    --red: #ef4444;
+    --yellow: #ffcb6c;
+    --teal: #6cffdb;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+
+/* Project logo as an <img>. 3x the original 28px size. */
+.logo {
+    display: inline-block;
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+
+nav { display: flex; gap: 16px; }
+nav a { color: var(--text-dim); text-decoration: none; font-size: 13px; }
+nav a:hover { color: var(--text); }
+
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.card h2 {
+    font-size: 14px;
+    margin: 0 0 14px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+.card-header h2 { margin: 0; }
+
+.status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+}
+
+.dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #555;
+}
+.dot.online  {
+    background: var(--green);
+    box-shadow: 0 0 8px rgba(108, 255, 155, 0.5);
+}
+.dot.offline { background: var(--red); }
+.dot.warn    { background: var(--yellow); }
+
+.meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: ui-monospace, monospace;
+    margin-top: 8px;
+    word-break: break-all;
+}
+
+/* ── LLM Runtime card ───────────────────────────────────────────── */
+
+.runtime-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 8px;
+}
+
+.install-panel {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+.install-panel.hidden { display: none; }
+
+.install-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.install-row label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.install-row select {
+    background: var(--bg-input);
+    color: var(--text);
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    flex: 1;
+    min-width: 240px;
+    max-width: 400px;
+}
+.install-row select:focus { border-color: var(--accent); }
+
+.recommendation {
+    font-size: 12px;
+    color: var(--teal);
+    margin-top: 10px;
+    font-family: ui-monospace, monospace;
+    padding: 8px 12px;
+    background: rgba(108, 255, 219, 0.06);
+    border-left: 3px solid var(--teal);
+    border-radius: 4px;
+}
+
+.install-checkboxes {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+.install-checkboxes label {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    cursor: pointer;
+}
+.install-checkboxes input { margin-top: 2px; }
+
+.install-progress { margin-top: 16px; }
+.install-progress.hidden { display: none; }
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#install-log {
+    font-family: ui-monospace, "Consolas", monospace;
+    font-size: 11px;
+    background: #0a0c10;
+    color: #b8c2cc;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.btn-mini {
+    background: transparent;
+    color: #888;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+}
+.btn-mini:hover { color: #ff6c6c; border-color: #ff6c6c; }
+
+.notice {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.notice.hidden { display: none; }
+.notice.success {
+    background: rgba(108, 255, 155, 0.08);
+    border-left: 3px solid var(--green);
+    color: var(--green);
+}
+.notice.error {
+    background: rgba(239, 68, 68, 0.08);
+    border-left: 3px solid var(--red);
+    color: #ff9494;
+}
+.notice.warn {
+    background: rgba(255, 203, 108, 0.08);
+    border-left: 3px solid var(--yellow);
+    color: var(--yellow);
+}
+
+/* ── Tables ────────────────────────────────────────────────────── */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+thead th {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+tbody td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    vertical-align: middle;
+}
+
+tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+.empty {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 24px !important;
+    font-style: italic;
+}
+
+.model-name {
+    font-family: ui-monospace, monospace;
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────── */
+
+button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+button:hover:not(:disabled) { background: var(--accent-hover); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+.btn-secondary {
+    background: #1f2937;
+    color: var(--text);
+    border: 1px solid #333;
+}
+.btn-secondary:hover:not(:disabled) { background: #2a3542; }
+
+.btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 5px 10px;
+    font-size: 12px;
+}
+.btn-danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--red);
+}
+
+.btn-row { display: flex; gap: 6px; justify-content: flex-end; }
+
+/* ── Hints and misc ─────────────────────────────────────────────── */
+
+.hint {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 0 0 14px 0;
+}
+.hint a { color: var(--accent); }
+.hint code {
+    background: var(--bg-input);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.pull-row { display: flex; gap: 8px; }
+
+.pull-row input {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--bg-input);
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: inherit;
+    font-size: 14px;
+    font-family: ui-monospace, monospace;
+    outline: none;
+}
+.pull-row input:focus { border-color: var(--accent); }
+
+.progress { margin-top: 14px; }
+.progress.hidden { display: none; }
+
+.progress-bar {
+    height: 8px;
+    background: var(--bg-input);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    transition: width 0.2s ease;
+}
+
+.progress-status {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: ui-monospace, monospace;
+}

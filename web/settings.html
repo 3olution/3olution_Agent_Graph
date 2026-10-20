@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3olution Agent Graph — Settings</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" class="logo" alt="3olution" />
+            <h1>3olution Settings</h1>
+        </div>
+        <nav>
+            <a href="/">Chat</a>
+            <a href="/graph">Graph Editor</a>
+            <a href="/php/">Notes</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- ── LLM Runtime (llama-cpp-python) ────────────────────── -->
+        <section class="card" id="llm-runtime-card">
+            <div class="card-header">
+                <h2>LLM Runtime</h2>
+                <button id="btn-refresh-runtime" class="btn-secondary">
+                    ↻ Refresh
+                </button>
+            </div>
+
+            <div class="status-row">
+                <span class="dot" id="runtime-dot"></span>
+                <span id="runtime-text">Checking…</span>
+            </div>
+            <div class="meta" id="runtime-meta"></div>
+
+            <div class="runtime-actions">
+                <button id="btn-show-install" class="btn-secondary">
+                    Show install options
+                </button>
+            </div>
+
+            <div id="install-panel" class="install-panel hidden">
+                <p class="hint">
+                    Installs <code>llama-cpp-python[server]</code> into the
+                    current virtual environment. Choose the wheel that
+                    matches your GPU. A restart of the backend is required
+                    after installation.
+                </p>
+
+                <div class="install-row">
+                    <label for="wheel-select">Wheel:</label>
+                    <select id="wheel-select">
+                        <option value="cpu">CPU (no GPU acceleration)</option>
+                        <option value="cu124">CUDA 12.4 (RTX 30/40, Ada/Hopper)</option>
+                        <option value="cu121">CUDA 12.1 (older 12.x drivers)</option>
+                        <option value="cu118">CUDA 11.8 (GTX 10/16, RTX 20)</option>
+                    </select>
+                    <button id="btn-install-runtime" class="btn-primary">
+                        Install
+                    </button>
+                    <button id="btn-uninstall-runtime" class="btn-secondary">
+                        Uninstall
+                    </button>
+                </div>
+
+                <div class="recommendation" id="runtime-recommendation"></div>
+
+                <div class="install-checkboxes">
+                    <label>
+                        <input type="checkbox" id="chk-upgrade" />
+                        Upgrade to the latest version
+                        (use with caution on Windows: stop the backend first)
+                    </label>
+                </div>
+
+                <div id="install-progress" class="install-progress hidden">
+                    <div class="progress-header">
+                        <span id="install-status">Installing…</span>
+                        <button id="btn-clear-log" class="btn-mini">
+                            Clear log
+                        </button>
+                    </div>
+                    <pre id="install-log"></pre>
+                </div>
+
+                <div id="install-notice" class="notice hidden"></div>
+            </div>
+        </section>
+
+        <!-- ── Ollama Connection ─────────────────────────────────── -->
+        <section class="card">
+            <h2>Ollama Connection</h2>
+            <div class="status-row">
+                <span class="dot" id="conn-dot"></span>
+                <span id="conn-text">Checking…</span>
+            </div>
+            <div class="meta" id="conn-meta"></div>
+        </section>
+
+        <!-- ── Installed models ──────────────────────────────────── -->
+        <section class="card">
+            <div class="card-header">
+                <h2>Installed Models</h2>
+                <button id="btn-refresh" class="btn-secondary">
+                    ↻ Refresh
+                </button>
+            </div>
+            <table id="models-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Size</th>
+                        <th>Family</th>
+                        <th>Params</th>
+                        <th>Quant</th>
+                        <th>Modified</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="models-body">
+                    <tr><td colspan="7" class="empty">Loading…</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ── Pull a model ──────────────────────────────────────── -->
+        <section class="card">
+            <h2>Pull a Model</h2>
+            <p class="hint">
+                Enter a model name from
+                <a href="https://ollama.com/library" target="_blank"
+                   rel="noopener">ollama.com/library</a>
+                (e.g. <code>llama3.2</code>, <code>mistral:7b</code>,
+                <code>qwen2.5-coder</code>).
+            </p>
+            <div class="pull-row">
+                <input id="pull-name" type="text" placeholder="llama3.2" />
+                <button id="btn-pull">Pull</button>
+            </div>
+            <div id="pull-progress" class="progress hidden">
+                <div class="progress-bar">
+                    <div id="pull-bar" class="progress-fill"></div>
+                </div>
+                <div id="pull-status" class="progress-status"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="settings.js"></script>
+</body>
+</html>
