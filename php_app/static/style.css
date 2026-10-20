@@ -1,0 +1,306 @@
+/* ══════════════════════════════════════════════════════════════════════
+   3olution Notes — dark theme
+   https://3olution.com
+   ══════════════════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; }
+
+:root {
+    --bg: #0f1116;
+    --panel: #14161b;
+    --input: #1a1d24;
+    --border: #222;
+    --text: #e6e6e6;
+    --text-dim: #888;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --green: #6cff9b;
+    --red: #ef4444;
+    --yellow: #ffcb6c;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+
+/* Project logo as an <img>. 3x the original 32px size. */
+.logo {
+    display: inline-block;
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+
+.meta {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: ui-monospace, "Consolas", monospace;
+    flex-wrap: wrap;
+}
+
+/* ── Main content ─────────────────────────────────────────────────── */
+
+main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.card h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    margin: 0 0 14px 0;
+    font-weight: 600;
+}
+
+/* ── Form ─────────────────────────────────────────────────────────── */
+
+label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 10px 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--input);
+    color: var(--text);
+    border: 1px solid #333;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    resize: vertical;
+}
+input[type="text"]:focus,
+textarea:focus { border-color: var(--accent); }
+
+button {
+    margin-top: 14px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+button:hover { background: var(--accent-hover); }
+
+/* ── Message banners ──────────────────────────────────────────────── */
+
+.message {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin: 0 0 10px;
+}
+.message.error {
+    background: rgba(239, 68, 68, 0.08);
+    border-left: 3px solid var(--red);
+    color: #ff9494;
+}
+.message.success {
+    background: rgba(108, 255, 155, 0.08);
+    border-left: 3px solid var(--green);
+    color: var(--green);
+}
+
+.error {
+    color: #ff9494;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+    background: rgba(239, 68, 68, 0.06);
+    padding: 10px 12px;
+    border-radius: 6px;
+    border-left: 3px solid var(--red);
+}
+
+.hint {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 12px 0 0;
+    line-height: 1.55;
+}
+.hint code {
+    background: var(--input);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--accent);
+}
+
+/* ── Notes list ───────────────────────────────────────────────────── */
+
+.notes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notes li {
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    transition: border-color 0.15s;
+}
+.notes li:hover { border-color: #333; }
+
+.note-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.note-header strong {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+}
+
+.note-header .date {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: ui-monospace, monospace;
+    white-space: nowrap;
+}
+
+/* Inline form wrapping the delete button. */
+.note-header form.inline {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.note-header button.delete {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 4px;
+    margin: 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+}
+.note-header button.delete:hover {
+    color: var(--red);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.notes p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #b8c2cc;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ── Empty state ──────────────────────────────────────────────────── */
+
+.empty {
+    color: var(--text-dim);
+    font-style: italic;
+    margin: 0;
+    padding: 20px 0;
+    text-align: center;
+}
+
+/* ── Endpoints list ───────────────────────────────────────────────── */
+
+.endpoints {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.endpoints code {
+    background: var(--input);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    color: var(--accent);
+    font-size: 12px;
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: #2a2f3a;
+    border-radius: 5px;
+    border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: #3a4150; }
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+    header { padding: 12px 16px; }
+    header h1 { font-size: 15px; }
+    .meta { font-size: 11px; gap: 8px; }
+    main { padding: 16px; }
+    .card { padding: 16px; }
+    .note-header { flex-wrap: wrap; }
+    .note-header .date { width: 100%; order: 3; }
+}

@@ -1,0 +1,31 @@
+/*
+ * This file is deprecated.
+ *
+ * The stylesheet for the 3olution Notes app has moved to
+ * `static/style.css` so that it can be served correctly by the
+ * Python backend at `/php-static/style.css`.
+ *
+ * If you are looking for the current styles, see:
+ *     php_app/static/style.css
+ *
+ * This file is kept as a redirect placeholder so that any cached
+ * browser reference to `/php/style.css` still resolves. It contains
+ * only the minimal styling to render a stub message.
+ */
+
+body {
+    margin: 0;
+    padding: 40px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #0f1116;
+    color: #e6e6e6;
+    line-height: 1.6;
+}
+code {
+    background: #1a1d24;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+}
+a { color: #4a9eff; }
