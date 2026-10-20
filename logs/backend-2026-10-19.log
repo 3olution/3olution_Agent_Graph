@@ -1,0 +1,31 @@
+2026-10-19 18:35:44.840 | INFO     | backend.logging_config:78 — Logging initialised (console=INFO, file=INFO)
+2026-10-19 18:35:45.402 | INFO     | backend.main:249 — Starting 3olution Agent Graph v2.0.0
+2026-10-19 18:35:45.402 | INFO     | backend.main:153 — Configuration file: C:\Users\Admin\Desktop\3olution_Agent_Graph_Project\.env
+2026-10-19 18:35:45.418 | INFO     | backend.main:110 — LiteGraph vendor files present
+2026-10-19 18:35:45.418 | INFO     | backend.main:192 — Effective configuration:
+2026-10-19 18:35:45.418 | INFO     | backend.main:193 —   Primary LLM base URL:  http://localhost:11434/v1
+2026-10-19 18:35:45.418 | INFO     | backend.main:194 —   Primary LLM model:     llama3.2
+2026-10-19 18:35:45.434 | INFO     | backend.main:195 —   Primary LLM API key:   (set)
+2026-10-19 18:35:45.434 | INFO     | backend.main:205 —   Fallback LLM:          (disabled)
+2026-10-19 18:35:45.434 | INFO     | backend.main:206 —   Ollama host:           http://127.0.0.1:11434
+2026-10-19 18:35:45.434 | INFO     | backend.main:207 —   llama-cpp enabled:     True
+2026-10-19 18:35:45.434 | INFO     | backend.main:208 —   llama-cpp base URL:    http://127.0.0.1:8081
+2026-10-19 18:35:45.434 | INFO     | backend.main:209 —   llama-cpp model:       Llama-3.2-3B-Instruct-Q4_K_M.gguf
+2026-10-19 18:35:45.434 | INFO     | backend.main:210 —   PHP enabled:           True
+2026-10-19 18:35:45.434 | INFO     | backend.main:211 —   PHP SQL driver:        sqlite
+2026-10-19 18:35:45.434 | INFO     | backend.main:212 —   MCP command:           python -m mcp_server.server
+2026-10-19 18:35:45.559 | INFO     | backend.main:214 —   Session DB:            sessions.db
+2026-10-19 18:35:45.559 | INFO     | backend.main:215 —   Models dir:            C:\Users\Admin\Desktop\3olution_Agent_Graph_Project\models
+2026-10-19 18:35:45.574 | INFO     | backend.main:216 —   Logs dir:              C:\Users\Admin\Desktop\3olution_Agent_Graph_Project\logs
+2026-10-19 18:35:45.574 | INFO     | backend.main:217 —   Stream tokens:         True
+2026-10-19 18:35:45.574 | INFO     | backend.main:218 —   Show thinking:         True
+2026-10-19 18:35:50.221 | INFO     | backend.storage:114 — Storage initialised at sessions.db (max_graph_runs=100)
+2026-10-19 18:35:50.221 | INFO     | backend.llama_server:300 — Spawning llama-server (native, model size 2.02 GB, port 8081, alias 'local')
+2026-10-19 18:36:40.924 | INFO     | backend.llama_server:394 — llama-server ready at http://127.0.0.1:8081 (model=Llama-3.2-3B-Instruct-Q4_K_M.gguf, backend=native, alias=local)
+2026-10-19 18:36:40.940 | INFO     | backend.main:288 — llama-cpp server started with model 'Llama-3.2-3B-Instruct-Q4_K_M.gguf'
+2026-10-19 18:36:40.940 | INFO     | backend.mcp_client:143 — Resolved MCP command 'python' -> 'C:\Users\Admin\Desktop\3olution_Agent_Graph_Project\runtime\python\python.exe'
+2026-10-19 18:36:40.940 | INFO     | backend.mcp_client:165 — Spawning MCP server: C:\Users\Admin\Desktop\3olution_Agent_Graph_Project\runtime\python\python.exe -m mcp_server.server
+2026-10-19 18:36:47.065 | INFO     | backend.mcp_client:180 — MCP session initialised
+2026-10-19 18:36:47.065 | INFO     | backend.llm:359 — Warming up primary LLM (model=llama3.2) -- this may take a while...
+2026-10-19 18:39:31.112 | INFO     | backend.llm:370 — Primary LLM warmup complete (model=llama3.2)
+2026-10-19 18:39:31.456 | INFO     | backend.main:331 — Backend ready — primary LLM=llama3.2 fallback=(none) llama_cpp=running php=enabled
