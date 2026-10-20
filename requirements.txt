@@ -1,0 +1,153 @@
+# ══════════════════════════════════════════════════════════════════════
+#  3olution Agent Graph — Python dependencies
+#  https://3olution.com
+#
+#  Installed into the portable runtime by bootstrap/setup.py, and into
+#  .venv/ by `python run.py setup`.
+#
+#  Pinned to the minor version (>=X.Y.0) rather than the patch version
+#  so users get bug fixes and security patches without waiting for a
+#  release here. Upper bounds are omitted deliberately — if a future
+#  major version breaks something, we want to see it in tests rather
+#  than silently pin an old release.
+#
+#  Platform note: all packages below have prebuilt wheels for Windows
+#  (x64 / arm64), Linux (x64 / aarch64), and macOS (x64 / arm64) at
+#  the pinned versions. No compiler is needed on any supported
+#  platform.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Core web framework ───────────────────────────────────────────────
+#
+# FastAPI + uvicorn serve the HTTP API, WebSocket endpoints, and the
+# static web UI. The [standard] extra pulls in uvloop on Unix,
+# httptools for faster HTTP parsing, watchfiles for --reload, and
+# python-dotenv for .env loading during development.
+
+fastapi>=0.118.0
+uvicorn[standard]>=0.37.0
+
+# ── Configuration and validation ─────────────────────────────────────
+#
+# pydantic v2 for request/response models, pydantic-settings for the
+# .env loader in backend/config.py. pydantic-settings depends on
+# python-dotenv internally, so it does not need to be listed here.
+
+pydantic>=2.11.0
+pydantic-settings>=2.8.0
+
+# ── Form and multipart handling ──────────────────────────────────────
+#
+# FastAPI requires python-multipart to parse `application/x-www-form-
+# urlencoded` bodies via the Form() helper. The current backend
+# passes raw request bodies through to PHP-CGI (which parses them
+# itself), so this is not strictly required today — but it is a
+# one-line addition that unlocks form-based routes without a
+# follow-up install step. Keep it.
+
+python-multipart>=0.0.20
+
+# ── LLM client ───────────────────────────────────────────────────────
+#
+# OpenAI SDK. Works with any OpenAI-compatible endpoint: Ollama,
+# OpenAI, LM Studio, vLLM, Groq, Together, Fireworks, OpenRouter,
+# and the llama-cpp-python server the backend manages.
+#
+# The SDK is pinned to 1.x. openai 2.x changed the streaming delta
+# shape in ways that would require changes to backend/agent.py's
+# _consume_stream(). Leave the major version open until that
+# migration is done deliberately.
+
+openai>=1.68.0,<2.0.0
+
+# ── MCP (Model Context Protocol) ─────────────────────────────────────
+#
+# Official Python SDK. v2 is the stable release. The backend's
+# mcp_client.py is compatible with both 1.x and 2.x — see
+# backend/mcp_client.py for the compatibility shim that handles
+# the inputSchema → input_schema rename.
+
+mcp>=2.2.0
+
+# ── HTTP ─────────────────────────────────────────────────────────────
+#
+# httpx for outbound HTTP: Ollama management API, llama-cpp server
+# health checks, and pip install streaming from the settings page.
+#
+# websockets is used by the desktop client to talk to the backend
+# over /ws. (uvicorn[standard] already installs it as a transitive
+# dependency, but the desktop client imports it directly, so it is
+# listed here as an explicit requirement.)
+
+httpx>=0.28.0
+websockets>=14.1
+
+# ── Desktop application ──────────────────────────────────────────────
+#
+# PyQt6 for the native window and the embedded Chromium view.
+# PyQt6-WebEngine provides QWebEngineView, which renders the same
+# web UI the browser sees. The desktop client can run in either
+# mode: embedded Chromium (desktop/app.py) or native widgets
+# (desktop/native_chat.py).
+#
+# These are heavy dependencies. If you only run the backend and
+# access the UI from a browser, you can skip them by commenting out
+# the two lines below before running bootstrap/setup.py.
+#
+# A `--skip-desktop` flag for the bootstrap is planned but not yet
+# implemented. Until then, manual editing is the supported way to
+# exclude them.
+
+PyQt6>=6.8.0
+PyQt6-WebEngine>=6.8.0
+
+# ── Logging ──────────────────────────────────────────────────────────
+#
+# loguru for structured, rotating logs. The backend writes
+# logs/backend-YYYY-MM-DD.log; the desktop client writes
+# logs/desktop-YYYY-MM-DD.log.
+
+loguru>=0.7.3
+
+# ── Optional: llama-cpp-python ───────────────────────────────────────
+#
+# NOT listed here because it is installed on demand from the Settings
+# page (LLM Runtime card) with the correct wheel index for your GPU.
+# The install is a `pip install llama-cpp-python[server]>=0.3.0` with
+# an --extra-index-url pointing at the right prebuilt wheel index
+# (cpu, cu118, cu121, cu124).
+#
+# See backend/llama_installer.py for the detection and install logic.
+#
+# If you want it installed unconditionally, add:
+#
+#     llama-cpp-python[server]>=0.3.0
+#
+# but be aware that on Windows without a matching wheel it will try
+# to build from source, which requires Visual Studio Build Tools
+# and 10–20 minutes of compile time.
+
+# ── Optional: native llama-server binary ─────────────────────────────
+#
+# Not a pip package. If your CPU lacks AVX-512 and the prebuilt
+# llama-cpp-python wheels crash with STATUS_ILLEGAL_INSTRUCTION
+# (0xC000001D), download a native llama-server binary from:
+#
+#     https://github.com/ggml-org/llama.cpp/releases
+#
+# and extract it into runtime/llama-server/. See backend/
+# llama_server.py's find_llama_server() for the discovery order.
+
+# ── Development (uncomment to install) ───────────────────────────────
+#
+# pytest             — test runner
+# pytest-asyncio     — async test support (required by tests/test_nodes.py)
+# ruff               — linter and formatter
+# mypy               — static type checker
+# pyinstaller        — desktop packaging
+#
+# pytest>=8.3.0
+# pytest-asyncio>=0.25.0
+# ruff>=0.9.0
+# mypy>=1.14.0
+# pyinstaller>=6.12.0

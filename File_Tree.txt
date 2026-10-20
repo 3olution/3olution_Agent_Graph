@@ -1,0 +1,163 @@
+3olution-agent-graph/
+│
+├── .env.example                              ← copy of .env.md, renamed
+├── .gitignore
+├── LICENSE
+├── README.md
+├── CONTRIBUTING.md
+├── CHANGES.md
+├── HOW_TO_USE.md
+├── INSTALLATION.md
+├── STARTUP.md
+├── ERROR_HANDLING.md
+├── FAQ.md
+├── FUTURE_EXTENSIONS.md
+├── requirements.txt                          ← includes PyQt6-WebEngine
+├── run.py                                    ← setup | backend | desktop | native | mcp | vendor
+├── pyinstaller.spec                          ← renamed from pyinstaller.spec.py
+├── setup.sh                                  ← portable runtime bootstrap (Linux/macOS)
+├── setup.ps1                                 ← portable runtime bootstrap (Windows)
+├── start.sh                                  ← uses runtime/python (Linux/macOS)
+├── start.bat                                 ← uses runtime/python (Windows)
+├── sessions.db                               ← [runtime] SQLite: sessions + graph_runs
+│
+├── bootstrap/
+│   └── setup.py                              ← downloads portable Python, PHP, SQLite
+│
+├── runtime/                                  ← [gitignored — created by bootstrap/setup.py]
+│   ├── python/                               ← portable CPython 3.12.11
+│   │   ├── python.exe                         (Windows)
+│   │   ├── python312.dll
+│   │   ├── Lib/site-packages/                ← pip-installed backend deps
+│   │   ├── DLLs/
+│   │   └── Scripts/
+│   ├── php/                                  ← portable PHP (CLI + CGI)
+│   │   ├── php.exe                            (CLI SAPI)
+│   │   ├── php-cgi.exe                        (CGI SAPI — used by php_server.py)
+│   │   ├── php.ini                            ← written by bootstrap
+│   │   └── ext/                               ← pdo_sqlite, sqlite3, mbstring, openssl
+│   ├── sqlite/                               ← SQLite CLI tools
+│   │   ├── sqlite3.exe
+│   │   ├── sqldiff.exe
+│   │   └── sqlite3_analyzer.exe
+│   ├── llama-server/                         ← optional native llama.cpp binary
+│   │   ├── llama-server.exe                   (dropped in by the user)
+│   │   ├── ggml.dll
+│   │   ├── ggml-cpu.dll
+│   │   └── llama.dll
+│   ├── _downloads/                           ← cached archives
+│   │   ├── python-3.12.11-x86_64-pc-windows-msvc.tar.gz
+│   │   ├── php-8.4.15-Win32-vs17-x64.zip
+│   │   └── sqlite-tools-win-x64-3460000.zip
+│   └── runtime.env                           ← manifest (paths to every binary)
+│
+├── backend/
+│   ├── __init__.py                           ← __version__ = "2.0.0"
+│   ├── main.py                               ← FastAPI + lifespan + router sanity check
+│   ├── state.py                              ← shared dict (llm, mcp, store, llama_server)
+│   ├── config.py                             ← pydantic-settings; llama-cpp, PHP, SQL, logs
+│   ├── retry.py                              ← retry_async with should_retry predicate
+│   ├── storage.py                            ← sessions + graph_runs tables
+│   ├── thinking.py                           ← multi-marker reasoning splitter
+│   ├── agent.py                              ← linear loop + tool-cap + provider routing
+│   ├── llm.py                                ← multi-provider (primary/fallback/llama_cpp)
+│   ├── logging_config.py                     ← console + rotating file sink
+│   ├── mcp_client.py                         ← mcp 1.x/2.x compatible, Windows-safe
+│   ├── ollama.py                             ← uses client.request("DELETE", ...)
+│   ├── models_setup.py                       ← ensure_models_dir + list_gguf_files
+│   ├── llama_installer.py                    ← CUDA detection + SSE pip streaming
+│   ├── llama_server.py                       ← LlamaServerManager (spawn/stop/swap/embed)
+│   ├── php_server.py                         ← PHP-CGI subprocess executor
+│   │
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── ollama_routes.py                  ← /api/ollama/* (list, pull, delete, ps, unload)
+│   │   ├── llama_routes.py                   ← /api/llama/* (install, runtime, all-models)
+│   │   ├── php_routes.py                     ← /php/* and /php-static/* (PHP-CGI)
+│   │   └── system_routes.py                  ← /api/system/* and /api/logs/*
+│   │
+│   └── graph/
+│       ├── __init__.py                       ← imports nodes + custom_nodes loader
+│       ├── engine.py                         ← topo-sort executor (Kahn's algorithm)
+│       ├── model.py                          ← Node, Edge, Port, Param, Graph
+│       ├── nodes.py                          ← 16 built-in node types
+│       ├── registry.py                       ← register / get / serialize_all
+│       ├── routes.py                         ← /api/graph/* and /ws/graph
+│       │
+│       └── custom_nodes/
+│           ├── __init__.py                   ← auto-loader with per-module try/except
+│           ├── README.md                     ← how to write a custom node
+│           └── example_nodes.py              ← 7 example nodes
+│
+├── mcp_server/
+│   ├── __init__.py
+│   ├── server.py                             ← thin entry point
+│   ├── _server.py                            ← shared mcp instance + run()
+│   ├── Extensive_Documentation.md
+│   │
+│   └── tools/
+│       ├── __init__.py                       ← auto-loader
+│       ├── README.md                         ← guide for adding tools
+│       ├── math_tools.py                     ← add, multiply, sqrt, power
+│       ├── time_tools.py                     ← current_time
+│       ├── filesystem_tools.py               ← list_directory, read_file
+│       └── text_tools.py                     ← word_count, shout
+│
+├── desktop/
+│   ├── __init__.py
+│   ├── app.py                                ← PyQt6 + QWebEngine (main desktop)
+│   ├── native_chat.py                        ← PyQt6 native widgets (fallback)
+│   ├── backend_launcher.py                   ← spawns + monitors backend subprocess
+│   ├── install_dialog.py                     ← native installer for llama-cpp
+│   └── logging_config.py                     ← desktop-YYYY-MM-DD.log sink
+│
+├── web/
+│   ├── index.html                            ← chat UI (unified model picker)
+│   ├── styles.css                            ← chat UI (tool toggle, thinking block)
+│   ├── app.js                                ← WebSocket chat client
+│   │
+│   ├── graph.html                            ← LiteGraph editor + history panel
+│   ├── graph.css                             ← dark theme + result bar
+│   ├── graph.js                              ← LiteGraph ↔ backend adapter
+│   │
+│   ├── settings.html                         ← LLM Runtime + Ollama + pull UI
+│   ├── settings.css                          ← settings UI
+│   ├── settings.js                           ← install dialog, model table, pull SSE
+│   │
+│   └── vendor/                               ← [gitignored — downloaded on demand]
+│       ├── .gitkeep                           ← placeholder so git tracks the folder
+│       ├── litegraph.min.js
+│       └── litegraph.css
+│
+├── php_app/
+│   ├── index.php                             ← notes UI (add / list / delete)
+│   ├── demo.php                              ← JSON SQL demo endpoint
+│   ├── db.php                                ← PDO helper (sqlite/mysql/pgsql)
+│   ├── style.css                             ← deprecated stub (points to static/)
+│   │
+│   ├── static/
+│   │   └── style.css                         ← the real stylesheet (served at /php-static/*)
+│   │
+│   └── data/                                 ← [gitignored — created at runtime]
+│       ├── .gitkeep                           ← placeholder
+│       └── app.db                             ← SQLite database (created on first request)
+│
+├── models/                                   ← [gitignored — GGUF files go here]
+│   └── README.md                             ← auto-written by models_setup.py
+│
+├── logs/                                     ← [gitignored]
+│   ├── .gitkeep                              ← placeholder
+│   ├── backend-YYYY-MM-DD.log                ← rotating daily, 14-day retention
+│   └── desktop-YYYY-MM-DD.log
+│
+├── tests/
+│   ├── __init__.py                           ← package marker + usage docs
+│   ├── test_engine.py                        ← _topo_sort + _safe (15 tests)
+│   └── test_nodes.py                         ← built-in node functions + Graph.from_dict
+│
+└── scripts/
+    ├── serve.py                              ← uvicorn launcher (loop fix + sys.path + access log)
+    ├── llama_cpp_runner.py                   ← direct runner for llama_cpp.server (port bypass)
+    ├── download_vendor.py                    ← cross-platform LiteGraph downloader
+    ├── download_vendor.sh                    ← thin bash wrapper
+    └── download_vendor.ps1                   ← thin PowerShell wrapper
