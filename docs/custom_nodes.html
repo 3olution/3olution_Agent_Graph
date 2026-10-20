@@ -1,0 +1,5008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3olution Agent Graph — Custom Nodes Cookbook</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-elev: #1c2128;
+  --bg-code: #0b0f14;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-mute: #6e7681;
+  --accent: #58a6ff;
+  --accent-2: #7c3aed;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+  --sidebar-w: 320px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+.sidebar-header h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-mark {
+  object-fit: cover;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-header .sub {
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.search-box {
+  padding: 0 16px 12px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px 7px 32px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+.search-box::before {
+  content: "⌕";
+  position: absolute;
+  left: 27px; top: 7px;
+  color: var(--text-mute);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+.nav-group {
+  padding: 6px 16px 2px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 8px;
+}
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-list li { margin: 0; }
+.nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-list a:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+.nav-list a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+}
+.nav-icon {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-icon.py { background: #3572A5; }
+.nav-icon.md { background: #519aba; }
+.nav-icon.node { background: #a371f7; }
+.nav-icon.home { background: #3fb950; }
+
+/* ---------- Main ---------- */
+main {
+  margin-left: var(--sidebar-w);
+  padding: 0 0 80px;
+  min-height: 100vh;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topbar .crumbs {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.topbar .stats {
+  font-size: 12px;
+  color: var(--text-mute);
+  display: flex;
+  gap: 16px;
+}
+.topbar .stats span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.hero {
+  padding: 40px 32px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(88,166,255,0.04), transparent);
+}
+.hero h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #58a6ff, #a371f7, #ec6547);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+.hero p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14.5px;
+  max-width: 780px;
+}
+.hero .links {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hero .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.hero .links a:hover {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+
+/* ---------- File section ---------- */
+.file-section {
+  margin: 32px 32px 0;
+  scroll-margin-top: 80px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.file-section.hidden { display: none; }
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.file-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.file-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+}
+.file-badge.doc {
+  background: rgba(124, 58, 237, 0.14);
+  color: #a371f7;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.file-badge.node {
+  background: rgba(163, 113, 247, 0.14);
+  color: #a371f7;
+  border-color: rgba(163, 113, 247, 0.35);
+}
+.file-badge.md {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.28);
+}
+.file-path {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.meta-pill {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: ui-monospace, monospace;
+}
+.copy-btn {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+.copy-btn.copied {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(63, 185, 80, 0.08);
+}
+.code-wrap {
+  position: relative;
+  max-height: 720px;
+  overflow: auto;
+  background: var(--bg-code);
+}
+.code-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+.code-wrap::-webkit-scrollbar-track { background: var(--bg-code); }
+.code-wrap::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #484f58; }
+.code-wrap pre {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 12.8px;
+  line-height: 1.65;
+  tab-size: 4;
+  overflow-x: auto;
+}
+.code-wrap code {
+  font-family: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.hljs { background: transparent !important; padding: 0 !important; }
+.md-content {
+  padding: 24px 28px;
+  max-height: 900px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--bg-code);
+}
+.md-content h1, .md-content h2, .md-content h3 {
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin-top: 1.4em;
+}
+.md-content h1 { font-size: 22px; margin-top: 0; }
+.md-content h2 { font-size: 17px; }
+.md-content h3 { font-size: 15px; border: none; }
+.md-content p { margin: 10px 0; color: var(--text-dim); }
+.md-content ul, .md-content ol { color: var(--text-dim); padding-left: 24px; }
+.md-content li { margin: 4px 0; }
+.md-content code {
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #ffa657;
+  border: 1px solid var(--border-soft);
+}
+.md-content pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.md-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text);
+}
+.md-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.md-content th {
+  background: var(--bg-elev);
+  color: var(--text);
+  font-weight: 600;
+}
+.md-content td { color: var(--text-dim); }
+.md-content a { color: var(--accent); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text-dim); }
+.md-content .callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(88, 166, 255, 0.06);
+  color: var(--text-dim);
+}
+.md-content .callout.warn {
+  border-left-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.06);
+}
+.md-content .callout.danger {
+  border-left-color: var(--red);
+  background: rgba(248, 81, 73, 0.06);
+}
+.md-content .callout.success {
+  border-left-color: var(--green);
+  background: rgba(63, 185, 80, 0.06);
+}
+.md-content kbd {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11.5px;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+}
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+.to-top.visible { opacity: 1; pointer-events: auto; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 900px) {
+  :root { --sidebar-w: 270px; }
+  .hero h1 { font-size: 26px; }
+  .file-section { margin: 20px 16px 0; }
+  .hero { padding: 28px 20px 20px; }
+  .topbar { padding: 10px 20px; }
+}
+@media (max-width: 700px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  .menu-btn { display: inline-flex !important; }
+}
+.menu-btn {
+  display: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+.nav-list li.hidden { display: none; }
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  display: none;
+}
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1><a href="index.html" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;"><img src="logo.png" class="logo-mark" alt="3olution"> Custom Nodes</a></h1>
+    <div class="sub"><a href="index.html" style="color:inherit;text-decoration:none;">← Back to Knowledge Base</a> · Cookbook &amp; Reference</div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search docs &amp; nodes…" autocomplete="off">
+  </div>
+
+  <div class="nav-group">Getting Started</div>
+  <ul class="nav-list" data-group="start">
+    <li><a href="#doc-overview"><span class="nav-icon md"></span>Overview</a></li>
+    <li><a href="#doc-install"><span class="nav-icon md"></span>Installation</a></li>
+    <li><a href="#doc-contract"><span class="nav-icon md"></span>The custom node contract</a></li>
+  </ul>
+
+  <div class="nav-group">Patterns</div>
+  <ul class="nav-list" data-group="patterns">
+    <li><a href="#doc-patterns"><span class="nav-icon md"></span>The eight patterns</a></li>
+    <li><a href="#doc-compose"><span class="nav-icon md"></span>Composition recipes</a></li>
+  </ul>
+
+  <div class="nav-group">Node Reference</div>
+  <ul class="nav-list" data-group="nodes">
+    <li><a href="#node-agent-chain"><span class="nav-icon node"></span>custom.agent_chain</a></li>
+    <li><a href="#node-agent-pool"><span class="nav-icon node"></span>custom.agent_pool</a></li>
+    <li><a href="#node-agent-router"><span class="nav-icon node"></span>custom.agent_router</a></li>
+    <li><a href="#node-map-llm"><span class="nav-icon node"></span>custom.map_llm</a></li>
+    <li><a href="#node-reduce-llm"><span class="nav-icon node"></span>custom.reduce_llm</a></li>
+    <li><a href="#node-critique-refine"><span class="nav-icon node"></span>custom.critique_refine</a></li>
+    <li><a href="#node-consensus"><span class="nav-icon node"></span>custom.consensus</a></li>
+    <li><a href="#node-json-extract"><span class="nav-icon node"></span>custom.json_extract</a></li>
+  </ul>
+
+  <div class="nav-group">Design &amp; Debugging</div>
+  <ul class="nav-list" data-group="design">
+    <li><a href="#doc-design"><span class="nav-icon md"></span>Design principles</a></li>
+    <li><a href="#doc-debug"><span class="nav-icon md"></span>Troubleshooting</a></li>
+  </ul>
+
+  <div class="nav-group">Source Files</div>
+  <ul class="nav-list" data-group="source">
+    <li><a href="#f-demo"><span class="nav-icon py"></span>demo_agent_patterns.py</a></li>
+  </ul>
+
+  <div class="no-results" id="noResults">No matching sections.</div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <span class="crumbs" id="crumbs">custom_nodes / overview</span>
+    </div>
+    <div class="stats">
+      <span>🧩 <strong>8</strong> nodes</span>
+      <span>🐍 <strong>~1050</strong> lines</span>
+      <span>📁 <strong>Custom Patterns</strong> category</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Custom Nodes Cookbook</h1>
+    <p>
+      Reference implementations for eight common agent patterns. Each node
+      combines an LLM call with Python control flow, so the graph editor
+      stops being "prompt → LLM → answer" and starts becoming a small
+      program. Drop <code>demo_agent_patterns.py</code> into
+      <code>backend/graph/custom_nodes/</code>, restart the backend, and
+      each node appears in the palette under <strong>Custom Patterns</strong>.
+    </p>
+    <div class="links">
+      <a href="index.html">← Back to Knowledge Base</a>
+      <a href="https://3olution.com" target="_blank" rel="noopener">🌐 3olution.com</a>
+      <a href="#doc-patterns">🧩 All patterns</a>
+      <a href="#doc-compose">🔀 Composition recipes</a>
+      <a href="#f-demo">📄 Full source</a>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       OVERVIEW
+       ============================================================= -->
+  <section class="file-section" id="doc-overview" data-name="overview custom nodes agent graph patterns documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Overview <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">custom_nodes — what this cookbook is for</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Overview</h1>
+
+      <p>
+        The Agent Graph ships with sixteen <strong>built-in</strong>
+        node types — inputs, outputs, LLM calls, tool invocations,
+        text operations, control flow, and utilities. Those are the
+        primitives. This cookbook shows what you can build with them
+        by writing <strong>custom nodes</strong>: small Python
+        functions that register themselves as new node types and
+        appear in the editor's palette.
+      </p>
+
+      <p>
+        Every pattern on this page is a <em>composition</em> of
+        existing primitives, packaged as a single reusable node. The
+        graph engine does not care how the function is implemented —
+        it only cares about the signature contract
+        (<code>async def fn(ctx, inputs, params) -&gt; dict</code>).
+        That means anything you can do in Python, you can do inside a
+        node.
+      </p>
+
+      <h2>The philosophy in one sentence</h2>
+
+      <p>
+        <strong>Built-in nodes are the assembly language; custom
+        nodes are the standard library.</strong> When a workflow
+        pattern repeats across multiple graphs — a refinement loop,
+        an ensemble vote, a router that classifies then fans out —
+        promote it to a custom node once, and reuse it forever.
+      </p>
+
+      <h2>What this cookbook demonstrates</h2>
+
+      <table>
+        <thead>
+          <tr><th>Pattern</th><th>Node</th><th>Reach for it when…</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Sequential follow-up</td>
+            <td><code>custom.agent_chain</code></td>
+            <td>You want each LLM turn to see the previous answer — refinement ladders, escalation, multi-step reasoning</td>
+          </tr>
+          <tr>
+            <td>Parallel workers</td>
+            <td><code>custom.agent_pool</code></td>
+            <td>You have a list of items and want one LLM call per item, in parallel, order preserved</td>
+          </tr>
+          <tr>
+            <td>Dynamic routing</td>
+            <td><code>custom.agent_router</code></td>
+            <td>The LLM should decide which of up to five downstream branches gets the value</td>
+          </tr>
+          <tr>
+            <td>Map</td>
+            <td><code>custom.map_llm</code></td>
+            <td>Transform every item in a list via an LLM call; the "map" half of map-reduce</td>
+          </tr>
+          <tr>
+            <td>Reduce</td>
+            <td><code>custom.reduce_llm</code></td>
+            <td>Combine a list into one answer; the "reduce" half of map-reduce</td>
+          </tr>
+          <tr>
+            <td>Iterative quality</td>
+            <td><code>custom.critique_refine</code></td>
+            <td>Draft → critique → refine until a score threshold is met</td>
+          </tr>
+          <tr>
+            <td>Ensemble voting</td>
+            <td><code>custom.consensus</code></td>
+            <td>Ask several models the same question; return the majority answer plus a disagreement score</td>
+          </tr>
+          <tr>
+            <td>Structured output</td>
+            <td><code>custom.json_extract</code></td>
+            <td>Reliable JSON from any LLM, with self-correction on parse failure</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>What the nodes do <em>not</em> do</h2>
+
+      <ul>
+        <li>
+          <strong>They don't pass <code>tools</code> to the LLM.</strong>
+          Every internal call uses <code>disable_tools=True</code>.
+          If you need the model to invoke MCP tools mid-turn, use the
+          built-in <code>llm.chat</code> node instead — it exposes a
+          <code>tools</code> input.
+        </li>
+        <li>
+          <strong>They don't stream tokens.</strong>
+          Each internal LLM call is a non-streaming chat completion.
+          One node = one atomic result. That's exactly what a graph
+          node should be.
+        </li>
+        <li>
+          <strong>They don't persist.</strong>
+          Every node is stateless. To save a chain's transcript for
+          later, attach a <code>util.log</code> node, or write a
+          small <code>custom.save_to_file</code> node of your own.
+        </li>
+        <li>
+          <strong>They don't sandbox.</strong>
+          A custom node has the same privileges as the backend
+          process. Don't put <code>subprocess.run(["rm", "-rf",
+          "/"])</code> in one, and don't accept a custom node from
+          an untrusted source.
+        </li>
+      </ul>
+
+      <div class="callout">
+        <strong>Learning by example.</strong>
+        Every section on this page ends with a working graph recipe —
+        the actual node parameters, the actual edges, and the actual
+        output you should see. Copy them into the editor to verify
+        that the node is working before adapting it to your own use
+        case.
+      </div>
+
+      <h2>The nine-line version</h2>
+
+      <p>
+        If you remember nothing else about custom nodes, remember the
+        shape of the file:
+      </p>
+
+      <pre>from ..model import NodeType, Port
+from ..registry import register
+
+async def _my_node(ctx, inputs, params):
+    return {"result": "whatever"}
+
+register(NodeType(
+    name="custom.my_node",
+    display="My Node",
+    category="Custom",
+    fn=_my_node,
+))</pre>
+
+      <p>
+        Drop it in <code>backend/graph/custom_nodes/</code>, restart
+        the backend, and the node appears in the palette. Everything
+        else on this page is elaboration on those nine lines.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       INSTALLATION
+       ============================================================= -->
+  <section class="file-section" id="doc-install" data-name="installation custom nodes demo file register documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Installation <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">custom_nodes — how to add the demo file</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Installation</h1>
+
+      <p>
+        The eight nodes documented here live in a single file,
+        <code>demo_agent_patterns.py</code>. Copy it into the custom
+        nodes folder and restart the backend.
+      </p>
+
+      <h2>Step 1 — Copy the file</h2>
+
+      <p>Download or copy the full source from the
+        <a href="#f-demo">demo_agent_patterns.py</a> section at the
+        bottom of this page, then:</p>
+
+      <pre>cp demo_agent_patterns.py backend/graph/custom_nodes/</pre>
+
+      <p>
+        The folder is created automatically on first backend startup,
+        and it usually already contains
+        <code>example_nodes.py</code> and <code>README.md</code>. If
+        it doesn't exist yet, create it:
+      </p>
+
+      <pre>mkdir -p backend/graph/custom_nodes
+cp demo_agent_patterns.py backend/graph/custom_nodes/</pre>
+
+      <h2>Step 2 — Restart the backend</h2>
+
+      <pre>python run.py backend</pre>
+
+      <p>
+        There is <strong>no hot reload</strong> for custom nodes. The
+        loader runs once at package import, at startup.
+      </p>
+
+      <h2>Step 3 — Verify the registration</h2>
+
+      <p>
+        The loader logs one line per custom node module. Search the
+        backend log for:
+      </p>
+
+      <pre>INFO | Loaded custom node module: demo_agent_patterns
+INFO | Registered 8 custom pattern nodes: agent_chain, agent_pool, agent_router, map_llm, reduce_llm, critique_refine, consensus, json_extract</pre>
+
+      <p>
+        The second line is the one <code>demo_agent_patterns.py</code>
+        emits at module import — it's an explicit breadcrumb. If you
+        see the first line but not the second, the module imported
+        but something failed before the <code>logger.info(...)</code>
+        at the bottom of the file. Scroll up for a traceback.
+      </p>
+
+      <h2>Step 4 — Confirm in the palette</h2>
+
+      <p>
+        Open <a href="/graph">/graph</a> (or the Graph Editor page in
+        the desktop client). Right-click on the canvas. The
+        categories should include:
+      </p>
+
+      <pre>Input
+Output
+LLM
+Tools
+Text
+Control
+Utility
+Custom            ← from example_nodes.py
+Custom Patterns   ← from demo_agent_patterns.py (this cookbook)</pre>
+
+      <p>
+        Expanding <strong>Custom Patterns</strong> shows the eight
+        nodes from this cookbook.
+      </p>
+
+      <h2>What the loader does (and does not do)</h2>
+
+      <table>
+        <thead><tr><th>Behaviour</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Loads <code>*.py</code> files</td>
+            <td>Any module in the folder whose name does not start with <code>_</code></td>
+          </tr>
+          <tr>
+            <td>Skips <code>_*.py</code></td>
+            <td>Private helpers, disabled modules — rename a module to <code>_demo.py</code> to turn it off without deleting it</td>
+          </tr>
+          <tr>
+            <td>Isolates failures</td>
+            <td>A module that raises on import is logged at ERROR level and skipped. Other modules still load.</td>
+          </tr>
+          <tr>
+            <td>Disables entirely</td>
+            <td>Set <code>AGENT_LOAD_CUSTOM_NODES=false</code> in <code>.env</code> — useful when a bad node is blocking startup</td>
+          </tr>
+          <tr>
+            <td>Is idempotent</td>
+            <td>Python caches imported modules. Re-running the loader does nothing.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Turning individual nodes off</h2>
+
+      <p>
+        Three options, in increasing order of disruption:
+      </p>
+
+      <ol>
+        <li>
+          <strong>Comment out the <code>register(...)</code> call.</strong>
+          The function stays in the file but the node no longer
+          appears in the palette. Good for a temporary disable during
+          development.
+        </li>
+        <li>
+          <strong>Rename the file.</strong>
+          Prefix with an underscore:
+          <code>_demo_agent_patterns.py</code>. The loader skips it
+          entirely.
+        </li>
+        <li>
+          <strong>Set the env flag.</strong>
+          <code>AGENT_LOAD_CUSTOM_NODES=false</code> disables the
+          whole folder — including <code>example_nodes.py</code>. Use
+          this when something is blocking startup and you need to
+          debug the backend without custom nodes.
+        </li>
+      </ol>
+
+      <div class="callout warn">
+        <strong>Multiple files, one namespace.</strong>
+        Node names must be globally unique across all custom node
+        files. If you copy <code>example_nodes.py</code> and edit it
+        without changing the <code>name="..."</code> strings, the
+        second registration silently overwrites the first.
+      </div>
+
+      <h2>Verifying with a hello-world graph</h2>
+
+      <p>
+        The simplest possible sanity check: a graph with one
+        <code>input.text</code>, one <code>custom.agent_chain</code>
+        with a single prompt, and one <code>output.text</code>.
+      </p>
+
+      <ol>
+        <li>Drag <code>input.text</code> onto the canvas. Set its <code>value</code> to <code>"Say hello"</code>.</li>
+        <li>Drag <code>custom.agent_chain</code> onto the canvas. Set <code>prompts</code> to <code>["{input}"]</code>.</li>
+        <li>Drag <code>output.text</code> onto the canvas.</li>
+        <li>Connect: <code>input.text.text</code> → <code>agent_chain.initial</code>.</li>
+        <li>Connect: <code>agent_chain.final</code> → <code>output.text.text</code>.</li>
+        <li>Click <strong>Run</strong>.</li>
+      </ol>
+
+      <p>
+        The result bar shows the model's reply. If it does, the node
+        is working. If the result bar is empty, check the backend log
+        for the LLM call's error message.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       THE CUSTOM NODE CONTRACT
+       ============================================================= -->
+  <section class="file-section" id="doc-contract" data-name="contract signature node function inputs params output documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>The Custom Node Contract <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">custom_nodes — what makes a node a node</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>The Custom Node Contract</h1>
+
+      <p>
+        A node type is a small dataclass plus a Python function. The
+        graph engine does not care what the function does internally
+        — it only knows about the signature and the declared ports.
+      </p>
+
+      <h2>The function signature</h2>
+
+      <pre>async def my_node(ctx, inputs, params) -&gt; dict:
+    ...
+    return {"output_name": value, ...}</pre>
+
+      <table>
+        <thead><tr><th>Argument</th><th>Type</th><th>What it holds</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>ctx</code></td>
+            <td><code>ExecutionContext</code></td>
+            <td>
+              <code>ctx.app</code> is the shared state dict —
+              <code>{"llm", "mcp", "store", "agent", "llama_server"}</code>.
+              <code>ctx.outputs</code> is the per-node result map from
+              upstream nodes, keyed by node ID.
+            </td>
+          </tr>
+          <tr>
+            <td><code>inputs</code></td>
+            <td><code>dict</code></td>
+            <td>
+              Values from connected upstream nodes, keyed by input
+              port name. A port that has no incoming edge is either
+              missing from the dict or set to <code>None</code>.
+            </td>
+          </tr>
+          <tr>
+            <td><code>params</code></td>
+            <td><code>dict</code></td>
+            <td>
+              The widget values configured on the node itself.
+              Same shape as the <code>params</code> list on the
+              NodeType, but populated with what the user actually
+              typed rather than the defaults.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The return value is a dict keyed by output port name. Every
+        declared output port should have a key in the return value;
+        extra keys are ignored. A missing key means the port is
+        unconnected for that run, which is fine — downstream nodes
+        will just see <code>None</code>.
+      </p>
+
+      <h2>The NodeType fields</h2>
+
+      <table>
+        <thead><tr><th>Field</th><th>Required</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>name</code></td>
+            <td>✅</td>
+            <td>
+              Globally unique identifier, conventionally
+              <code>category.subname</code>. The engine matches on
+              this string, so renaming is a breaking change.
+            </td>
+          </tr>
+          <tr>
+            <td><code>display</code></td>
+            <td>✅</td>
+            <td>Label shown in the palette and on the canvas node</td>
+          </tr>
+          <tr>
+            <td><code>category</code></td>
+            <td>✅</td>
+            <td>Palette group. Use <code>"Custom Patterns"</code> here.</td>
+          </tr>
+          <tr>
+            <td><code>fn</code></td>
+            <td>✅</td>
+            <td>The async function above. <code>None</code> is technically allowed (an abstract node), but the engine will not execute it.</td>
+          </tr>
+          <tr>
+            <td><code>description</code></td>
+            <td>—</td>
+            <td>Tooltip shown in the palette search</td>
+          </tr>
+          <tr>
+            <td><code>inputs</code></td>
+            <td>—</td>
+            <td>List of <code>Port</code> objects. Defaults to no inputs.</td>
+          </tr>
+          <tr>
+            <td><code>outputs</code></td>
+            <td>—</td>
+            <td>List of <code>Port</code> objects. Defaults to no outputs.</td>
+          </tr>
+          <tr>
+            <td><code>params</code></td>
+            <td>—</td>
+            <td>List of <code>Param</code> objects. Defaults to no widgets.</td>
+          </tr>
+          <tr>
+            <td><code>color</code></td>
+            <td>—</td>
+            <td>Node background. Defaults to a mid-grey. Use a hue that matches the category.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>The Port fields</h2>
+
+      <table>
+        <thead><tr><th>Field</th><th>Default</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>name</code></td><td>required</td><td>Port label; also the key in the <code>inputs</code> dict</td></tr>
+          <tr><td><code>type</code></td><td><code>"any"</code></td><td>Cosmetic — LiteGraph colors the socket but does not enforce it</td></tr>
+          <tr><td><code>optional</code></td><td><code>False</code></td><td>Whether the port can be left unconnected. Purely advisory.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>The Param fields</h2>
+
+      <table>
+        <thead><tr><th>Field</th><th>Default</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>name</code></td><td>required</td><td>Widget label; also the key in the <code>params</code> dict</td></tr>
+          <tr>
+            <td><code>type</code></td>
+            <td><code>"string"</code></td>
+            <td>
+              One of: <code>string</code>, <code>text</code>,
+              <code>number</code>, <code>bool</code>,
+              <code>select</code>, <code>json</code>
+            </td>
+          </tr>
+          <tr><td><code>default</code></td><td><code>None</code></td><td>Initial value</td></tr>
+          <tr>
+            <td><code>choices</code></td>
+            <td><code>None</code></td>
+            <td>For <code>select</code>: the list of options</td>
+          </tr>
+          <tr>
+            <td><code>dynamic</code></td>
+            <td><code>None</code></td>
+            <td>
+              For <code>select</code>: <code>"all.models"</code> or
+              <code>"ollama.models"</code>. The frontend fetches the
+              model list and populates the dropdown at page load.
+            </td>
+          </tr>
+          <tr><td><code>description</code></td><td><code>""</code></td><td>Tooltip</td></tr>
+        </tbody>
+      </table>
+
+      <h2>The palette → node → execution lifecycle</h2>
+
+      <pre>1. Backend import time
+       └── register(NodeType(...)) stores the type in the registry
+
+2. Graph editor loads
+       └── GET /api/graph/litegraph-types returns every registered type
+       └── The frontend calls LiteGraph.registerNodeType for each
+
+3. User drags the node from the palette
+       └── Node instance created with the widget defaults
+
+4. User configures widgets and connects ports
+       └── Node properties and edges stored in the graph's serialised form
+
+5. Click Run
+       └── POST /ws/graph → Graph.from_dict() → _topo_sort() → node.fn()
+
+6. Node executes
+       └── ctx.app holds the shared state
+       └── inputs holds upstream values
+       └── params holds widget values
+       └── return value stored in ctx.outputs[node_id]
+       └── Downstream nodes see it as their inputs</pre>
+
+      <h2>The bare-minimum valid node</h2>
+
+      <p>
+        Strip everything down to the essentials and you get this.
+        Sixteen lines, one LLM call, one output.
+      </p>
+
+      <pre>from ..model import NodeType, Port
+from ..registry import register
+
+async def _hello(ctx, inputs, params):
+    llm = ctx.app.get("llm")
+    if llm is None:
+        raise RuntimeError("LLM not available")
+    name = str(inputs.get("name") or "world")
+    resp = await llm.chat(
+        [{"role": "user", "content": f"Say hello to {name}"}],
+        disable_tools=True,
+    )
+    return {"greeting": resp.choices[0].message.content or ""}
+
+register(NodeType(
+    name="custom.hello",
+    display="Hello",
+    category="Custom",
+    inputs=[Port("name", "string", optional=True)],
+    outputs=[Port("greeting", "string")],
+    fn=_hello,
+))</pre>
+
+      <p>
+        That is the entire contract. Every other pattern on this page
+        is an elaboration — loops, asyncio, parsing, retries — all
+        inside the same signature.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       THE EIGHT PATTERNS
+       ============================================================= -->
+  <section class="file-section" id="doc-patterns" data-name="patterns overview eight nodes quick reference documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>The Eight Patterns <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">custom_nodes — quick reference</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>The Eight Patterns</h1>
+
+      <p>
+        Each node below is documented in detail in its own section.
+        This page is the index — one glance, one decision, one
+        reference to the deep dive.
+      </p>
+
+      <h2>At a glance</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Node</th>
+            <th>Shape</th>
+            <th>LLM calls</th>
+            <th>Best for</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>custom.agent_chain</code></td>
+            <td>Serial</td>
+            <td>N (one per prompt)</td>
+            <td>Refinement ladders, multi-step reasoning, escalation</td>
+          </tr>
+          <tr>
+            <td><code>custom.agent_pool</code></td>
+            <td>Parallel</td>
+            <td>N (one per item)</td>
+            <td>Batch processing, per-row enrichment, bulk translation</td>
+          </tr>
+          <tr>
+            <td><code>custom.agent_router</code></td>
+            <td>Serial</td>
+            <td>1 (classification only)</td>
+            <td>Ticket triage, intent routing, dynamic fan-out</td>
+          </tr>
+          <tr>
+            <td><code>custom.map_llm</code></td>
+            <td>Parallel</td>
+            <td>N (one per item)</td>
+            <td>Transform every list element; half of map-reduce</td>
+          </tr>
+          <tr>
+            <td><code>custom.reduce_llm</code></td>
+            <td>Serial</td>
+            <td>1</td>
+            <td>Fold a list into one answer; half of map-reduce</td>
+          </tr>
+          <tr>
+            <td><code>custom.critique_refine</code></td>
+            <td>Serial loop</td>
+            <td>2N (critique + refine, until threshold)</td>
+            <td>Writing, code review, anything that benefits from iteration</td>
+          </tr>
+          <tr>
+            <td><code>custom.consensus</code></td>
+            <td>Parallel</td>
+            <td>N (one per model)</td>
+            <td>Fact-checking, majority-vote answers, disagreement detection</td>
+          </tr>
+          <tr>
+            <td><code>custom.json_extract</code></td>
+            <td>Serial loop</td>
+            <td>1 + retries</td>
+            <td>Structured output from any LLM</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>How to pick one</h2>
+
+      <pre>Do you have a LIST of items?
+  ├── Yes → Do you want one result per item or one combined result?
+  │         ├── One per item    → custom.map_llm    (or custom.agent_pool)
+  │         └── One combined    → custom.map_llm → custom.reduce_llm
+  │
+  └── No  → Do you want to try DIFFERENT MODELS on the same question?
+            ├── Yes → custom.consensus
+            └── No  → Do you want ITERATIVE IMPROVEMENT?
+                      ├── Yes → custom.critique_refine
+                      └── No  → Do you need STRUCTURED OUTPUT?
+                                ├── Yes → custom.json_extract
+                                └── No  → Do you need DYNAMIC BRANCHING?
+                                          ├── Yes → custom.agent_router
+                                          └── No  → Do you want MULTI-STEP
+                                                    SEQUENTIAL PROMPTS?
+                                                    ├── Yes → custom.agent_chain
+                                                    └── No  → You probably
+                                                              want the built-in
+                                                              `llm.chat` node.</pre>
+
+      <h2>What makes a node "worth being a custom node"</h2>
+
+      <p>
+        The graph engine already has <code>control.foreach</code>,
+        which runs an operation once per list element. Why does
+        <code>custom.map_llm</code> exist then?
+      </p>
+
+      <table>
+        <thead><tr><th>Concern</th><th><code>control.foreach</code></th><th><code>custom.map_llm</code></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Sub-node config</td>
+            <td>User must connect a child graph inside the foreach node</td>
+            <td>One prompt template parameter</td>
+          </tr>
+          <tr>
+            <td>Concurrency</td>
+            <td>Serial by default</td>
+            <td>Parallel, semaphore-capped</td>
+          </tr>
+          <tr>
+            <td>Error handling</td>
+            <td>Stops the whole loop</td>
+            <td>Returns <code>errors</code> list; valid results still usable</td>
+          </tr>
+          <tr>
+            <td>Order guarantee</td>
+            <td>Yes (serial)</td>
+            <td>Yes (index-sorted after gather)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The rule of thumb: <strong>when a composition of primitives
+        becomes a "shape" that repeats</strong> — map, reduce,
+        chain, ensemble — promote it to a custom node with the
+        smallest possible configuration surface. The user gets one
+        node, three widgets, and no wiring.
+      </p>
+
+      <div class="callout success">
+        <strong>All eight nodes compose.</strong>
+        Any node's output can feed any node's input. Stacking them
+        is the point — a single graph can chain, pool, route, then
+        extract structured JSON, then refine the result, in one
+        linear pipeline. See the
+        <a href="#doc-compose">Composition recipes</a> section for
+        six worked examples.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       COMPOSITION RECIPES
+       ============================================================= -->
+  <section class="file-section" id="doc-compose" data-name="composition recipes worked examples multi-node graphs documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Composition Recipes <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">custom_nodes — six worked examples</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Composition Recipes</h1>
+
+      <p>
+        Six worked examples. Each one is a complete graph you can
+        reproduce in the editor, with node wiring, parameter values,
+        and the expected result.
+      </p>
+
+      <h2>Recipe 1 — Map-reduce summarisation</h2>
+
+      <p>
+        Summarise a batch of documents, then combine the summaries
+        into one report.
+      </p>
+
+      <pre>input.json ─► custom.map_llm ─► custom.reduce_llm ─► output.text
+              (results)         (items ← results)</pre>
+
+      <h3>Node configuration</h3>
+
+      <table>
+        <thead><tr><th>Node</th><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="4"><code>input.json</code></td><td><code>value</code></td><td><code>["doc one text…", "doc two text…", …]</code></td></tr>
+          <tr><td colspan="2">(one string per document)</td></tr>
+          <tr><td colspan="2"></td></tr>
+          <tr><td colspan="2"></td></tr>
+          <tr><td rowspan="4"><code>custom.map_llm</code></td><td><code>prompt</code></td><td><code>Summarise this document in 2 sentences: {item}</code></td></tr>
+          <tr><td><code>concurrency</code></td><td><code>4</code></td></tr>
+          <tr><td><code>model</code></td><td><code>(default)</code></td></tr>
+          <tr><td><code>provider</code></td><td><code>auto</code></td></tr>
+          <tr><td rowspan="3"><code>custom.reduce_llm</code></td><td><code>reduce_prompt</code></td><td><code>Combine these summaries into one report:\n\n{results}</code></td></tr>
+          <tr><td><code>separator</code></td><td><code>\n\n</code></td></tr>
+          <tr><td><code>model</code></td><td><code>(default)</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Wiring</h3>
+      <pre>input.json.data → custom.map_llm.items
+custom.map_llm.results → custom.reduce_llm.items
+custom.reduce_llm.result → output.text.text</pre>
+
+      <h3>What happens</h3>
+      <ol>
+        <li><code>input.json</code> parses the array into a Python list.</li>
+        <li><code>map_llm</code> fires one LLM call per document, up to 4 at a time. Result order matches input order.</li>
+        <li><code>reduce_llm</code> joins the summaries with numbered prefixes and asks the LLM to merge them.</li>
+        <li>The final text appears in the result bar and on the <code>output.text</code> node.</li>
+      </ol>
+
+      <p>
+        <strong>Timing:</strong> with 10 documents and 4-way concurrency,
+        expect roughly <code>ceil(10/4) = 3</code> rounds — 3× the
+        per-document latency, not 10×.
+      </p>
+
+      <h2>Recipe 2 — Customer support escalation</h2>
+
+      <p>
+        Draft a reply, critique it, then rewrite it more concisely.
+        Three sequential steps, each seeing the previous answer.
+      </p>
+
+      <pre>input.text ─► custom.agent_chain ─► output.text
+              (initial)</pre>
+
+      <h3>Node configuration</h3>
+
+      <table>
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>system_prompt</code></td>
+            <td><code>You are a senior customer-support agent. Be precise and empathetic.</code></td>
+          </tr>
+          <tr>
+            <td><code>prompts</code></td>
+            <td>
+              <pre style="margin:4px 0;background:transparent;border:none;padding:0;color:#a5d6ff;">[
+  "Draft an initial reply to: {input}",
+  "Critique your reply and improve it: {previous}",
+  "Rewrite the improved reply more concisely: {previous}"
+]</pre>
+            </td>
+          </tr>
+          <tr><td><code>model</code></td><td><code>(default)</code></td></tr>
+          <tr><td><code>stop_on_error</code></td><td><code>true</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>What happens</h3>
+      <ol>
+        <li>Step 1 generates a first draft from the customer email.</li>
+        <li>Step 2 reads <code>{previous}</code> (the draft) and produces a critique-driven improvement.</li>
+        <li>Step 3 reads the improved version and rewrites it more concisely.</li>
+        <li><code>outputs.final</code> is the step 3 output. <code>outputs.transcript</code> is the full three-step record.</li>
+      </ol>
+
+      <p>
+        <strong>Bonus:</strong> connect <code>transcript</code> to a
+        <code>util.log</code> node to see all three steps in the run
+        log, or to <code>output.text</code> with a
+        <code>text.template</code> in front to inspect the
+        intermediate drafts.
+      </p>
+
+      <h2>Recipe 3 — Triage with router + specialised branches</h2>
+
+      <p>
+        Classify an incoming ticket into one of three categories,
+        then run a different prompt for each category.
+      </p>
+
+      <pre>                ┌──► branch_0 ─► custom.agent_chain (billing flow) ─┐
+input.text ─► router (branch_1 ─► custom.agent_chain (tech flow)   ─┼─► output.text
+                └──► branch_2 ─► custom.agent_chain (other flow)   ─┘</pre>
+
+      <h3>Router configuration</h3>
+
+      <table>
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td><code>branches</code></td><td><code>billing,tech-support,other</code></td></tr>
+          <tr>
+            <td><code>router_prompt</code></td>
+            <td>
+              <pre style="margin:4px 0;background:transparent;border:none;padding:0;color:#a5d6ff;">Read this support ticket and classify it as one of:
+- billing
+- tech-support
+- other
+
+Respond with only the category name.
+
+Ticket: {input}</pre>
+            </td>
+          </tr>
+          <tr><td><code>model</code></td><td><code>(default)</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Each branch's agent_chain</h3>
+
+      <p>
+        Point each branch at the same <code>custom.agent_chain</code>
+        node but with different <code>prompts</code>. Since only one
+        branch fires per run, the other two chains are skipped
+        silently — <code>None</code> goes into their <code>initial</code>
+        input, but they never run because the graph engine short-circuits
+        on disconnected ports.
+      </p>
+
+      <p>
+        Actually, the graph engine does not short-circuit by default —
+        every node runs. To skip unused branches, either (a) run a
+        separate graph per ticket type after the router emits its
+        classification, or (b) use the router's
+        <code>chosen_index</code> output and a
+        <code>control.branch</code> chain. Both are legitimate; the
+        graph editor makes it easy to try either.
+      </p>
+
+      <div class="callout warn">
+        <strong>Router fallback behaviour.</strong>
+        If the LLM returns text that does not contain any branch
+        name, the router falls back to <code>branch_0</code> and logs
+        a warning. Check the run log if a ticket ends up in the wrong
+        category. Tuning <code>router_prompt</code> to enumerate the
+        exact spelling of each category reduces this dramatically.
+      </div>
+
+      <h2>Recipe 4 — Ensemble fact-check</h2>
+
+      <p>
+        Ask three different models the same question. The node returns
+        the majority answer and a 0-1 agreement score.
+      </p>
+
+      <pre>input.text ─► custom.consensus ─► output.text
+              (prompt)</pre>
+
+      <h3>Node configuration</h3>
+
+      <table>
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td><code>models</code></td><td><code>llama3.2, qwen2.5, mistral:7b</code></td></tr>
+          <tr><td><code>provider</code></td><td><code>ollama</code></td></tr>
+          <tr><td><code>temperature</code></td><td><code>0.7</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <strong>Prerequisite:</strong> all three models must be pulled
+        into Ollama.
+      </p>
+
+      <pre>ollama pull llama3.2
+ollama pull qwen2.5
+ollama pull mistral:7b</pre>
+
+      <h3>What happens</h3>
+      <ol>
+        <li>Three LLM calls fire in parallel — one per model.</li>
+        <li>Each answer is fingerprinted by its first five tokens, lowercased.</li>
+        <li>The fingerprint with the most matches is the "majority".</li>
+        <li>Agreement is the fraction of valid responses that voted for the majority.</li>
+      </ol>
+
+      <p>
+        <strong>Reading the output:</strong>
+      </p>
+
+      <ul>
+        <li><code>answer</code> is the majority answer text.</li>
+        <li><code>agreement</code> ≥ 0.66 means strong consensus — high confidence.</li>
+        <li><code>agreement</code> ≈ 0.33 means the models disagreed — treat the answer with suspicion.</li>
+        <li><code>all_responses</code> is the full per-model breakdown for inspection.</li>
+      </ul>
+
+      <h2>Recipe 5 — Structured extraction from email</h2>
+
+      <p>
+        Turn free-form text into a validated JSON object.
+      </p>
+
+      <pre>input.text ─► custom.json_extract ─► output.text
+              (text)                  (JSON string)</pre>
+
+      <h3>Node configuration</h3>
+
+      <table>
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>schema</code></td>
+            <td>
+              <pre style="margin:4px 0;background:transparent;border:none;padding:0;color:#a5d6ff;">{
+  "type": "object",
+  "properties": {
+    "customer_name": {"type": "string"},
+    "order_id": {"type": "string"},
+    "amount": {"type": "number"},
+    "currency": {"type": "string"}
+  }
+}</pre>
+            </td>
+          </tr>
+          <tr><td><code>max_retries</code></td><td><code>2</code></td></tr>
+          <tr><td><code>model</code></td><td><code>(default)</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>What happens</h3>
+      <ol>
+        <li>The node sends the extraction prompt with the schema and text.</li>
+        <li>The model responds with JSON (possibly fenced in markdown).</li>
+        <li>The node strips any code fence and parses the JSON.</li>
+        <li>On success: <code>valid=True</code>, <code>data</code> is the parsed object.</li>
+        <li>On failure: the parse error is appended to the retry prompt, and the call is retried.</li>
+        <li>After <code>max_retries + 1</code> failures: <code>valid=False</code>, <code>data=None</code>, <code>errors</code> lists every attempt's reason.</li>
+      </ol>
+
+      <p>
+        Downstream, you can attach a <code>control.branch</code> on
+        <code>valid</code> to route the success path and the failure
+        path separately.
+      </p>
+
+      <h2>Recipe 6 — Writing assistant with quality threshold</h2>
+
+      <p>
+        Draft, grade, improve — repeat until the grade hits 9/10 or
+        the retry budget is exhausted.
+      </p>
+
+      <pre>input.text ─► custom.critique_refine ─► output.text
+              (task)</pre>
+
+      <h3>Node configuration</h3>
+
+      <table>
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td><code>task</code></td><td><code>Write a 200-word product description for a noise-cancelling headphone.</code></td></tr>
+          <tr><td><code>quality_threshold</code></td><td><code>9.0</code></td></tr>
+          <tr><td><code>max_iterations</code></td><td><code>3</code></td></tr>
+          <tr><td><code>model</code></td><td><code>(default)</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>What happens</h3>
+      <ol>
+        <li>Iteration 1: generate a first draft from <code>task</code>.</li>
+        <li>Critique the draft — the response contains <code>SCORE:</code> and <code>ISSUES:</code> lines.</li>
+        <li>Parse the score. If <code>≥ 9.0</code>, stop and return.</li>
+        <li>Otherwise refine with the critique embedded.</li>
+        <li>Repeat up to <code>max_iterations</code> cycles.</li>
+      </ol>
+
+      <p>
+        The <code>history</code> output is a list of every iteration,
+        with the draft, the critique text, and the parsed score. Point
+        <code>history</code> at a <code>util.log</code> node to see
+        the whole evolution in the run log, or at <code>output.text</code>
+        for a compact summary.
+      </p>
+
+      <div class="callout">
+        <strong>The threshold is not a guarantee.</strong>
+        If the model consistently gives inflated scores, the loop
+        exits after one iteration with the original draft. Consider
+        explicitly asking for a harsh critique in
+        <code>critique_prompt</code> — "Be harsh, find at least three
+        issues" — to spread the score across the 1-10 range more
+        realistically.
+      </div>
+
+      <h2>Combining recipes</h2>
+
+      <p>
+        These recipes compose. A realistic graph might:
+      </p>
+
+      <ol>
+        <li><code>input.json</code> with a list of customer emails</li>
+        <li><code>custom.map_llm</code> to extract structured fields per email (one per item)</li>
+        <li><code>custom.reduce_llm</code> to produce a combined report</li>
+        <li><code>custom.critique_refine</code> to polish the report to a quality threshold</li>
+        <li><code>output.text</code> to display it</li>
+      </ol>
+
+      <p>
+        That is five nodes, one branch, and zero Python code. The
+        whole pipeline runs on the graph engine, and each step is
+        individually testable by clicking any node and inspecting its
+        output in the result bar.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       NODE 1 — custom.agent_chain
+       ============================================================= -->
+  <section class="file-section" id="node-agent-chain" data-name="agent chain sequential prompts follow up custom node reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>custom.agent_chain <span class="file-badge node">node</span></h2>
+        <span class="file-path">Agent Chain (sequential) — follow-up trigger</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 input · 3 outputs</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>custom.agent_chain</h1>
+
+      <p>
+        Run a list of prompts one after another. Each prompt sees the
+        previous answer via the <code>{previous}</code> placeholder,
+        which is what makes the "follow-up" pattern work without any
+        loop code in the graph itself.
+      </p>
+
+      <h2>Ports</h2>
+
+      <table>
+        <thead><tr><th>Direction</th><th>Name</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Input</td>
+            <td><code>initial</code></td>
+            <td>any</td>
+            <td>The user's original input. Available as <code>{input}</code> in every prompt template.</td>
+          </tr>
+          <tr>
+            <td>Output</td>
+            <td><code>final</code></td>
+            <td>string</td>
+            <td>The last step's answer.</td>
+          </tr>
+          <tr>
+            <td>Output</td>
+            <td><code>transcript</code></td>
+            <td>list</td>
+            <td>One entry per step: <code>{step, prompt, response}</code>.</td>
+          </tr>
+          <tr>
+            <td>Output</td>
+            <td><code>steps</code></td>
+            <td>number</td>
+            <td>How many steps actually ran (matches <code>len(transcript)</code>).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Parameters</h2>
+
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>system_prompt</code></td>
+            <td>text</td>
+            <td><code>""</code></td>
+          </tr>
+          <tr>
+            <td><code>prompts</code></td>
+            <td>json</td>
+            <td>
+              <pre style="margin:4px 0;background:transparent;border:none;padding:0;color:#a5d6ff;">["{input}", "Improve this: {previous}"]</pre>
+            </td>
+          </tr>
+          <tr><td><code>model</code></td><td>select (all.models)</td><td><code>""</code></td></tr>
+          <tr>
+            <td><code>provider</code></td>
+            <td>select</td>
+            <td><code>auto</code></td>
+          </tr>
+          <tr><td><code>stop_on_error</code></td><td>bool</td><td><code>true</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Placeholder reference</h2>
+
+      <table>
+        <thead><tr><th>Placeholder</th><th>Substituted with</th></tr></thead>
+        <tbody>
+          <tr><td><code>{input}</code></td><td>The initial input, unchanged for every step</td></tr>
+          <tr><td><code>{previous}</code></td><td>The previous step's answer (empty string on step 1)</td></tr>
+          <tr><td><code>{step}</code></td><td>The 1-based step number</td></tr>
+        </tbody>
+      </table>
+
+      <h2>When <code>stop_on_error</code> is false</h2>
+
+      <p>
+        A failed step is recorded in the transcript with
+        <code>"response": "[step N error: …]"</code>, and the chain
+        continues. The final answer is the last step that succeeded
+        — or the last failure message if every step failed. Use this
+        when a downstream step can recover from an earlier failure
+        (e.g. "translate, then simplify, then check grammar" where
+        the "check grammar" step can work on the original text if the
+        translation failed).
+      </p>
+
+      <h2>When to reach for it</h2>
+
+      <ul>
+        <li>
+          <strong>Refinement ladders.</strong> "Draft → critique →
+          rewrite → tighten" is exactly what this node is for.
+        </li>
+        <li>
+          <strong>Multi-step reasoning.</strong> "Extract facts →
+          deduce consequences → state a conclusion" as three prompts
+          that each see the previous answer.
+        </li>
+        <li>
+          <strong>Escalation.</strong> "Try a simple reply → if
+          rejected, try a more apologetic one → if still rejected,
+          escalate to a supervisor tone" — the LLM decides which
+          escalation it needs based on <code>{previous}</code>.
+        </li>
+        <li>
+          <strong>Few-shot bootstrapping.</strong> Chain a "write an
+          example" step, then "write N more like the example" step.
+        </li>
+      </ul>
+
+      <h2>When NOT to reach for it</h2>
+
+      <p>
+        <strong>When the steps are independent.</strong> If prompt B
+        does not need prompt A's answer, use
+        <code>custom.agent_pool</code> instead — it runs the calls
+        in parallel and finishes 3-4× faster.
+      </p>
+
+      <div class="callout">
+        <strong>Serial by design.</strong>
+        Each step depends on the last, so this node is inherently
+        serial. Three steps at 3 seconds each means 9 seconds total.
+        If that is too slow, either shorten the individual prompts
+        or consider whether the steps really need to be sequential.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       NODE 2 — custom.agent_pool
+       ============================================================= -->
+  <section class="file-section" id="node-agent-pool" data-name="agent pool parallel workers concurrency custom node reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>custom.agent_pool <span class="file-badge node">node</span></h2>
+        <span class="file-path">Agent Pool (parallel) — bounded concurrency</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 input · 4 outputs</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>custom.agent_pool</h1>
+
+      <p>
+        Run a prompt template across a list of items in parallel, with
+        a semaphore capping the concurrency. Preserves the input order
+        in the output.
+      </p>
+
+      <h2>Ports</h2>
+
+      <table>
+        <thead><tr><th>Direction</th><th>Name</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>Input</td><td><code>items</code></td><td>list</td></tr>
+          <tr><td>Output</td><td><code>results</code></td><td>list</td></tr>
+          <tr><td>Output</td><td><code>merged</code></td><td>string</td></tr>
+          <tr><td>Output</td><td><code>count</code></td><td>number</td></tr>
+          <tr><td>Output</td><td><code>errors</code></td><td>list</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <code>results</code> is a list of dicts:
+        <code>{index, item, response, error}</code>. Successful items
+        have <code>error: null</code>. Failed items have
+        <code>response: ""</code> and a populated <code>error</code>.
+      </p>
+
+      <p>
+        <code>merged</code> is a single string built by joining the
+        non-empty responses with <code>merge_separator</code>. Useful
+        when you just want one big blob of text to display.
+      </p>
+
+      <h2>Parameters</h2>
+
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>prompt_template</code></td><td>text</td><td><code>Process: {item}</code></td></tr>
+          <tr><td><code>model</code></td><td>select</td><td><code>""</code></td></tr>
+          <tr><td><code>provider</code></td><td>select</td><td><code>auto</code></td></tr>
+          <tr><td><code>concurrency</code></td><td>number</td><td><code>4</code></td></tr>
+          <tr><td><code>merge_separator</code></td><td>text</td><td><code>\n\n---\n\n</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Placeholder reference</h2>
+
+      <table>
+        <thead><tr><th>Placeholder</th><th>Substituted with</th></tr></thead>
+        <tbody>
+          <tr><td><code>{item}</code></td><td>The current item from the input list</td></tr>
+          <tr><td><code>{index}</code></td><td>The 0-based index of the item</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Choosing the concurrency</h2>
+
+      <table>
+        <thead><tr><th>Setting</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td><code>1</code></td><td>Provider rate limits are tight, or you want strict serial order</td></tr>
+          <tr><td><code>2-4</code></td><td>Default for local Ollama — the model can answer 2-4 concurrent requests without queueing</td></tr>
+          <tr><td><code>8-16</code></td><td>Cloud APIs (OpenAI, Groq, Together) — these handle high concurrency well</td></tr>
+          <tr><td><code>&gt; 32</code></td><td>Only if you have explicitly verified the provider allows it. Risk of 429 errors.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Difference from <code>custom.map_llm</code></h2>
+
+      <p>
+        Both nodes fire one LLM call per item in parallel. The
+        difference is the output:
+      </p>
+
+      <table>
+        <thead><tr><th></th><th><code>agent_pool</code></th><th><code>map_llm</code></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Results shape</td>
+            <td>List of dicts with <code>{index, item, response, error}</code></td>
+            <td>List of strings only</td>
+          </tr>
+          <tr>
+            <td>Errors</td>
+            <td>Embedded in each result dict</td>
+            <td>Separate <code>errors</code> list</td>
+          </tr>
+          <tr>
+            <td>Merged output</td>
+            <td>Yes — <code>merged</code> output</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td>Best for</td>
+            <td>Display, logging, per-item error handling</td>
+            <td>Feeding into a <code>reduce_llm</code> node</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        In practice: use <code>agent_pool</code> when you want the
+        full per-item metadata; use <code>map_llm</code> when you are
+        going to reduce the results into one answer.
+      </p>
+
+      <div class="callout">
+        <strong>Order is preserved despite parallelism.</strong>
+        Even though the LLM calls complete in a non-deterministic
+        order, the node sorts the results back into input order
+        before returning. Downstream nodes see a stable list.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       NODE 3 — custom.agent_router
+       ============================================================= -->
+  <section class="file-section" id="node-agent-router" data-name="agent router llm branching classification custom node reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>custom.agent_router <span class="file-badge node">node</span></h2>
+        <span class="file-path">Router (LLM branch) — dynamic fan-out</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 input · 8 outputs</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>custom.agent_router</h1>
+
+      <p>
+        Ask the LLM to classify the input into one of up to five
+        named categories, then route the value to the matching output
+        port. This is how you get <strong>content-based branching</strong>
+        in a graph that otherwise runs deterministically.
+      </p>
+
+      <h2>Ports</h2>
+
+      <table>
+        <thead><tr><th>Direction</th><th>Name</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>Input</td><td><code>input</code></td><td>any</td></tr>
+          <tr><td>Output</td><td><code>branch_0</code></td><td>any</td></tr>
+          <tr><td>Output</td><td><code>branch_1</code></td><td>any</td></tr>
+          <tr><td>Output</td><td><code>branch_2</code></td><td>any</td></tr>
+          <tr><td>Output</td><td><code>branch_3</code></td><td>any</td></tr>
+          <tr><td>Output</td><td><code>branch_4</code></td><td>any</td></tr>
+          <tr><td>Output</td><td><code>chosen</code></td><td>string</td></tr>
+          <tr><td>Output</td><td><code>chosen_index</code></td><td>number</td></tr>
+          <tr><td>Output</td><td><code>reason</code></td><td>string</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        The <code>branch_N</code> outputs are mutually exclusive: only
+        the chosen branch receives the input value. The others are
+        <code>None</code>. This is the routing primitive — attach a
+        different downstream subgraph to each branch, and only the
+        matching one fires.
+      </p>
+
+      <h2>Parameters</h2>
+
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>branches</code></td>
+            <td>text</td>
+            <td><code>positive,negative,neutral</code></td>
+          </tr>
+          <tr>
+            <td><code>router_prompt</code></td>
+            <td>text</td>
+            <td>
+              <pre style="margin:4px 0;background:transparent;border:none;padding:0;color:#a5d6ff;">Classify the following input into exactly one of these categories: {branches}.
+
+Respond with only the category name, nothing else.
+
+Input: {input}</pre>
+            </td>
+          </tr>
+          <tr><td><code>model</code></td><td>select</td><td><code>""</code></td></tr>
+          <tr><td><code>provider</code></td><td>select</td><td><code>auto</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>The <code>branches</code> parameter</h2>
+
+      <p>
+        A comma-separated string of up to five category names. The
+        position in the list determines which output port each one
+        maps to:
+      </p>
+
+      <table>
+        <thead><tr><th><code>branches</code> value</th><th>Port mapping</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>billing,tech,other</code></td>
+            <td>
+              <code>billing</code> → <code>branch_0</code><br>
+              <code>tech</code> → <code>branch_1</code><br>
+              <code>other</code> → <code>branch_2</code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        Extra names beyond five are silently truncated. Names with
+        whitespace are stripped. Empty names are ignored.
+      </p>
+
+      <h2>How the router decides</h2>
+
+      <ol>
+        <li>The <code>{branches}</code> placeholder is replaced with a comma-joined list.</li>
+        <li>The <code>{input}</code> placeholder is replaced with the input value.</li>
+        <li>The prompt is sent to the LLM (with <code>temperature=0.0</code>).</li>
+        <li>The response is lowercased and each branch name is checked as a substring.</li>
+        <li>The first branch whose name appears in the response wins.</li>
+        <li>If no branch matches, the node falls back to <code>branch_0</code> and logs a warning.</li>
+      </ol>
+
+      <h2>Debugging the classification</h2>
+
+      <p>
+        Point the <code>reason</code> output at a <code>util.log</code>
+        node to see exactly what the LLM said. Common reasons a
+        classification fails:
+      </p>
+
+      <table>
+        <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Everything routes to branch 0</td>
+            <td>The LLM response doesn't contain any branch name</td>
+            <td>Tighten <code>router_prompt</code> — enumerate the exact spellings</td>
+          </tr>
+          <tr>
+            <td>Wrong branch chosen</td>
+            <td>Two branch names are substrings of one another (e.g. <code>tech</code> and <code>tech-support</code>)</td>
+            <td>Rename to avoid substring collisions, or reorder so the more specific one comes first</td>
+          </tr>
+          <tr>
+            <td>Empty reason output</td>
+            <td>The LLM returned an empty response</td>
+            <td>Check the backend log; the model may be out of context or returning malformed output</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <strong>LLM classification is probabilistic.</strong>
+        Even at <code>temperature=0.0</code>, different models phrase
+        their "I pick X" answer differently. If you need deterministic
+        routing, pre-classify the input with a keyword rule and use
+        <code>control.branch</code> for the actual routing. This node
+        is the right tool when the classification itself needs an
+        LLM.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       NODE 4 — custom.map_llm
+       ============================================================= -->
+  <section class="file-section" id="node-map-llm" data-name="map llm parallel list transform custom node reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>custom.map_llm <span class="file-badge node">node</span></h2>
+        <span class="file-path">Map (LLM per item) — transform a list</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 input · 3 outputs</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>custom.map_llm</h1>
+
+      <p>
+        Apply a prompt template to every item in a list, one LLM call
+        per item, in parallel. The "map" half of map-reduce.
+      </p>
+
+      <h2>Ports</h2>
+
+      <table>
+        <thead><tr><th>Direction</th><th>Name</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>Input</td><td><code>items</code></td><td>list</td></tr>
+          <tr><td>Output</td><td><code>results</code></td><td>list</td></tr>
+          <tr><td>Output</td><td><code>errors</code></td><td>list</td></tr>
+          <tr><td>Output</td><td><code>count</code></td><td>number</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <code>results</code> is a list of strings, one per input item.
+        A failed item's entry is an empty string; the error lives in
+        <code>errors</code> as <code>{index, error}</code>.
+      </p>
+
+      <h2>Parameters</h2>
+
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>prompt</code></td><td>text</td><td><code>Process this item: {item}</code></td></tr>
+          <tr><td><code>model</code></td><td>select</td><td><code>""</code></td></tr>
+          <tr><td><code>provider</code></td><td>select</td><td><code>auto</code></td></tr>
+          <tr><td><code>concurrency</code></td><td>number</td><td><code>4</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Composing with <code>reduce_llm</code></h2>
+
+      <p>
+        The canonical pattern:
+      </p>
+
+      <pre>input.json ─► custom.map_llm ─► custom.reduce_llm ─► output.text
+  (data)       (items)           (items)              (text)</pre>
+
+      <p>
+        The <code>map_llm.results</code> output is exactly the shape
+        <code>reduce_llm.items</code> expects, so the two nodes snap
+        together without any intermediate processing.
+      </p>
+
+      <h2>When to use it</h2>
+
+      <ul>
+        <li>
+          <strong>Transform every list element.</strong> "Translate
+          every string to German", "Summarize every paragraph", "Score
+          every review 1-10".
+        </li>
+        <li>
+          <strong>Feed a reduce step.</strong> When you just need the
+          list of results and don't care about per-item metadata.
+        </li>
+        <li>
+          <strong>Any batch operation.</strong> If it can be expressed
+          as "one prompt × N items", this node does it.
+        </li>
+      </ul>
+
+      <h2>When NOT to use it</h2>
+
+      <p>
+        <strong>When you need per-item metadata.</strong> Use
+        <code>custom.agent_pool</code> instead — it returns a dict
+        per item with the original input, the response, and the error
+        (if any), plus a <code>merged</code> string. The tradeoff is
+        a slightly more complex output shape.
+      </p>
+
+      <div class="callout">
+        <strong>Preserves order.</strong>
+        Even with <code>concurrency=8</code>, the results come out in
+        the same order as the inputs. Internally the node collects
+        the completed futures into a dict keyed by index, then sorts
+        before returning.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       NODE 5 — custom.reduce_llm
+       ============================================================= -->
+  <section class="file-section" id="node-reduce-llm" data-name="reduce llm combine list aggregate custom node reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>custom.reduce_llm <span class="file-badge node">node</span></h2>
+        <span class="file-path">Reduce (combine via LLM) — fold a list</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 input · 1 output</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>custom.reduce_llm</h1>
+
+      <p>
+        Combine a list of results into one answer via an LLM call.
+        The "reduce" half of map-reduce.
+      </p>
+
+      <h2>Ports</h2>
+
+      <table>
+        <thead><tr><th>Direction</th><th>Name</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>Input</td><td><code>items</code></td><td>list</td></tr>
+          <tr><td>Output</td><td><code>result</code></td><td>string</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Parameters</h2>
+
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>reduce_prompt</code></td>
+            <td>text</td>
+            <td>
+              <pre style="margin:4px 0;background:transparent;border:none;padding:0;color:#a5d6ff;">Combine the following items into one coherent summary. Preserve every distinct point. Do not invent details.
+
+{results}</pre>
+            </td>
+          </tr>
+          <tr><td><code>separator</code></td><td>text</td><td><code>\n\n</code></td></tr>
+          <tr><td><code>model</code></td><td>select</td><td><code>""</code></td></tr>
+          <tr><td><code>provider</code></td><td>select</td><td><code>auto</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>How <code>{results}</code> is built</h2>
+
+      <p>
+        Each item is prefixed with its 1-based index in brackets, and
+        the items are joined with <code>separator</code>:
+      </p>
+
+      <pre>[1] First item text
+
+[2] Second item text
+
+[3] Third item text</pre>
+
+      <p>
+        The numbering helps the LLM see distinct items rather than one
+        wall of text, and gives it an anchor for attributing claims.
+      </p>
+
+      <h2>Placeholder reference</h2>
+
+      <table>
+        <thead><tr><th>Placeholder</th><th>Substituted with</th></tr></thead>
+        <tbody>
+          <tr><td><code>{results}</code></td><td>The numbered, joined list</td></tr>
+          <tr><td><code>{count}</code></td><td>The number of items</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Common reduce prompts</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th><code>reduce_prompt</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Summarise</td>
+            <td><code>Summarise these items in one paragraph:\n\n{results}</code></td>
+          </tr>
+          <tr>
+            <td>Find common themes</td>
+            <td><code>Identify the themes shared across all these items. Be specific.\n\n{results}</code></td>
+          </tr>
+          <tr>
+            <td>Classify each</td>
+            <td><code>Classify each item into one of: positive, negative, mixed. Return a table.\n\n{results}</code></td>
+          </tr>
+          <tr>
+            <td>Answer from evidence</td>
+            <td><code>Answer the question using only the evidence below. Cite which item each claim comes from.\n\n{results}</code></td>
+          </tr>
+          <tr>
+            <td>Extract facts</td>
+            <td><code>Extract every verifiable fact from these items. Skip opinions.\n\n{results}</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>The reduce is not a summary</h2>
+
+      <p>
+        A reduce step is a <em>fold</em>: it treats each item as an
+        independent piece of evidence and produces a single output
+        that accounts for all of them. That is different from a
+        summary, which compresses a single document. The difference
+        matters when you write the prompt:
+      </p>
+
+      <ul>
+        <li>
+          For a summary of one document, use <code>llm.chat</code> or
+          <code>custom.map_llm</code> directly.
+        </li>
+        <li>
+          For synthesising across N documents, use
+          <code>reduce_llm</code> and be explicit about preserving
+          distinct points.
+        </li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Context window limits.</strong>
+        Reduce concatenates every item into one prompt. If the input
+        list is large (say 100 items of 2 KB each), the prompt is
+        200 KB — likely past the model's context window. Two fixes:
+        (a) chunk the input before reducing, or (b) reduce
+        hierarchically — run map+reduce on groups of 10, then
+        reduce the group summaries.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       NODE 6 — custom.critique_refine
+       ============================================================= -->
+  <section class="file-section" id="node-critique-refine" data-name="critique refine loop quality threshold custom node reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>custom.critique_refine <span class="file-badge node">node</span></h2>
+        <span class="file-path">Critique &amp; Refine (loop) — iterative quality</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">2 inputs · 4 outputs</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>custom.critique_refine</h1>
+
+      <p>
+        Draft → critique → refine loop. Runs up to
+        <code>max_iterations</code> cycles; stops early when the
+        critique score reaches <code>quality_threshold</code>.
+      </p>
+
+      <h2>Ports</h2>
+
+      <table>
+        <thead><tr><th>Direction</th><th>Name</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Input</td><td><code>task</code></td><td>string</td><td>What the draft should accomplish</td></tr>
+          <tr><td>Input</td><td><code>draft</code></td><td>string (optional)</td><td>An optional starting draft. If empty, iteration 1 generates one.</td></tr>
+          <tr><td>Output</td><td><code>final</code></td><td>string</td><td>The last draft</td></tr>
+          <tr><td>Output</td><td><code>iterations</code></td><td>number</td><td>How many cycles ran</td></tr>
+          <tr><td>Output</td><td><code>score</code></td><td>number</td><td>The final critique score</td></tr>
+          <tr><td>Output</td><td><code>history</code></td><td>list</td><td>Per-iteration <code>{draft, critique, score, iteration}</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Parameters</h2>
+
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>task</code></td><td>text</td><td><code>""</code></td></tr>
+          <tr><td><code>system_prompt</code></td><td>text</td><td><code>""</code></td></tr>
+          <tr>
+            <td><code>critique_prompt</code></td>
+            <td>text</td>
+            <td>see below</td>
+          </tr>
+          <tr>
+            <td><code>refine_prompt</code></td>
+            <td>text</td>
+            <td>see below</td>
+          </tr>
+          <tr><td><code>quality_threshold</code></td><td>number</td><td><code>8.0</code></td></tr>
+          <tr><td><code>max_iterations</code></td><td>number</td><td><code>3</code></td></tr>
+          <tr><td><code>model</code></td><td>select</td><td><code>""</code></td></tr>
+          <tr><td><code>provider</code></td><td>select</td><td><code>auto</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>The two prompt templates</h2>
+
+      <p>
+        <strong><code>critique_prompt</code></strong> must produce a
+        response containing a line that starts with
+        <code>SCORE:</code> followed by a number. The default:
+      </p>
+
+      <pre>Critique the following draft for the task below.
+
+Task: {task}
+
+Draft:
+{draft}
+
+Respond in exactly this format, on two lines:
+SCORE: &lt;a number 1-10&gt;
+ISSUES: &lt;one specific improvement&gt;</pre>
+
+      <p>
+        <strong><code>refine_prompt</code></strong> must produce an
+        improved draft, with no meta commentary:
+      </p>
+
+      <pre>Task: {task}
+
+Current draft:
+{draft}
+
+Critique:
+{critique}
+
+Produce an improved draft. Output the draft only — no explanations, no critique, no meta commentary.</pre>
+
+      <h2>Placeholder reference</h2>
+
+      <table>
+        <thead><tr><th>Template</th><th>Placeholders</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>critique_prompt</code></td>
+            <td><code>{task}</code>, <code>{draft}</code>, <code>{iteration}</code></td>
+          </tr>
+          <tr>
+            <td><code>refine_prompt</code></td>
+            <td><code>{task}</code>, <code>{draft}</code>, <code>{critique}</code>, <code>{score}</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Parsing the score</h2>
+
+      <p>
+        <code>_parse_score()</code> looks for a line containing
+        <code>score</code> (case-insensitive) and extracts the first
+        number on that line. If no such line exists, it falls back to
+        the first standalone number in the response. If neither
+        works, the score is <code>0.0</code> and the loop continues.
+      </p>
+
+      <p>
+        This is why the default <code>critique_prompt</code> is
+        explicit about the format: a well-formatted response is
+        reliably parsed.
+      </p>
+
+      <h2>The iterative flow</h2>
+
+      <pre>iteration 1:
+    if draft is empty:
+        draft = generate(task)        ← LLM call #1
+    critique = critique(task, draft)  ← LLM call #2
+    score = parse(critique)
+    if score &gt;= threshold: STOP
+    if iteration == max: STOP
+    draft = refine(task, draft, critique)  ← LLM call #3
+
+iteration 2:
+    critique = critique(task, draft)  ← LLM call #4
+    score = parse(critique)
+    if score &gt;= threshold: STOP
+    ...
+iteration N:</pre>
+
+      <h2>Timing estimate</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Model speed</th>
+            <th><code>max_iterations=3</code></th>
+            <th><code>max_iterations=5</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Local 3B, CPU only</td>
+            <td>~60-90 s</td>
+            <td>~120-180 s</td>
+          </tr>
+          <tr>
+            <td>Local 7B, GPU</td>
+            <td>~15-30 s</td>
+            <td>~30-60 s</td>
+          </tr>
+          <tr>
+            <td>Cloud (GPT-4o, Claude)</td>
+            <td>~20-40 s</td>
+            <td>~40-80 s</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>When to reach for it</h2>
+
+      <ul>
+        <li>
+          <strong>Writing.</strong> Product descriptions, marketing
+          copy, blog sections — anything where "draft, critique,
+          rewrite" produces measurably better output than a single
+          prompt.
+        </li>
+        <li>
+          <strong>Code review.</strong> Draft a function, critique
+          its edge cases, refine with the critique embedded.
+        </li>
+        <li>
+          <strong>Structured extraction.</strong> Generate a JSON
+          object, critique its completeness, refine with the missing
+          fields.
+        </li>
+      </ul>
+
+      <div class="callout">
+        <strong>Pair with <code>custom.json_extract</code>.</strong>
+        A common composition: <code>critique_refine</code> to get a
+        polished text, then <code>json_extract</code> to parse it
+        into a schema-validated object. The refine step catches
+        content problems; the extract step catches format problems.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       NODE 7 — custom.consensus
+       ============================================================= -->
+  <section class="file-section" id="node-consensus" data-name="consensus multi-model vote ensemble custom node reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>custom.consensus <span class="file-badge node">node</span></h2>
+        <span class="file-path">Consensus (multi-model vote)</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 input · 4 outputs</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>custom.consensus</h1>
+
+      <p>
+        Ask several models the same prompt in parallel. Return the
+        majority answer and a 0-1 agreement score. Useful for
+        cross-model fact-checking, catching hallucinations, and
+        detecting disagreements.
+      </p>
+
+      <h2>Ports</h2>
+
+      <table>
+        <thead><tr><th>Direction</th><th>Name</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>Input</td><td><code>prompt</code></td><td>string</td></tr>
+          <tr><td>Output</td><td><code>answer</code></td><td>string</td></tr>
+          <tr><td>Output</td><td><code>all_responses</code></td><td>list</td></tr>
+          <tr><td>Output</td><td><code>agreement</code></td><td>number</td></tr>
+          <tr><td>Output</td><td><code>majority_count</code></td><td>number</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Parameters</h2>
+
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>prompt</code></td><td>text</td><td><code>""</code></td></tr>
+          <tr>
+            <td><code>models</code></td>
+            <td>text</td>
+            <td><code>llama3.2, qwen2.5, mistral:7b</code></td>
+          </tr>
+          <tr>
+            <td><code>provider</code></td>
+            <td>select</td>
+            <td><code>auto</code></td>
+          </tr>
+          <tr>
+            <td><code>temperature</code></td>
+            <td>number</td>
+            <td><code>0.7</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>The <code>models</code> parameter</h2>
+
+      <p>
+        A comma-separated list of model names. Each one is queried
+        independently. The provider parameter applies to <em>all</em>
+        of them — you cannot mix providers within a single consensus
+        call.
+      </p>
+
+      <table>
+        <thead><tr><th>Provider setting</th><th>Model names should be</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>ollama</code></td>
+            <td>Ollama tags — <code>llama3.2</code>, <code>qwen2.5</code>, <code>mistral:7b</code></td>
+          </tr>
+          <tr>
+            <td><code>llama_cpp</code></td>
+            <td>Local GGUF filenames — usually only one is loaded at a time, so consensus is limited to one model</td>
+          </tr>
+          <tr>
+            <td><code>fallback</code></td>
+            <td>The fallback endpoint's model name</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        For real multi-model consensus, use <code>provider=ollama</code>
+        and pull several models.
+      </p>
+
+      <h2>How voting works</h2>
+
+      <ol>
+        <li>
+          Each model's answer is fingerprinted: lowercased, first five
+          tokens, joined with single spaces.
+        </li>
+        <li>
+          All valid answers are grouped into buckets by fingerprint.
+        </li>
+        <li>
+          The bucket with the most members wins.
+        </li>
+        <li>
+          <code>answer</code> is the first response in the winning
+          bucket (they are usually identical or near-identical).
+        </li>
+        <li>
+          <code>agreement</code> = winning bucket size / total valid
+          responses.
+        </li>
+      </ol>
+
+      <h2>Reading the agreement score</h2>
+
+      <table>
+        <thead><tr><th>Agreement</th><th>Interpretation</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>1.0</code></td>
+            <td>All models gave the same answer. High confidence in the answer.</td>
+          </tr>
+          <tr>
+            <td><code>≥ 0.66</code></td>
+            <td>Most models agreed. Reasonable confidence — the outlier is worth inspecting.</td>
+          </tr>
+          <tr>
+            <td><code>≈ 0.5</code></td>
+            <td>Split decision. Treat the answer with skepticism.</td>
+          </tr>
+          <tr>
+            <td><code>≤ 0.33</code></td>
+            <td>Every model gave a different answer. This is often a fact the models are not confident about.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>What fingerprinting does <em>not</em> catch</h2>
+
+      <p>
+        The fingerprint is a <em>first-five-tokens</em> heuristic, not
+        a semantic comparison. Two answers that mean the same thing but
+        start differently ("The answer is 96" vs. "96 is the answer")
+        will land in different buckets and be treated as disagreements.
+      </p>
+
+      <p>
+        This is fine for factual questions with short answers ("What is
+        12×8?"), and bad for open-ended questions ("Describe the
+        causes of the French Revolution"). For open-ended consensus,
+        consider adding a small reduce step after the node to compare
+        the answers semantically.
+      </p>
+
+      <h2>Cost and latency</h2>
+
+      <p>
+        All N model calls fire in parallel — the total latency is the
+        slowest model, not the sum. However, if all models are hosted
+        behind the same rate limit, they may queue.
+      </p>
+
+      <p>
+        At 3 models × 200 tokens each, expect ~600 tokens billed per
+        consensus call. Not expensive for occasional use, but
+        noticeable if you put this node in a loop.
+      </p>
+
+      <div class="callout warn">
+        <strong>The models must be pulled.</strong>
+        If a model name is not pulled in Ollama, its call fails and it
+        is excluded from the vote (<code>error</code> populated, no
+        <code>answer</code>). If <em>every</em> model fails, the node
+        returns an empty <code>answer</code> and <code>agreement=0.0</code>.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       NODE 8 — custom.json_extract
+       ============================================================= -->
+  <section class="file-section" id="node-json-extract" data-name="json extract schema structured output retry custom node reference">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>custom.json_extract <span class="file-badge node">node</span></h2>
+        <span class="file-path">JSON Extract (schema) — structured output</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">1 input · 4 outputs</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>custom.json_extract</h1>
+
+      <p>
+        Extract JSON matching a schema from free-form text. Retries on
+        parse failure, with the error embedded in the retry prompt so
+        the model can self-correct.
+      </p>
+
+      <h2>Ports</h2>
+
+      <table>
+        <thead><tr><th>Direction</th><th>Name</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>Input</td><td><code>text</code></td><td>string</td></tr>
+          <tr><td>Output</td><td><code>data</code></td><td>any</td></tr>
+          <tr><td>Output</td><td><code>valid</code></td><td>boolean</td></tr>
+          <tr><td>Output</td><td><code>errors</code></td><td>list</td></tr>
+          <tr><td>Output</td><td><code>raw</code></td><td>string</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        <code>data</code> is the parsed JSON object (a dict, list,
+        string, number, or boolean — whatever the schema produced).
+        When parsing fails, <code>data</code> is <code>None</code>,
+        <code>valid</code> is <code>False</code>, and
+        <code>errors</code> lists every attempt's failure reason.
+      </p>
+
+      <h2>Parameters</h2>
+
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>text</code></td><td>text</td><td><code>""</code></td></tr>
+          <tr>
+            <td><code>schema</code></td>
+            <td>json</td>
+            <td>
+              <pre style="margin:4px 0;background:transparent;border:none;padding:0;color:#a5d6ff;">{"type": "object",
+ "properties": {
+   "name": {"type": "string"},
+   "value": {"type": "number"}
+ }}</pre>
+            </td>
+          </tr>
+          <tr>
+            <td><code>extract_prompt</code></td>
+            <td>text</td>
+            <td>
+              <pre style="margin:4px 0;background:transparent;border:none;padding:0;color:#a5d6ff;">Extract structured data from the following text according to this JSON schema:
+
+{schema}
+
+Respond with ONLY valid JSON. No markdown fences, no explanation, no preamble.
+
+Text:
+{text}</pre>
+            </td>
+          </tr>
+          <tr><td><code>max_retries</code></td><td>number</td><td><code>2</code></td></tr>
+          <tr><td><code>model</code></td><td>select</td><td><code>""</code></td></tr>
+          <tr><td><code>provider</code></td><td>select</td><td><code>auto</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>How the retry loop works</h2>
+
+      <pre>attempt 1:
+    raw = LLM(extract_prompt)
+    cleaned = strip_code_fence(raw)
+    if json.loads(cleaned) succeeds: RETURN {data, valid=True}
+    errors.append("JSON decode failed: ...")
+
+attempt 2:
+    prompt = "Previous attempt failed with: {last_error}\n\n" + extract_prompt
+    raw = LLM(prompt)
+    ...
+attempt N+1:
+    ...
+
+if all fail: RETURN {data=None, valid=False, errors, raw=last_response}</pre>
+
+      <p>
+        The self-correction prompt is the key: including the parse
+        error lets the model fix its mistake. Blind retries with the
+        same prompt almost never help.
+      </p>
+
+      <h2>Code fence stripping</h2>
+
+      <p>
+        Models sometimes wrap JSON in ```json fences despite
+        instructions. <code>_strip_code_fence()</code> removes the
+        opening <code>```json</code> (or plain <code>```</code>) and
+        the closing <code>```</code>, so the parsed content is pure
+        JSON.
+      </p>
+
+      <h2>Example schemas</h2>
+
+      <h3>Contact information</h3>
+      <pre>{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "email": {"type": "string"},
+    "phone": {"type": "string"}
+  },
+  "required": ["name", "email"]
+}</pre>
+
+      <h3>Sentiment</h3>
+      <pre>{
+  "type": "object",
+  "properties": {
+    "sentiment": {"enum": ["positive", "negative", "neutral"]},
+    "confidence": {"type": "number"},
+    "reasoning": {"type": "string"}
+  }
+}</pre>
+
+      <h3>Event</h3>
+      <pre>{
+  "type": "object",
+  "properties": {
+    "title": {"type": "string"},
+    "date": {"type": "string"},
+    "location": {"type": "string"},
+    "attendees": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}</pre>
+
+      <h2>What "schema" means here</h2>
+
+      <p>
+        The schema is a JSON Schema document, but the node does not
+        strictly validate against it. It uses the schema as part of
+        the prompt (the LLM is told the schema and asked to fill it),
+        and it validates only that the output parses as valid JSON.
+      </p>
+
+      <p>
+        This is a deliberate tradeoff: strict JSON Schema validation
+        requires a library like <code>jsonschema</code> and would
+        reject otherwise-usable output over minor issues (a missing
+        optional field, a number where a string was expected). The
+        practical goal is "parseable JSON, roughly the right shape",
+        not "byte-exact schema conformance".
+      </p>
+
+      <p>
+        If you need strict validation, add a downstream
+        <code>custom.validate_json</code> node — or extend
+        <code>json_extract</code> to run the parsed data through a
+        validator before returning.
+      </p>
+
+      <h2>Bracketing with <code>control.branch</code></h2>
+
+      <p>
+        Route the success and failure paths separately:
+      </p>
+
+      <pre>       ┌── valid=true  ─► output.text (data)
+extract┤
+       └── valid=false ─► util.log (errors)  →  custom.critique_refine (retry)</pre>
+
+      <p>
+        The <code>valid</code> output is a boolean that works directly
+        with <code>control.branch</code>'s <code>condition</code>
+        input.
+      </p>
+
+      <div class="callout">
+        <strong>Retry budget sanity.</strong>
+        With <code>max_retries=2</code>, that's 3 total attempts.
+        With <code>max_retries=5</code>, that's 6 attempts — usually
+        enough to recover from a stubborn model, but if 6 attempts
+        all fail, the schema is probably wrong, not the model. Check
+        the <code>errors</code> list — if every error is "JSON decode
+        failed", the schema is malformed. If errors vary ("JSON decode
+        failed", "missing required field"), the model is genuinely
+        struggling with the task and a different prompt would help
+        more than more retries.
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       DESIGN PRINCIPLES
+       ============================================================= -->
+  <section class="file-section" id="doc-design" data-name="design principles best practices custom node authoring documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Design Principles <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">custom_nodes — what good custom nodes do</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Design Principles</h1>
+
+      <p>
+        Ten rules distilled from the eight nodes on this page. They
+        apply to every custom node you write.
+      </p>
+
+      <h2>1. One node, one job</h2>
+
+      <p>
+        A node that does two things is two nodes pretending to be
+        one. When "search and download" fails, you don't know which
+        half broke. Split it into <code>search</code> and
+        <code>download</code>, and let the graph editor compose them.
+      </p>
+
+      <h2>2. Fail with a message, not a silent empty return</h2>
+
+      <p>
+        If <code>custom.critique_refine</code> gets no
+        <code>task</code> input, it raises
+        <code>ValueError("custom.critique_refine: 'task' input (or
+        param) required")</code>. The engine catches the exception,
+        turns it into a red node-error event, and logs a traceback.
+        The user sees exactly what went wrong.
+      </p>
+
+      <p>
+        The alternative — returning <code>{"final": ""}</code> — makes
+        the failure look like a normal empty result. Worse.
+      </p>
+
+      <p>
+        Exception: when the failure is per-item and not per-node
+        (like in <code>agent_pool</code>), embed the error in the
+        output dict so other items are not affected. Node-level
+        failures raise; item-level failures are returned.
+      </p>
+
+      <h2>3. Return JSON-safe values</h2>
+
+      <p>
+        The engine calls <code>_safe()</code> on every output value
+        before serialising. Anything non-serialisable is stringified.
+        But stringifying is not the same as "returning the right
+        thing" — a <code>datetime</code> object that gets stringified
+        to <code>"2025-01-15 12:34:56"</code> is different from a
+        proper ISO 8601 string with a timezone.
+      </p>
+
+      <p>
+        Prefer primitives: <code>str</code>, <code>int</code>,
+        <code>float</code>, <code>bool</code>, <code>None</code>,
+        <code>list</code>, <code>dict</code>. Stringify anything
+        exotic yourself, using a specific format.
+      </p>
+
+      <h2>4. Cap your concurrency</h2>
+
+      <p>
+        Any node that spawns parallel LLM calls should use
+        <code>asyncio.Semaphore(n)</code> with an
+        <code>n</code> that defaults to something reasonable (4 is
+        good). Unbounded <code>asyncio.gather()</code> over 100 items
+        will hammer the provider and either rate-limit or crash.
+      </p>
+
+      <pre>sem = asyncio.Semaphore(concurrency)
+
+async def run_one(item):
+    async with sem:
+        return await do_work(item)
+
+results = await asyncio.gather(*[run_one(i) for i in items])</pre>
+
+      <h2>5. Preserve order across parallel calls</h2>
+
+      <p>
+        <code>asyncio.gather()</code> returns results in the order of
+        the input coroutines — but only if every coroutine returns
+        successfully. If you use <code>return_exceptions=True</code>
+        or you collect results into a dict keyed by index, sort
+        before returning:
+      </p>
+
+      <pre>results = sorted(results, key=lambda r: r["index"])</pre>
+
+      <p>
+        Downstream nodes should not have to care that the work was
+        parallel.
+      </p>
+
+      <h2>6. Do not stream tokens</h2>
+
+      <p>
+        A node returns one atomic value. If you need streaming, the
+        built-in <code>llm.chat</code> node already handles it — use
+        that instead of writing a custom node.
+      </p>
+
+      <p>
+        The reason: a custom node that streams tokens has to interact
+        with the graph engine's progress events, which complicates the
+        node considerably. Atomic returns keep every custom node
+        simple.
+      </p>
+
+      <h2>7. Do not pass <code>tools</code> unless you have to</h2>
+
+      <p>
+        LLM calls without <code>tools</code> are faster, cheaper, and
+        more predictable. Adding tool schemas to every internal call
+        is unnecessary unless the pattern genuinely needs the model to
+        decide to invoke a tool mid-step.
+      </p>
+
+      <p>
+        All eight nodes on this page use
+        <code>disable_tools=True</code>. If you write a node that
+        needs tool use, follow the same pattern — pass a
+        <code>disable_tools</code> parameter so users can opt in.
+      </p>
+
+      <h2>8. Make the widget surface small</h2>
+
+      <p>
+        Each parameter is a widget the user has to configure. Every
+        added parameter is one more chance to misconfigure the node.
+        Aim for 3-5 widgets per node. When you're tempted to add
+        more, ask whether the extra configuration could be a
+        <em>second</em> node that composes.
+      </p>
+
+      <h2>9. Follow the naming convention</h2>
+
+      <table>
+        <thead><tr><th>Thing</th><th>Convention</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Node <code>name</code></td>
+            <td><code>custom.category.subname</code> — lowercased, dot-separated</td>
+          </tr>
+          <tr>
+            <td>Node <code>display</code></td>
+            <td>Title Case with a parenthetical hint: <code>"Agent Chain (sequential)"</code></td>
+          </tr>
+          <tr>
+            <td><code>category</code></td>
+            <td>Title Case: <code>"Custom Patterns"</code>, <code>"Custom"</code>, or a use-case label</td>
+          </tr>
+          <tr>
+            <td>Port names</td>
+            <td><code>snake_case</code>, verbs or nouns: <code>prompt</code>, <code>results</code>, <code>valid</code></td>
+          </tr>
+          <tr>
+            <td>Param names</td>
+            <td><code>snake_case</code>, matching the port names when they represent the same concept</td>
+          </tr>
+          <tr>
+            <td>Module filename</td>
+            <td><code>snake_case.py</code>, plural if it contains multiple related nodes: <code>demo_agent_patterns.py</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>10. Log once at import</h2>
+
+      <p>
+        Every module should emit one <code>logger.info(...)</code>
+        line at module scope, after all registrations. This is what
+        tells the user "yes, my module loaded and everything inside
+        registered".
+      </p>
+
+      <pre>logger.info(
+    "Registered 8 custom pattern nodes: agent_chain, agent_pool, "
+    "agent_router, map_llm, reduce_llm, critique_refine, consensus, "
+    "json_extract"
+)</pre>
+
+      <p>
+        If the line appears but the nodes are not in the palette, the
+        problem is in the frontend (the
+        <code>/api/graph/litegraph-types</code> response). If the line
+        does not appear, the problem is in the module import — scroll
+        up in the log for the traceback.
+      </p>
+
+      <h2>Bonus: prefer composition over a bigger node</h2>
+
+      <p>
+        <code>custom.critique_refine</code> does not internally
+        translate, extract JSON, or call tools. It does exactly one
+        thing — refine until good enough. Everything else is the
+        caller's job.
+      </p>
+
+      <p>
+        This is the single most important rule. A node that tries to
+        be everything becomes unmaintainable, unguessable, and
+        untestable. A node that does one thing can be composed with
+        other one-thing nodes to do anything.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       TROUBLESHOOTING
+       ============================================================= -->
+  <section class="file-section" id="doc-debug" data-name="troubleshooting custom nodes debugging documentation">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>Troubleshooting <span class="file-badge doc">docs</span></h2>
+        <span class="file-path">custom_nodes — common failures</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill">doc</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="md-content">
+      <h1>Troubleshooting</h1>
+
+      <p>
+        Every failure mode with a specific fix. If a failure is not
+        listed here, the log message from the backend startup is the
+        next step.
+      </p>
+
+      <h2>Node does not appear in the palette</h2>
+
+      <ol>
+        <li>
+          <strong>Check the backend log for the module name.</strong>
+          Search for:
+          <pre>INFO | Loaded custom node module: demo_agent_patterns</pre>
+          If this line is missing, the module was not imported.
+        </li>
+        <li>
+          <strong>Check the filename.</strong>
+          Files starting with <code>_</code> are skipped by the loader.
+          Rename <code>_demo.py</code> → <code>demo.py</code>.
+        </li>
+        <li>
+          <strong>Check the folder.</strong>
+          The file must be in <code>backend/graph/custom_nodes/</code>.
+          Not in <code>backend/graph/</code>, not in
+          <code>scripts/</code>.
+        </li>
+        <li>
+          <strong>Check for import errors.</strong>
+          Scroll up in the log for a traceback. The loader logs the
+          full exception with <code>logger.exception</code> at ERROR
+          level. Fix the import, restart the backend.
+        </li>
+        <li>
+          <strong>Check the env flag.</strong>
+          <code>AGENT_LOAD_CUSTOM_NODES=false</code> disables the
+          whole folder. Unset it and restart.
+        </li>
+      </ol>
+
+      <h2>"RuntimeError: LLM client not available"</h2>
+
+      <p>
+        The node was called, but <code>ctx.app["llm"]</code> is
+        <code>None</code>. This means the backend started without a
+        working LLM client.
+      </p>
+
+      <ul>
+        <li>
+          Check <code>GET /api/health</code>. The
+          <code>primary_llm</code> block should have a valid
+          <code>base_url</code> and <code>model</code>.
+        </li>
+        <li>
+          Check <code>.env</code> — <code>AGENT_LLM_BASE_URL</code>
+          should point at a running Ollama (or another OpenAI-compatible
+          endpoint).
+        </li>
+        <li>
+          If <code>AGENT_LLM_WARMUP=true</code>, the startup log
+          should contain either
+          <code>"Primary LLM warmup complete"</code> or
+          <code>"Primary LLM warmup failed"</code>. If it failed, the
+          endpoint is unreachable.
+        </li>
+      </ul>
+
+      <h2>"LLM call failed" or "timeout"</h2>
+
+      <p>
+        The node ran, but the LLM call inside it did not complete.
+        Every error message is passed through with the exception
+        text. Common causes:
+      </p>
+
+      <table>
+        <thead><tr><th>Message contains</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>Connection refused</code></td>
+            <td>Ollama or the LLM endpoint is not running</td>
+            <td>Start Ollama (<code>ollama serve</code>) or the remote endpoint</td>
+          </tr>
+          <tr>
+            <td><code>model 'X' not found</code></td>
+            <td>The model name is wrong or not pulled</td>
+            <td><code>ollama pull &lt;model&gt;</code> or fix the model name</td>
+          </tr>
+          <tr>
+            <td><code>timed out</code></td>
+            <td>The model is loading or the request is genuinely slow</td>
+            <td>Increase <code>AGENT_LLM_TIMEOUT</code> in <code>.env</code></td>
+          </tr>
+          <tr>
+            <td><code>does not support tools</code></td>
+            <td>The node bypasses tools, but the built-in chat function may still send them</td>
+            <td>Verify <code>disable_tools=True</code> is set in every call</td>
+          </tr>
+          <tr>
+            <td><code>context length exceeded</code></td>
+            <td>The prompt is too long for the model's context window</td>
+            <td>Shorten the input or reduce <code>max_tokens</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>"custom.agent_chain: 'prompts' must be a non-empty JSON array"</h2>
+
+      <p>
+        The <code>prompts</code> parameter is empty, is a plain string
+        instead of a JSON array, or failed to parse. Verify:
+      </p>
+
+      <ul>
+        <li>
+          The param value starts with <code>[</code> and ends with
+          <code>]</code>.
+        </li>
+        <li>
+          Each element is a quoted string (<code>"..."</code>).
+        </li>
+        <li>
+          Commas separate elements — no trailing comma after the
+          last element.
+        </li>
+      </ul>
+
+      <p>Valid:</p>
+      <pre>["{input}", "Improve this: {previous}"]</pre>
+
+      <p>Invalid:</p>
+      <pre>"say hello"
+{input}, "improve"
+["{input}", "Improve this: {previous}",]</pre>
+
+      <h2>"custom.agent_router: branch fallback to branch_0"</h2>
+
+      <p>
+        The LLM's response did not contain any branch name. Two
+        fixes:
+      </p>
+
+      <ol>
+        <li>
+          <strong>Make the router prompt stricter.</strong>
+          Explicitly list the exact spellings:
+          <pre>Classify into exactly one of:
+  billing
+  tech-support
+  other
+
+Respond with ONLY the category name. No explanation.</pre>
+        </li>
+        <li>
+          <strong>Check the <code>reason</code> output.</strong>
+          Point it at a <code>util.log</code> node to see what the
+          LLM actually said. If it said "I classify this as billing",
+          the substring match for "billing" should succeed — if it
+          didn't, there's an issue with the model output encoding.
+        </li>
+      </ol>
+
+      <h2>"custom.critique_refine: 'task' required"</h2>
+
+      <p>
+        Neither the <code>task</code> input port nor the
+        <code>task</code> parameter has a value. Connect an
+        <code>input.text</code> node to the <code>task</code> input,
+        or fill in the <code>task</code> parameter on the node.
+      </p>
+
+      <h2>"custom.consensus: 'models' must be a comma-separated list"</h2>
+
+      <p>
+        The <code>models</code> parameter is empty. Set it to at least
+        two model names:
+      </p>
+
+      <pre>llama3.2, qwen2.5</pre>
+
+      <p>
+        With only one model, the "majority" vote is trivially that
+        model's answer, which defeats the purpose — use a single
+        <code>llm.chat</code> node instead.
+      </p>
+
+      <h2>All consensus responses failed</h2>
+
+      <p>
+        Every model in the <code>models</code> parameter failed its
+        call. The <code>all_responses</code> output lists each one's
+        error. Common causes:
+      </p>
+
+      <ul>
+        <li>
+          Some or all model names are not pulled. Check with
+          <code>ollama list</code>.
+        </li>
+        <li>
+          The <code>provider</code> parameter is wrong. If the models
+          are Ollama tags, set <code>provider=ollama</code>. If they
+          are GGUF filenames, you can't use consensus — only one GGUF
+          is loaded at a time.
+        </li>
+      </ul>
+
+      <h2>"All JSON extraction attempts failed"</h2>
+
+      <p>
+        The <code>errors</code> output lists every parse failure.
+        Read them:
+      </p>
+
+      <table>
+        <thead><tr><th>Error pattern</th><th>Cause</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>All errors are "JSON decode failed"</td>
+            <td>
+              The model is not producing valid JSON. Tighten the
+              <code>extract_prompt</code> — explicit "no markdown,
+              no explanation" often helps.
+            </td>
+          </tr>
+          <tr>
+            <td>Errors include "unexpected end of string"</td>
+            <td>
+              The response was truncated. Increase
+              <code>max_tokens</code> in the model settings, or
+              reduce the input length.
+            </td>
+          </tr>
+          <tr>
+            <td>Errors include "Expecting value: line 1 column 1"</td>
+            <td>
+              The response starts with something other than
+              <code>{</code> or <code>[</code>. The code-fence
+              stripper failed — the model used a different fence
+              style. Check the <code>raw</code> output.
+            </td>
+          </tr>
+          <tr>
+            <td>Errors include "invalid schema parameter"</td>
+            <td>
+              The <code>schema</code> parameter itself is not valid
+              JSON. Fix the schema widget.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Node runs but output is empty</h2>
+
+      <p>
+        The node returned successfully but produced no visible
+        output. Check each output port:
+      </p>
+
+      <ul>
+        <li>
+          <code>final</code> / <code>result</code> / <code>answer</code> —
+          the LLM may have returned an empty string. Check the
+          backend log for the raw response.
+        </li>
+        <li>
+          <code>transcript</code> / <code>results</code> /
+          <code>history</code> — should be a list, not a string. If
+          it's empty, the operation did not run any items.
+        </li>
+        <li>
+          <code>valid</code> / <code>score</code> /
+          <code>agreement</code> — numeric outputs. If they are 0,
+          the parse failed silently.
+        </li>
+      </ul>
+
+      <p>
+        <strong>Quick test:</strong> attach a <code>util.log</code>
+        node to the suspect output. The log dock shows the raw value
+        as JSON. That is the ground truth.
+      </p>
+
+      <h2>The graph hangs on a custom node</h2>
+
+      <p>
+        If a node takes > 6 minutes and never completes, the stall
+        timer in the frontend is not the issue — the node is stuck.
+        Common causes:
+      </p>
+
+      <ul>
+        <li>
+          <strong>LLM call with no timeout.</strong>
+          All eight nodes use the standard <code>llm.chat()</code>
+          which respects <code>AGENT_LLM_TIMEOUT</code> (120s
+          default). If you wrote your own node, make sure it uses
+          the same client.
+        </li>
+        <li>
+          <strong>Infinite loop.</strong>
+          <code>custom.critique_refine</code> has a
+          <code>max_iterations</code> cap. If you wrote a loop
+          without one, the backend is still running it.
+        </li>
+        <li>
+          <strong>Deadlock on a semaphore.</strong>
+          If you spawn parallel work but the semaphore count is 0
+          or the tasks block on a resource that never frees, the
+          node hangs forever. Kill the backend and restart.
+        </li>
+      </ul>
+
+      <h2>Removing a broken node</h2>
+
+      <p>
+        When a custom node is blocking startup and you cannot edit
+        the file:
+      </p>
+
+      <ol>
+        <li>
+          Rename the folder's offending file to start with
+          <code>_</code>:
+          <pre>mv backend/graph/custom_nodes/bad_node.py \
+   backend/graph/custom_nodes/_bad_node.py</pre>
+        </li>
+        <li>
+          Or set the escape hatch:
+          <pre>AGENT_LOAD_CUSTOM_NODES=false</pre>
+        </li>
+        <li>
+          Restart the backend. It will start without the custom
+          nodes. Fix the file, then reverse the rename or the flag.
+        </li>
+      </ol>
+
+      <h2>Still stuck?</h2>
+
+      <p>
+        Capture:
+      </p>
+
+      <ul>
+        <li>
+          The output of
+          <code>GET /api/logs/recent?lines=500</code> — the last 500
+          log lines usually contain the failure context.
+        </li>
+        <li>
+          The output of
+          <code>GET /api/graph/litegraph-types | jq '.[] | .name'</code> —
+          confirms the node type is registered on the backend side.
+        </li>
+        <li>
+          <code>python -c "import backend.graph.custom_nodes.demo_agent_patterns; print('OK')"</code> —
+          the module imports cleanly in isolation. If this fails,
+          the problem is in the file.
+        </li>
+      </ul>
+
+      <p>
+        Those three together will pinpoint the failure within one
+        look.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       SOURCE — demo_agent_patterns.py
+       ============================================================= -->
+  <section class="file-section" id="f-demo" data-name="demo_agent_patterns.py custom nodes source code">
+    <div class="file-header">
+      <div class="file-title">
+        <h2>demo_agent_patterns.py <span class="file-badge">python</span></h2>
+        <span class="file-path">backend/graph/custom_nodes/demo_agent_patterns.py</span>
+      </div>
+      <div class="file-meta">
+        <span class="meta-pill" data-lines>—</span>
+        <button class="copy-btn" data-copy>⧉ Copy</button>
+      </div>
+    </div>
+    <div class="code-wrap"><pre><code class="language-python">"""
+3olution Agent Graph — demo custom nodes.
+https://3olution.com
+
+Reference implementations for eight common agent patterns. Copy
+this file into `backend/graph/custom_nodes/`, restart the backend,
+and each node appears in the graph editor's palette.
+
+================================================================
+  WHAT THIS FILE DEMONSTRATES
+================================================================
+
+  The graph engine is not "prompt → LLM → answer". These nodes
+  combine LLM calls with Python control flow, so users can see
+  what is achievable when a graph becomes a small program:
+
+  ┌────────────────────────────────────────────────────────────┐
+  │  custom.agent_chain     Sequential prompts, each sees the  │
+  │                         previous answer. Follow-up trigger.│
+  ├────────────────────────────────────────────────────────────┤
+  │  custom.agent_pool      Run N "agents" in parallel over a  │
+  │                         list of items. Concurrency-limited.│
+  ├────────────────────────────────────────────────────────────┤
+  │  custom.agent_router    LLM-based dynamic branching. The   │
+  │                         LLM picks which output port gets   │
+  │                         the value (5 branches max).        │
+  ├────────────────────────────────────────────────────────────┤
+  │  custom.map_llm         Map one prompt across a list, one  │
+  │                         LLM call per item, in parallel.    │
+  ├────────────────────────────────────────────────────────────┤
+  │  custom.reduce_llm      Reduce a list of results into one  │
+  │                         combined answer via the LLM.       │
+  ├────────────────────────────────────────────────────────────┤
+  │  custom.critique_refine Draft → critique → refine loop     │
+  │                         with a quality threshold and a     │
+  │                         maximum iteration count.           │
+  ├────────────────────────────────────────────────────────────┤
+  │  custom.consensus       Ask several models the same        │
+  │                         question, vote on the majority.    │
+  ├────────────────────────────────────────────────────────────┤
+  │  custom.json_extract    Schema-validated JSON extraction   │
+  │                         with automatic retry on parse      │
+  │                         failure.                           │
+  └────────────────────────────────────────────────────────────┘
+
+  map_llm + reduce_llm compose into the classic map-reduce
+  pattern — attach them in sequence.
+
+================================================================
+  WHAT THE NODES DO NOT DO
+================================================================
+
+  - They do not pass `tools` to the LLM. Every internal call uses
+    disable_tools=True. If your pattern needs the model to invoke
+    MCP tools mid-turn, use the built-in `llm.chat` node instead
+    (it exposes a tools input) or extend these nodes.
+
+  - They do not stream tokens. Each internal LLM call is a
+    non-streaming chat completion. The pattern is "one node = one
+    atomic result", which is exactly what a graph node should be.
+    If you want streamed reasoning to reach the UI, use the
+    built-in `llm.chat` node.
+
+  - They do not persist. Each node is stateless. To save a chain's
+    transcript for later inspection, attach a `util.log` node, or
+    write your own `custom.save_to_file` node.
+
+================================================================
+  HOW TO COMPOSE THEM (example graphs)
+================================================================
+
+  Sequential agent (customer-support escalation):
+      input.text ─► custom.agent_chain ─► output.text
+      prompts param: [
+        "Draft an initial reply to: {input}",
+        "Now critique your reply and improve it: {previous}",
+        "Rewrite the improved reply more concisely: {previous}"
+      ]
+
+  Parallel fan-out (bulk translation):
+      input.json ─► custom.agent_pool ─► output.text
+      items: ["Hello", "Bonjour", "Hola", "Ciao"]
+      prompt_template: "Translate to German: {item}"
+
+  Dynamic routing (ticket triage):
+      input.text ─► custom.agent_router ─┬─► branch_0 → billing flow
+                                          ├─► branch_1 → tech-support
+                                          └─► branch_2 → other
+      branches: "billing,tech-support,other"
+
+  Map-reduce (summarise many documents):
+      input.json ─► custom.map_llm ─► custom.reduce_llm ─► output.text
+      map.prompt:    "Summarise this document in 2 sentences: {item}"
+      reduce.prompt: "Combine these summaries: {results}"
+
+  Draft-refine (writing assistant):
+      input.text ─► custom.critique_refine ─► output.text
+      critique_prompt: "Score 1-10 and list issues for: {draft}\nTask: {task}"
+      quality_threshold: 9.0
+      max_iterations: 3
+
+  Ensemble (fact-checking):
+      input.text ─► custom.consensus ─► output.text
+      models: "llama3.2, qwen2.5, mistral:7b"
+      → returns the majority answer plus all responses
+
+  Structured output (form-filling from email):
+      input.text ─► custom.json_extract ─► output.text
+      schema: {"type": "object", "properties": {"name": {"type":"string"},
+                "date": {"type":"string"}, "amount": {"type":"number"}}}
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+from typing import Any
+
+from loguru import logger
+
+from ..model import NodeType, Param, Port
+from ..registry import register
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Shared helpers
+# ══════════════════════════════════════════════════════════════════════
+
+def _decode_model_and_provider(
+    raw_model: str | None,
+    raw_provider: str | None,
+) -&gt; tuple[str | None, str]:
+    """Decode the `provider::model` encoding the frontend sends."""
+    provider = (raw_provider or "").strip().lower() or "auto"
+    model: str | None = None
+
+    raw = (raw_model or "").strip()
+    if raw and raw not in ("(default)",):
+        if "::" in raw:
+            prov_part, model_part = raw.split("::", 1)
+            prov_part = prov_part.strip().lower()
+            model_part = model_part.strip()
+            if prov_part:
+                provider = prov_part
+            if model_part:
+                model = model_part
+        else:
+            model = raw
+
+    return model, provider
+
+
+def _get_llm(ctx):
+    llm = ctx.app.get("llm")
+    if llm is None:
+        raise RuntimeError(
+            "LLM client not available in app state. "
+            "Check the backend startup log — the primary LLM "
+            "endpoint may be unreachable."
+        )
+    return llm
+
+
+async def _one_chat(
+    llm,
+    user_content: str,
+    *,
+    model: str | None,
+    provider: str,
+    system: str = "",
+    temperature: float = 0.0,
+) -&gt; str:
+    """Single non-streaming LLM call. Returns the assistant text."""
+    messages: list[dict] = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": user_content})
+
+    resp = await llm.chat(
+        messages,
+        model=model,
+        provider=provider,
+        disable_tools=True,
+        temperature=temperature,
+    )
+    msg = resp.choices[0].message
+    return msg.content or ""
+
+
+def _safe_format(template: str, **kwargs: Any) -&gt; str:
+    """
+    str.format() with a fallback for missing keys.
+
+    A user prompt containing `{unknown_key}` would normally raise
+    KeyError. Here it is left verbatim so the LLM sees the literal
+    text instead of the whole node failing.
+    """
+    try:
+        return template.format(**kwargs)
+    except (KeyError, IndexError):
+        return template
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  1. custom.agent_chain — sequential prompts with follow-up
+# ══════════════════════════════════════════════════════════════════════
+
+async def _agent_chain(ctx, inputs, params):
+    """
+    Run a list of prompts in sequence, feeding each answer to the next.
+
+    This is the "follow-up trigger" pattern: every turn has access
+    to the previous turn's output, so you can build refine chains,
+    multi-step reasoning, or escalation ladders without writing
+    any loop code.
+
+    Templates support three placeholders:
+        {input}     — the initial input (fixed across all steps)
+        {previous}  — the previous step's answer (empty on step 1)
+        {step}      — the 1-based step number
+    """
+    llm = _get_llm(ctx)
+
+    initial = str(inputs.get("initial") or params.get("initial", ""))
+    system = str(params.get("system_prompt", ""))
+    stop_on_error = bool(params.get("stop_on_error", True))
+
+    # prompts can be a JSON array (recommended) or a single string.
+    raw_prompts = params.get("prompts", [])
+    if isinstance(raw_prompts, str):
+        try:
+            raw_prompts = json.loads(raw_prompts)
+        except json.JSONDecodeError:
+            raw_prompts = [raw_prompts]
+    if not isinstance(raw_prompts, list) or not raw_prompts:
+        raise ValueError(
+            "custom.agent_chain: 'prompts' must be a non-empty "
+            "JSON array of strings."
+        )
+
+    model, provider = _decode_model_and_provider(
+        params.get("model"), params.get("provider"),
+    )
+
+    transcript: list[dict] = []
+    previous = ""
+    for i, tmpl in enumerate(raw_prompts, start=1):
+        prompt = _safe_format(
+            str(tmpl),
+            input=initial,
+            previous=previous,
+            step=i,
+        )
+
+        try:
+            answer = await _one_chat(
+                llm, prompt,
+                model=model, provider=provider, system=system,
+            )
+        except Exception as exc:
+            logger.warning(
+                "agent_chain step {} failed: {}", i, exc,
+            )
+            if stop_on_error:
+                raise
+            answer = f"[step {i} error: {exc}]"
+
+        transcript.append({
+            "step": i,
+            "prompt": prompt,
+            "response": answer,
+        })
+        previous = answer
+
+    return {
+        "final": previous,
+        "transcript": transcript,
+        "steps": len(transcript),
+    }
+
+
+register(NodeType(
+    name="custom.agent_chain",
+    display="Agent Chain (sequential)",
+    category="Custom Patterns",
+    description=(
+        "Run a list of prompts one after another. Each prompt sees "
+        "the previous answer via {previous}, enabling follow-up "
+        "chains, refinement ladders, and multi-step reasoning."
+    ),
+    inputs=[Port("initial", "any", optional=True)],
+    outputs=[
+        Port("final", "string"),
+        Port("transcript", "list"),
+        Port("steps", "number"),
+    ],
+    params=[
+        Param("system_prompt", "text", "",
+              description="Optional system prompt applied to every step"),
+        Param("prompts", "json",
+              ["{input}", "Improve this: {previous}"],
+              description=(
+                  "JSON array of prompt templates. Placeholders: "
+                  "{input}, {previous}, {step}."
+              )),
+        Param("model", "select", "", dynamic="all.models",
+              description="Model to use for every step"),
+        Param("provider", "select", "auto",
+              choices=["auto", "ollama", "llama_cpp", "fallback"],
+              description="Provider override if model has no prefix"),
+        Param("stop_on_error", "bool", True,
+              description="Abort the chain on the first failed step"),
+    ],
+    color="#4b2a5f",
+    fn=_agent_chain,
+))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  2. custom.agent_pool — parallel workers over a list
+# ══════════════════════════════════════════════════════════════════════
+
+async def _agent_pool(ctx, inputs, params):
+    """
+    Run a prompt across N items in parallel, bounded by a concurrency
+    semaphore.
+
+    Each "agent" is an independent LLM call. The output preserves
+    the input order, so downstream nodes see a stable list.
+    """
+    llm = _get_llm(ctx)
+
+    items = inputs.get("items") or params.get("items", []) or []
+    if not isinstance(items, list):
+        items = [items]
+    if not items:
+        return {"results": [], "merged": "", "count": 0, "errors": []}
+
+    prompt_tpl = str(params.get("prompt_template", "{item}"))
+    model, provider = _decode_model_and_provider(
+        params.get("model"), params.get("provider"),
+    )
+    concurrency = max(1, int(params.get("concurrency", 4)))
+    merge_sep = str(params.get("merge_separator", "\n\n---\n\n"))
+
+    sem = asyncio.Semaphore(concurrency)
+
+    async def run_one(index: int, item: Any) -&gt; dict:
+        async with sem:
+            prompt = _safe_format(
+                prompt_tpl, item=item, index=index,
+            )
+            try:
+                answer = await _one_chat(
+                    llm, prompt,
+                    model=model, provider=provider,
+                )
+                return {
+                    "index": index,
+                    "item": str(item),
+                    "response": answer,
+                    "error": None,
+                }
+            except Exception as exc:
+                logger.warning(
+                    "agent_pool item {} failed: {}", index, exc,
+                )
+                return {
+                    "index": index,
+                    "item": str(item),
+                    "response": "",
+                    "error": str(exc),
+                }
+
+    unordered = await asyncio.gather(
+        *[run_one(i, it) for i, it in enumerate(items)]
+    )
+    results = sorted(unordered, key=lambda r: r["index"])
+
+    merged = merge_sep.join(
+        r["response"] for r in results if r["response"]
+    )
+    errors = [r for r in results if r["error"]]
+
+    return {
+        "results": results,
+        "merged": merged,
+        "count": len(results),
+        "errors": errors,
+    }
+
+
+register(NodeType(
+    name="custom.agent_pool",
+    display="Agent Pool (parallel)",
+    category="Custom Patterns",
+    description=(
+        "Run a prompt template across N items in parallel. "
+        "Concurrency-limited so you don't hit provider rate limits. "
+        "Preserves input order in the output."
+    ),
+    inputs=[Port("items", "list")],
+    outputs=[
+        Port("results", "list"),
+        Port("merged", "string"),
+        Port("count", "number"),
+        Port("errors", "list"),
+    ],
+    params=[
+        Param("prompt_template", "text", "Process: {item}",
+              description=(
+                  "Prompt template. Placeholders: {item}, {index}."
+              )),
+        Param("model", "select", "", dynamic="all.models"),
+        Param("provider", "select", "auto",
+              choices=["auto", "ollama", "llama_cpp", "fallback"]),
+        Param("concurrency", "number", 4,
+              description="Max simultaneous LLM calls"),
+        Param("merge_separator", "text", "\n\n---\n\n",
+              description="Separator used when building 'merged'"),
+    ],
+    color="#2a4b5f",
+    fn=_agent_pool,
+))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  3. custom.agent_router — LLM-based branching
+# ══════════════════════════════════════════════════════════════════════
+
+async def _agent_router(ctx, inputs, params):
+    """
+    Use the LLM to classify the input into one of up to five branches,
+    then route the value to the matching output port.
+
+    Only the chosen branch receives the value; the others receive
+    None. Downstream nodes can rely on this — a branch that never
+    fires is simply not traversed.
+    """
+    llm = _get_llm(ctx)
+
+    value = inputs.get("input")
+    empty_out = {
+        "chosen": "", "chosen_index": -1, "reason": "no input",
+        "branch_0": None, "branch_1": None, "branch_2": None,
+        "branch_3": None, "branch_4": None,
+    }
+    if value is None:
+        return empty_out
+
+    branches_raw = str(params.get("branches", "positive,negative,neutral"))
+    branches = [b.strip() for b in branches_raw.split(",") if b.strip()][:5]
+    if not branches:
+        raise ValueError(
+            "custom.agent_router: 'branches' must be a comma-separated "
+            "list of at least one category name."
+        )
+
+    router_prompt = str(params.get(
+        "router_prompt",
+        "Classify the following input into exactly one of these "
+        "categories: {branches}.\n\n"
+        "Respond with only the category name, nothing else.\n\n"
+        "Input: {input}",
+    ))
+    model, provider = _decode_model_and_provider(
+        params.get("model"), params.get("provider"),
+    )
+
+    prompt = _safe_format(
+        router_prompt,
+        branches=", ".join(branches),
+        input=value,
+    )
+    answer = (await _one_chat(
+        llm, prompt, model=model, provider=provider, temperature=0.0,
+    )).strip()
+
+    chosen_idx = -1
+    chosen = ""
+    for i, b in enumerate(branches):
+        if b.lower() in answer.lower():
+            chosen_idx = i
+            chosen = b
+            break
+
+    # If the LLM refused to pick a branch, fall back to the first so
+    # the graph keeps running instead of stalling.
+    if chosen_idx == -1:
+        chosen_idx = 0
+        chosen = branches[0]
+        logger.warning(
+            "agent_router: LLM response {} did not match any branch; "
+            "falling back to '{}'", answer, chosen,
+        )
+
+    out = {
+        "chosen": chosen,
+        "chosen_index": chosen_idx,
+        "reason": answer,
+    }
+    for i in range(5):
+        out[f"branch_{i}"] = value if i == chosen_idx else None
+    return out
+
+
+register(NodeType(
+    name="custom.agent_router",
+    display="Router (LLM branch)",
+    category="Custom Patterns",
+    description=(
+        "Ask the LLM to classify the input into one of up to five "
+        "named branches, then route the value to the matching "
+        "output port. Enables dynamic fan-out based on content."
+    ),
+    inputs=[Port("input", "any")],
+    outputs=[
+        Port("branch_0", "any"),
+        Port("branch_1", "any"),
+        Port("branch_2", "any"),
+        Port("branch_3", "any"),
+        Port("branch_4", "any"),
+        Port("chosen", "string"),
+        Port("chosen_index", "number"),
+        Port("reason", "string"),
+    ],
+    params=[
+        Param("branches", "text", "positive,negative,neutral",
+              description=(
+                  "Comma-separated branch names (max 5). The order "
+                  "determines which output port each one maps to."
+              )),
+        Param("router_prompt", "text",
+              "Classify the following input into exactly one of these "
+              "categories: {branches}.\n\nRespond with only the "
+              "category name, nothing else.\n\nInput: {input}",
+              description=(
+                  "Classification prompt. Placeholders: {branches}, "
+                  "{input}."
+              )),
+        Param("model", "select", "", dynamic="all.models"),
+        Param("provider", "select", "auto",
+              choices=["auto", "ollama", "llama_cpp", "fallback"]),
+    ],
+    color="#5f2a4b",
+    fn=_agent_router,
+))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  4. custom.map_llm — map a prompt over a list
+# ══════════════════════════════════════════════════════════════════════
+
+async def _map_llm(ctx, inputs, params):
+    """
+    Process each item with an LLM call and return a parallel list of
+    results.
+
+    This is the "map" half of map-reduce. Combine with
+    `custom.reduce_llm` to get the full pattern.
+    """
+    llm = _get_llm(ctx)
+
+    items = inputs.get("items") or params.get("items", []) or []
+    if not isinstance(items, list):
+        items = [items]
+    if not items:
+        return {"results": [], "errors": [], "count": 0}
+
+    prompt_tpl = str(params.get("prompt", "{item}"))
+    model, provider = _decode_model_and_provider(
+        params.get("model"), params.get("provider"),
+    )
+    concurrency = max(1, int(params.get("concurrency", 4)))
+
+    sem = asyncio.Semaphore(concurrency)
+
+    async def run(index: int, item: Any) -&gt; tuple[int, str | None, str | None]:
+        async with sem:
+            try:
+                prompt = _safe_format(
+                    prompt_tpl, item=item, index=index,
+                )
+                answer = await _one_chat(
+                    llm, prompt,
+                    model=model, provider=provider,
+                )
+                return (index, answer, None)
+            except Exception as exc:
+                return (index, None, str(exc))
+
+    triples = await asyncio.gather(
+        *[run(i, it) for i, it in enumerate(items)]
+    )
+    triples = sorted(triples, key=lambda t: t[0])
+
+    results: list[Any] = []
+    errors: list[dict] = []
+    for i, content, err in triples:
+        results.append(content if content is not None else "")
+        if err:
+            errors.append({"index": i, "error": err})
+
+    return {
+        "results": results,
+        "errors": errors,
+        "count": len(results),
+    }
+
+
+register(NodeType(
+    name="custom.map_llm",
+    display="Map (LLM per item)",
+    category="Custom Patterns",
+    description=(
+        "Apply a prompt template to every item in a list, one LLM "
+        "call per item, in parallel. The 'map' half of map-reduce."
+    ),
+    inputs=[Port("items", "list")],
+    outputs=[
+        Port("results", "list"),
+        Port("errors", "list"),
+        Port("count", "number"),
+    ],
+    params=[
+        Param("prompt", "text", "Process this item: {item}",
+              description=(
+                  "Prompt template. Placeholders: {item}, {index}."
+              )),
+        Param("model", "select", "", dynamic="all.models"),
+        Param("provider", "select", "auto",
+              choices=["auto", "ollama", "llama_cpp", "fallback"]),
+        Param("concurrency", "number", 4,
+              description="Max simultaneous LLM calls"),
+    ],
+    color="#2a5f4b",
+    fn=_map_llm,
+))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  5. custom.reduce_llm — fold a list into one answer
+# ══════════════════════════════════════════════════════════════════════
+
+async def _reduce_llm(ctx, inputs, params):
+    """
+    Combine a list of results into one answer via an LLM call.
+
+    This is the "reduce" half of map-reduce. It formats the input
+    list with numbered prefixes so the LLM can see each item
+    distinctly, then asks it to merge them.
+    """
+    llm = _get_llm(ctx)
+
+    items = inputs.get("items") or params.get("items", []) or []
+    if not isinstance(items, list):
+        items = [items]
+    if not items:
+        return {"result": ""}
+
+    reduce_prompt = str(params.get(
+        "reduce_prompt",
+        "Combine the following items into one coherent summary. "
+        "Preserve every distinct point. Do not invent details.\n\n"
+        "{results}",
+    ))
+    model, provider = _decode_model_and_provider(
+        params.get("model"), params.get("provider"),
+    )
+    separator = str(params.get("separator", "\n\n"))
+
+    formatted = separator.join(
+        f"[{i + 1}] {item}" for i, item in enumerate(items)
+    )
+    prompt = _safe_format(
+        reduce_prompt,
+        results=formatted,
+        count=len(items),
+    )
+
+    answer = await _one_chat(
+        llm, prompt, model=model, provider=provider,
+    )
+    return {"result": answer}
+
+
+register(NodeType(
+    name="custom.reduce_llm",
+    display="Reduce (combine via LLM)",
+    category="Custom Patterns",
+    description=(
+        "Combine a list of results into one answer via an LLM call. "
+        "The 'reduce' half of map-reduce. Feed it the 'results' "
+        "output from a Map node."
+    ),
+    inputs=[Port("items", "list")],
+    outputs=[Port("result", "string")],
+    params=[
+        Param("reduce_prompt", "text",
+              "Combine the following items into one coherent summary. "
+              "Preserve every distinct point. Do not invent details."
+              "\n\n{results}",
+              description=(
+                  "Reduction prompt. Placeholders: {results}, {count}."
+              )),
+        Param("separator", "text", "\n\n",
+              description="Joins the numbered items in {results}"),
+        Param("model", "select", "", dynamic="all.models"),
+        Param("provider", "select", "auto",
+              choices=["auto", "ollama", "llama_cpp", "fallback"]),
+    ],
+    color="#2a5f4b",
+    fn=_reduce_llm,
+))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  6. custom.critique_refine — iterative refinement
+# ══════════════════════════════════════════════════════════════════════
+
+def _parse_score(text: str) -&gt; float:
+    """Extract the first 1-10 numeric score from a critique."""
+    for line in text.splitlines():
+        if "score" in line.lower():
+            digits = "".join(
+                c for c in line if c.isdigit() or c == "."
+            )
+            try:
+                return float(digits)
+            except ValueError:
+                return 0.0
+    # No SCORE line found — fall back to the first standalone number.
+    for word in text.split():
+        try:
+            return float(word)
+        except ValueError:
+            continue
+    return 0.0
+
+
+async def _critique_refine(ctx, inputs, params):
+    """
+    Draft → critique → refine loop.
+
+    Runs up to `max_iterations` cycles. Stops early when the
+    critique's score reaches `quality_threshold`.
+
+    If no `draft` is provided, the first iteration generates one
+    from the `task`. This makes the node usable either as a
+    "start from scratch and iterate" or as "polish this existing
+    draft".
+    """
+    llm = _get_llm(ctx)
+
+    task = str(inputs.get("task") or params.get("task", "")).strip()
+    if not task:
+        raise ValueError(
+            "custom.critique_refine: 'task' input (or param) required"
+        )
+
+    current = str(inputs.get("draft") or "").strip()
+    system = str(params.get("system_prompt", ""))
+
+    critique_tpl = str(params.get(
+        "critique_prompt",
+        "Critique the following draft for the task below.\n\n"
+        "Task: {task}\n\nDraft:\n{draft}\n\n"
+        "Respond in exactly this format, on two lines:\n"
+        "SCORE: &lt;a number 1-10&gt;\n"
+        "ISSUES: &lt;one specific improvement&gt;\n",
+    ))
+    refine_tpl = str(params.get(
+        "refine_prompt",
+        "Task: {task}\n\n"
+        "Current draft:\n{draft}\n\n"
+        "Critique:\n{critique}\n\n"
+        "Produce an improved draft. Output the draft only — no "
+        "explanations, no critique, no meta commentary.",
+    ))
+
+    model, provider = _decode_model_and_provider(
+        params.get("model"), params.get("provider"),
+    )
+    threshold = float(params.get("quality_threshold", 8.0))
+    max_iter = max(1, int(params.get("max_iterations", 3)))
+
+    history: list[dict] = []
+    score = 0.0
+
+    for iteration in range(1, max_iter + 1):
+        # First iteration with no draft: generate one.
+        if not current:
+            try:
+                current = await _one_chat(
+                    llm,
+                    f"Complete the following task:\n\n{task}",
+                    model=model, provider=provider, system=system,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "critique_refine: initial draft generation "
+                    "failed: {}", exc,
+                )
+                return {
+                    "final": "",
+                    "iterations": 0,
+                    "score": 0.0,
+                    "history": [],
+                    "error": str(exc),
+                }
+
+        # Critique
+        critique_prompt = _safe_format(
+            critique_tpl, task=task, draft=current,
+            iteration=iteration,
+        )
+        try:
+            critique = await _one_chat(
+                llm, critique_prompt,
+                model=model, provider=provider,
+            )
+        except Exception as exc:
+            logger.warning(
+                "critique_refine: critique failed at iter {}: {}",
+                iteration, exc,
+            )
+            critique = f"[critique error: {exc}]"
+
+        score = _parse_score(critique)
+
+        history.append({
+            "iteration": iteration,
+            "draft": current,
+            "critique": critique,
+            "score": score,
+        })
+
+        # Stop early if the score is high enough.
+        if score &gt;= threshold:
+            logger.info(
+                "critique_refine: threshold {} met at iteration {} "
+                "(score {})", threshold, iteration, score,
+            )
+            break
+
+        # Don't refine after the last iteration — we'd never use it.
+        if iteration &gt;= max_iter:
+            break
+
+        # Refine
+        refine_prompt = _safe_format(
+            refine_tpl, task=task, draft=current,
+            critique=critique, score=score,
+        )
+        try:
+            current = await _one_chat(
+                llm, refine_prompt,
+                model=model, provider=provider, system=system,
+            )
+        except Exception as exc:
+            logger.warning(
+                "critique_refine: refine failed at iter {}: {}",
+                iteration, exc,
+            )
+            break
+
+    return {
+        "final": current,
+        "iterations": len(history),
+        "score": score,
+        "history": history,
+    }
+
+
+register(NodeType(
+    name="custom.critique_refine",
+    display="Critique &amp; Refine (loop)",
+    category="Custom Patterns",
+    description=(
+        "Draft → critique → refine loop. Runs up to max_iterations "
+        "cycles; stops early when the critique score reaches "
+        "quality_threshold. Accepts an optional starting draft."
+    ),
+    inputs=[
+        Port("task", "string"),
+        Port("draft", "string", optional=True),
+    ],
+    outputs=[
+        Port("final", "string"),
+        Port("iterations", "number"),
+        Port("score", "number"),
+        Port("history", "list"),
+    ],
+    params=[
+        Param("task", "text", "",
+              description="Task description (used if task input is empty)"),
+        Param("system_prompt", "text", "",
+              description="System prompt applied to every call"),
+        Param("critique_prompt", "text",
+              "Critique the following draft for the task below."
+              "\n\nTask: {task}\n\nDraft:\n{draft}\n\n"
+              "Respond in exactly this format, on two lines:\n"
+              "SCORE: &lt;a number 1-10&gt;\n"
+              "ISSUES: &lt;one specific improvement&gt;\n",
+              description=(
+                  "Critique prompt. Placeholders: {task}, {draft}, "
+                  "{iteration}. The response must contain 'SCORE:'."
+              )),
+        Param("refine_prompt", "text",
+              "Task: {task}\n\nCurrent draft:\n{draft}\n\n"
+              "Critique:\n{critique}\n\n"
+              "Produce an improved draft. Output the draft only.",
+              description=(
+                  "Refinement prompt. Placeholders: {task}, {draft}, "
+                  "{critique}, {score}."
+              )),
+        Param("quality_threshold", "number", 8.0,
+              description="Stop when the critique score reaches this"),
+        Param("max_iterations", "number", 3,
+              description="Hard cap on draft-critique-refine cycles"),
+        Param("model", "select", "", dynamic="all.models"),
+        Param("provider", "select", "auto",
+              choices=["auto", "ollama", "llama_cpp", "fallback"]),
+    ],
+    color="#5f4b2a",
+    fn=_critique_refine,
+))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  7. custom.consensus — multi-model voting
+# ══════════════════════════════════════════════════════════════════════
+
+def _fingerprint(text: str, tokens: int = 5) -&gt; str:
+    """Lowercase, first-N-token signature used for majority voting."""
+    return " ".join(text.lower().split()[:tokens])
+
+
+async def _consensus(ctx, inputs, params):
+    """
+    Ask several models the same question in parallel, then return
+    the majority answer and a 0-1 agreement score.
+
+    Majority is determined by the first five tokens of each answer
+    (case-insensitive). This is a fast heuristic, not semantic
+    voting — but for factual questions ("What is 12×8?") it works
+    well because the answer is short and starts with the same word.
+    """
+    llm = _get_llm(ctx)
+
+    prompt = str(inputs.get("prompt") or params.get("prompt", "")).strip()
+    if not prompt:
+        raise ValueError(
+            "custom.consensus: 'prompt' input (or param) required"
+        )
+
+    models_raw = str(params.get("models", ""))
+    models = [m.strip() for m in models_raw.split(",") if m.strip()]
+    if not models:
+        raise ValueError(
+            "custom.consensus: 'models' must be a comma-separated "
+            "list of model names (e.g. 'llama3.2, qwen2.5, mistral:7b')."
+        )
+
+    provider = str(params.get("provider", "auto")).strip().lower() or "auto"
+    temperature = float(params.get("temperature", 0.7))
+
+    async def ask(model_name: str) -&gt; dict:
+        try:
+            answer = await _one_chat(
+                llm, prompt,
+                model=model_name, provider=provider,
+                temperature=temperature,
+            )
+            return {
+                "model": model_name,
+                "answer": answer,
+                "error": None,
+            }
+        except Exception as exc:
+            return {
+                "model": model_name,
+                "answer": "",
+                "error": str(exc),
+            }
+
+    responses = await asyncio.gather(*[ask(m) for m in models])
+
+    valid = [r for r in responses if r["answer"]]
+    if not valid:
+        return {
+            "answer": "",
+            "all_responses": responses,
+            "agreement": 0.0,
+            "majority_count": 0,
+        }
+
+    # Count fingerprints.
+    buckets: dict[str, list[str]] = {}
+    for r in valid:
+        key = _fingerprint(r["answer"])
+        buckets.setdefault(key, []).append(r["answer"])
+
+    majority_key = max(buckets, key=lambda k: len(buckets[k]))
+    majority_answers = buckets[majority_key]
+    majority_answer = majority_answers[0]
+    agreement = len(majority_answers) / len(valid)
+
+    return {
+        "answer": majority_answer,
+        "all_responses": responses,
+        "agreement": round(agreement, 3),
+        "majority_count": len(majority_answers),
+    }
+
+
+register(NodeType(
+    name="custom.consensus",
+    display="Consensus (multi-model vote)",
+    category="Custom Patterns",
+    description=(
+        "Ask several models the same prompt in parallel and return "
+        "the majority answer plus an agreement score. Useful for "
+        "fact-checking, sanity checks, and cross-model ensembles."
+    ),
+    inputs=[Port("prompt", "string")],
+    outputs=[
+        Port("answer", "string"),
+        Port("all_responses", "list"),
+        Port("agreement", "number"),
+        Port("majority_count", "number"),
+    ],
+    params=[
+        Param("prompt", "text", "",
+              description="Question (used if prompt input is empty)"),
+        Param("models", "text", "llama3.2, qwen2.5, mistral:7b",
+              description=(
+                  "Comma-separated model names to query in parallel."
+              )),
+        Param("provider", "select", "auto",
+              choices=["auto", "ollama", "llama_cpp", "fallback"],
+              description=(
+                  "Provider applied to every model. Set to 'ollama' "
+                  "when the model names are Ollama tags."
+              )),
+        Param("temperature", "number", 0.7,
+              description="Sampling temperature for every model"),
+    ],
+    color="#2a2a5f",
+    fn=_consensus,
+))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  8. custom.json_extract — schema-validated JSON
+# ══════════════════════════════════════════════════════════════════════
+
+def _strip_code_fence(text: str) -&gt; str:
+    """Remove ```json … ``` fences the LLM may add despite instructions."""
+    text = text.strip()
+    if not text.startswith("```"):
+        return text
+    lines = text.split("\n")
+    if len(lines) &lt; 2:
+        return text
+    # Drop the opening fence line.
+    lines = lines[1:]
+    # Drop the closing fence if present.
+    if lines and lines[-1].strip().startswith("```"):
+        lines = lines[:-1]
+    return "\n".join(lines).strip()
+
+
+async def _json_extract(ctx, inputs, params):
+    """
+    Ask the LLM to produce JSON matching a schema, validate the
+    result, and retry on parse failure.
+
+    On success: `data` holds the parsed object, `valid` is True.
+    On failure: `data` is None, `valid` is False, `errors` lists
+    every attempt's failure reason.
+
+    The retry prompt includes the previous parse error so the model
+    can correct its mistake — much more reliable than blind retries
+    with the same prompt.
+    """
+    llm = _get_llm(ctx)
+
+    text = str(inputs.get("text") or params.get("text", "")).strip()
+    if not text:
+        return {
+            "data": None,
+            "valid": False,
+            "errors": ["empty input"],
+            "raw": "",
+        }
+
+    raw_schema = params.get("schema", "{}")
+    if isinstance(raw_schema, str):
+        try:
+            schema = json.loads(raw_schema)
+        except json.JSONDecodeError as exc:
+            return {
+                "data": None,
+                "valid": False,
+                "errors": [f"invalid schema parameter: {exc}"],
+                "raw": "",
+            }
+    else:
+        schema = raw_schema
+
+    extract_tpl = str(params.get(
+        "extract_prompt",
+        "Extract structured data from the following text according "
+        "to this JSON schema:\n\n{schema}\n\n"
+        "Respond with ONLY valid JSON. No markdown fences, no "
+        "explanation, no preamble.\n\n"
+        "Text:\n{text}",
+    ))
+    model, provider = _decode_model_and_provider(
+        params.get("model"), params.get("provider"),
+    )
+    max_retries = max(0, int(params.get("max_retries", 2)))
+
+    errors: list[str] = []
+    last_raw = ""
+
+    for attempt in range(max_retries + 1):
+        prompt = _safe_format(
+            extract_tpl,
+            schema=json.dumps(schema, indent=2),
+            text=text,
+        )
+        if attempt &gt; 0:
+            prompt = (
+                f"Previous attempt failed with: {errors[-1]}\n\n"
+                f"Try again. Output only valid JSON.\n\n{prompt}"
+            )
+
+        try:
+            raw = await _one_chat(
+                llm, prompt,
+                model=model, provider=provider, temperature=0.0,
+            )
+        except Exception as exc:
+            errors.append(f"attempt {attempt + 1}: LLM call failed: {exc}")
+            continue
+
+        last_raw = raw
+        cleaned = _strip_code_fence(raw)
+        try:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError as exc:
+            errors.append(
+                f"attempt {attempt + 1}: JSON decode failed: {exc}"
+            )
+            continue
+
+        return {
+            "data": data,
+            "valid": True,
+            "errors": errors,
+            "raw": cleaned,
+        }
+
+    return {
+        "data": None,
+        "valid": False,
+        "errors": errors,
+        "raw": last_raw,
+    }
+
+
+register(NodeType(
+    name="custom.json_extract",
+    display="JSON Extract (schema)",
+    category="Custom Patterns",
+    description=(
+        "Extract JSON matching a schema from free-form text, with "
+        "automatic retry on parse failure. Each retry includes the "
+        "previous error in the prompt so the model can self-correct."
+    ),
+    inputs=[Port("text", "string")],
+    outputs=[
+        Port("data", "any"),
+        Port("valid", "boolean"),
+        Port("errors", "list"),
+        Port("raw", "string"),
+    ],
+    params=[
+        Param("text", "text", "",
+              description="Source text (used if text input is empty)"),
+        Param("schema", "json",
+              {
+                  "type": "object",
+                  "properties": {
+                      "name": {"type": "string"},
+                      "value": {"type": "number"},
+                  },
+              },
+              description=(
+                  "JSON schema describing the desired output shape."
+              )),
+        Param("extract_prompt", "text",
+              "Extract structured data from the following text "
+              "according to this JSON schema:\n\n{schema}\n\n"
+              "Respond with ONLY valid JSON. No markdown fences, no "
+              "explanation, no preamble.\n\n"
+              "Text:\n{text}",
+              description=(
+                  "Extraction prompt. Placeholders: {schema}, {text}."
+              )),
+        Param("max_retries", "number", 2,
+              description=(
+                  "Extra attempts on JSON parse failure. Total "
+                  "attempts = max_retries + 1."
+              )),
+        Param("model", "select", "", dynamic="all.models"),
+        Param("provider", "select", "auto",
+              choices=["auto", "ollama", "llama_cpp", "fallback"]),
+    ],
+    color="#5f2a2a",
+    fn=_json_extract,
+))
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Logger breadcrumb
+# ══════════════════════════════════════════════════════════════════════
+#
+#  Logged once at module import time so the backend startup log shows
+#  which custom pattern nodes were registered.
+
+logger.info(
+    "Registered 8 custom pattern nodes: agent_chain, agent_pool, "
+    "agent_router, map_llm, reduce_llm, critique_refine, consensus, "
+    "json_extract"
+)</code></pre></div>
+  </section>
+
+</main>
+
+<button class="to-top" id="toTop" title="Back to top">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/languages/markdown.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Highlight all code blocks ----------
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      try { hljs.highlightElement(el); } catch (e) {}
+    });
+  }
+
+  // ---------- Line count for each file ----------
+  document.querySelectorAll('.file-section').forEach(function (sec) {
+    var code = sec.querySelector('pre code');
+    var badge = sec.querySelector('[data-lines]');
+    if (!badge) return;
+    if (code) {
+      var text = code.textContent || '';
+      var lines = text.split('\n').length;
+      badge.textContent = lines + ' lines';
+    } else {
+      badge.textContent = 'doc';
+    }
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.file-section');
+      if (!sec) return;
+      var code = sec.querySelector('pre code');
+      var md = sec.querySelector('.md-content');
+      var text = code ? code.textContent : (md ? md.innerText : '');
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = '✗ Failed';
+        setTimeout(function () { btn.textContent = '⧉ Copy'; }, 1600);
+      });
+    });
+  });
+
+  // ---------- Active nav tracking ----------
+  var navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+  var sections = Array.from(document.querySelectorAll('.file-section'));
+  var crumbs = document.getElementById('crumbs');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s.offsetTop <= scrollY) current = s;
+      else break;
+    }
+    navLinks.forEach(function (a) { a.classList.remove('active'); });
+    if (current) {
+      var link = document.querySelector('.nav-list a[href="#' + current.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        var path = current.querySelector('.file-path');
+        if (path && crumbs) {
+          crumbs.textContent = path.textContent;
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ---------- Search filter ----------
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+  var navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var q = searchInput.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      document.querySelectorAll('.nav-list li').forEach(function (li) {
+        var text = li.textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        li.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+      });
+
+      navGroups.forEach(function (g) {
+        var list = g.nextElementSibling;
+        if (!list || !list.classList.contains('nav-list')) return;
+        var hasVisible = list.querySelector('li:not(.hidden)');
+        g.style.display = hasVisible ? '' : 'none';
+      });
+
+      sections.forEach(function (sec) {
+        var name = (sec.getAttribute('data-name') || '') + ' ' +
+                   (sec.querySelector('.file-path')?.textContent || '') + ' ' +
+                   (sec.querySelector('h2')?.textContent || '');
+        name = name.toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        sec.classList.toggle('hidden', !match);
+      });
+
+      if (noResults) noResults.classList.toggle('visible', visibleCount === 0);
+    });
+  }
+
+  // ---------- Back to top ----------
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('visible', window.scrollY > 500);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---------- Mobile sidebar toggle ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (window.innerWidth <= 700) sidebar.classList.remove('open');
+      });
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

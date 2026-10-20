@@ -65,6 +65,7 @@ body {
   gap: 8px;
 }
 .logo-mark {
+  object-fit: cover;
   width: 22px; height: 22px;
   border-radius: 6px;
   background: linear-gradient(135deg, #2563eb, #7c3aed);
@@ -156,6 +157,7 @@ body {
 .nav-icon.sh { background: #89e051; }
 .nav-icon.ps1 { background: #012456; }
 .nav-icon.link { background: #7c3aed; }
+.nav-icon.node { background: #a371f7; }
 main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
 .topbar {
   position: sticky;
@@ -276,6 +278,11 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
   color: #a371f7;
   border-color: rgba(124, 58, 237, 0.3);
 }
+.file-badge.node {
+  background: rgba(163, 113, 247, 0.14);
+  color: #a371f7;
+  border-color: rgba(163, 113, 247, 0.35);
+}
 .file-path {
   font-size: 12px;
   color: var(--text-mute);
@@ -308,6 +315,7 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
   align-items: center;
   gap: 5px;
   transition: all 0.15s;
+  text-decoration: none;
 }
 .copy-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.08); }
 .copy-btn.copied { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, 0.08); }
@@ -447,6 +455,14 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
   background: rgba(88, 166, 255, 0.06);
   transform: translateY(-1px);
 }
+.kb-card.featured {
+  border-color: rgba(163, 113, 247, 0.4);
+  background: linear-gradient(135deg, rgba(163, 113, 247, 0.08), rgba(88, 166, 255, 0.04));
+}
+.kb-card.featured:hover {
+  border-color: #a371f7;
+  background: linear-gradient(135deg, rgba(163, 113, 247, 0.14), rgba(88, 166, 255, 0.08));
+}
 .kb-card .kb-icon {
   display: inline-flex;
   align-items: center;
@@ -457,6 +473,9 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
   background: linear-gradient(135deg, #2563eb, #7c3aed);
   font-size: 14px;
   margin-bottom: 10px;
+}
+.kb-card.featured .kb-icon {
+  background: linear-gradient(135deg, #a371f7, #ec6547);
 }
 .kb-card h3 {
   margin: 0 0 6px;
@@ -482,6 +501,11 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
   background: rgba(88, 166, 255, 0.12);
   color: var(--accent);
   border: 1px solid rgba(88, 166, 255, 0.25);
+}
+.kb-card.featured .kb-tag {
+  background: rgba(163, 113, 247, 0.14);
+  color: #a371f7;
+  border-color: rgba(163, 113, 247, 0.35);
 }
 .to-top {
   position: fixed;
@@ -544,7 +568,7 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
 
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <h1><span class="logo-mark">3</span> Knowledge Base</h1>
+    <h1><img src="logo.png" class="logo-mark" alt="3olution"> Knowledge Base</h1>
     <div class="sub">3olution Agent Graph — v2.0.0</div>
   </div>
 
@@ -559,6 +583,11 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
     <li><a href="#doc-tree"><span class="nav-icon md"></span>Project Tree</a></li>
     <li><a href="#doc-workflows"><span class="nav-icon md"></span>Two Workflows</a></li>
     <li><a href="#doc-quickstart"><span class="nav-icon md"></span>Quick Start</a></li>
+  </ul>
+
+  <div class="nav-group">Detailed Docs</div>
+  <ul class="nav-list" data-group="detailed">
+    <li><a href="custom_nodes.html"><span class="nav-icon node"></span>Custom Nodes Cookbook ↗</a></li>
   </ul>
 
   <div class="nav-group">Subfolder Documentation</div>
@@ -625,7 +654,7 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
     <div class="stats">
       <span>📄 <strong id="statFiles">12</strong> sections</span>
       <span>📁 <strong>11</strong> subfolders</span>
-      <span>🔗 <strong>10</strong> detailed docs</span>
+      <span>🔗 <strong>11</strong> detailed docs</span>
       <span>🐍 <strong>Python 3.10+</strong></span>
     </div>
   </div>
@@ -643,6 +672,7 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
     </p>
     <div class="links">
       <a href="#kb-index">📚 Knowledge Base Index</a>
+      <a href="custom_nodes.html">🧩 Custom Nodes Cookbook</a>
       <a href="#doc-quickstart">🚀 Quick Start</a>
       <a href="#doc-tree">🗂 Project Tree</a>
       <a href="#doc-workflows">🔀 Two Workflows</a>
@@ -659,11 +689,18 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
         <span class="file-path">Detailed per-folder documentation pages</span>
       </div>
       <div class="file-meta">
-        <span class="meta-pill">10 docs</span>
+        <span class="meta-pill">11 docs</span>
         <button class="copy-btn" data-copy>⧉ Copy</button>
       </div>
     </div>
     <div class="kb-grid">
+
+      <a class="kb-card featured" href="custom_nodes.html">
+        <div class="kb-icon">🧩</div>
+        <h3>Custom Nodes Cookbook</h3>
+        <p>Eight reference implementations for agent patterns: sequential chains, parallel pools, dynamic routing, map-reduce, critique-refine loops, multi-model consensus, schema-validated JSON extraction.</p>
+        <span class="kb-tag">8 nodes · ~1050 lines</span>
+      </a>
 
       <a class="kb-card" href="backend.html">
         <div class="kb-icon">🐍</div>
@@ -899,6 +936,7 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
 ├── fix_php.bat / fix_php.ps1       ← PHP permission repair
 ├── test_php.py                     ← PHP launch diagnostic
 ├── File_Tree.txt                   ← this tree
+├── logo-mark-replace.py            ← KB logo helper
 │
 ├── bootstrap/                      ← one-shot runtime installer
 │   └── setup.py
@@ -935,6 +973,8 @@ main { margin-left: var(--sidebar-w); padding: 0 0 80px; min-height: 100vh; }
 │       ├── engine.py               ← topological executor
 │       ├── routes.py               ← /api/graph/*
 │       └── custom_nodes/           ← user-authored nodes
+│           ├── demo_agent_patterns.py  ← 8 reference patterns
+│           └── example_nodes.py        ← 7 example nodes
 │
 ├── mcp_server/                     ← MCP tool server
 │   ├── server.py                   ← entry point
@@ -1215,6 +1255,17 @@ python run.py backend   # or, if using the developer workflow</pre>
         <li>Restart the backend so the newly installed module is loaded.</li>
         <li>Drop a <code>.gguf</code> file into <code>models/</code> and load it from the chat header's <em>Load GGUF</em> button.</li>
       </ol>
+
+      <h2>Optional: explore the custom nodes cookbook</h2>
+      <p>
+        The graph editor's palette includes sixteen built-in node types
+        and a growing set of custom pattern nodes. To see what is
+        possible when you compose them, open the
+        <a href="custom_nodes.html">Custom Nodes Cookbook</a> — eight
+        reference implementations covering sequential chains, parallel
+        pools, LLM routing, map-reduce, iterative refinement,
+        multi-model consensus, and schema-validated JSON extraction.
+      </p>
 
       <div class="callout success">
         <strong>That is the entire setup.</strong>
@@ -2453,6 +2504,7 @@ pytest tests/ -v</pre>
           <tr><td><code>AGENT_STREAM_STALL_TIMEOUT</code></td><td><code>360.0</code></td><td>Abort a stalled turn after N seconds</td></tr>
           <tr><td><code>AGENT_RETRY_ATTEMPTS</code></td><td><code>3</code></td><td>Max LLM retry attempts</td></tr>
           <tr><td><code>AGENT_SESSION_DB</code></td><td><code>sessions.db</code></td><td>SQLite session file path</td></tr>
+          <tr><td><code>AGENT_LOAD_CUSTOM_NODES</code></td><td><code>true</code></td><td>Auto-load custom node modules</td></tr>
         </tbody>
       </table>
     </div>
@@ -2787,6 +2839,7 @@ pytest tests/ -v</pre>
         <li><a href="#doc-quickstart">Quick start</a></li>
         <li>LLM configuration</li>
         <li><a href="#doc-backend">Built-in node types</a></li>
+        <li><a href="custom_nodes.html">Custom node patterns</a></li>
         <li><a href="#doc-mcp">Built-in MCP tools</a></li>
         <li>API reference</li>
         <li>Event schema</li>
@@ -2816,6 +2869,7 @@ pytest tests/ -v</pre>
           <tr><td>Install the project</td><td><a href="#f-installation">INSTALLATION.md</a></td></tr>
           <tr><td>Understand the backend</td><td><a href="backend.html">backend.html</a></td></tr>
           <tr><td>Extend the graph editor</td><td><a href="web.html">web.html</a></td></tr>
+          <tr><td>See what custom nodes can do</td><td><a href="custom_nodes.html">custom_nodes.html</a></td></tr>
           <tr><td>Add an MCP tool</td><td><a href="mcp_server.html">mcp_server.html</a></td></tr>
           <tr><td>Contribute a patch</td><td><a href="#f-contributing">CONTRIBUTING.md</a></td></tr>
           <tr><td>See what changed</td><td><a href="#f-changes">CHANGES.md</a></td></tr>
@@ -2873,6 +2927,7 @@ pytest tests/ -v</pre>
         <li>Optionally start the desktop client.</li>
         <li>Optionally enable the PHP notes app.</li>
         <li>Verify the install.</li>
+        <li>Explore the custom nodes cookbook to see what graphs can do.</li>
       </ol>
 
       <h2>Which install path should I use?</h2>
@@ -2900,6 +2955,7 @@ pytest tests/ -v</pre>
           <tr><td><code>/graph</code> returns 404</td><td>Vendor files missing</td><td><code>python scripts/download_vendor.py --force</code></td></tr>
           <tr><td><code>/php/</code> returns 500</td><td>PHP binary or php.ini missing</td><td>Run the PHP-only bootstrap</td></tr>
           <tr><td>MCP handshake fails on Windows</td><td>Proactor event loop bug</td><td>Launch via <code>scripts/serve.py</code></td></tr>
+          <tr><td>Custom node not in palette</td><td>File starts with <code>_</code> or import failed</td><td>Check the backend log for <code>Loaded custom node module</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -2982,7 +3038,9 @@ pytest tests/ -v</pre>
           <code>Param</code> from <code>..model</code>, and
           <code>register</code> from <code>..registry</code>. Register
           exactly as above. The loader picks up the new file
-          automatically.
+          automatically. See the
+          <a href="custom_nodes.html">Custom Nodes Cookbook</a> for
+          eight full reference implementations.
         </li>
       </ul>
 
@@ -3011,6 +3069,7 @@ pytest tests/ -v</pre>
         <li>No secrets in the diff</li>
         <li>If the frontend changed, all three pages still render correctly</li>
         <li>If the backend changed, the startup log has no new warnings</li>
+        <li>If a new custom node is added, it is registered and appears in the palette</li>
       </ul>
 
       <h2>Reporting issues</h2>
@@ -3118,6 +3177,11 @@ pytest tests/ -v</pre>
         <li><strong>Auto-download of LiteGraph vendor files.</strong> With two validation gates and a two-mirror fallback chain.</li>
         <li><strong>Startup diagnostics.</strong> The FastAPI lifespan logs the effective configuration; <code>/api/health</code> returns structured state.</li>
         <li><strong>CONTRIBUTING.md</strong> and <strong>CHANGES.md</strong>.</li>
+        <li>
+          <strong>Custom Nodes Cookbook.</strong> Eight reference
+          implementations for agent patterns — see
+          <a href="custom_nodes.html">custom_nodes.html</a>.
+        </li>
       </ul>
 
       <h2>Upgrade from 1.0.0 to 2.0.0</h2>
@@ -3567,7 +3631,7 @@ fix_php.bat -NoElevate       # do not prompt for elevation</pre>
       </table>
 
       <h2>Examples</h2>
-      <pre>.\New-ProjectTree.ps1 -Root C:\dev\agent-graph -WithFiles</pre>
+      <pre>.\3olution_Agent_Graph_Project_Tree.ps1 -Root C:\dev\agent-graph -WithFiles</pre>
 
       <h2>What it creates</h2>
       <ul>
